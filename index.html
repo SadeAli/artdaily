@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Art Daily — tiny daily drills for artists — SadeAli</title>
+<meta name="description" content="Five-minute art warmups: lines, ellipses, color, values, symmetry, perspective. Free, in your browser, no ads, no signup.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Art Daily — tiny daily drills for artists">
+<meta property="og:description" content="Five-minute art warmups: lines, ellipses, color, values, symmetry, perspective. Free, no ads, no signup.">
+<meta property="og:site_name" content="Art Daily · SadeAli">
+<meta property="og:url" content="https://artdaily.sadeali.com/">
+<meta property="og:image" content="https://artdaily.sadeali.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Art Daily — tiny daily drills for artists">
+<link rel="canonical" href="https://artdaily.sadeali.com/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Art Daily — tiny daily drills for artists">
+<meta name="twitter:description" content="Five-minute art warmups: lines, ellipses, color, values, symmetry, perspective. Free, no ads, no signup.">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og.png">
+<link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🎨&lt;/text&gt;&lt;/svg&gt;">
+<link rel="stylesheet" href="css/style.css">
+<script>
+(function(){var t=null;try{t=localStorage.getItem('sadeali-theme');}catch(e){}document.documentElement.dataset.theme=(t==='light')?'light':'dark';})();
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "WebSite", "name": "Art Daily", "url": "https://artdaily.sadeali.com/"}
+</script>
+</head>
+<body>
+<div class="topbar">
+  <a class="backlink" href="https://sadeali.com/">← sadeali.com</a>
+  <div class="topbar-spacer"></div>
+  <span class="streakchip" id="streakChip" hidden></span>
+  <button class="iconbtn" id="themeToggle" aria-label="Toggle light or dark theme" title="Toggle theme" hidden>
+    <svg class="ic-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/></svg>
+    <svg class="ic-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+  </button>
+</div>
+
+<header class="hero">
+  <div class="term hero-term">
+    <div class="term-bar" aria-hidden="true"><i class="dot d1"></i><i class="dot d2"></i><i class="dot d3"></i><span class="term-title">sadeali@artdaily:~</span></div>
+    <div class="term-body">
+      <p class="promptline" aria-hidden="true"><span class="prompt">$</span> ./artdaily --today</p>
+      <h1 class="hero-title">Art Daily</h1>
+      <p class="lede">five minutes of fundamentals, every day — tiny drills that train the hand and the eye</p>
+      <div class="today">
+        <p class="promptline" aria-hidden="true"><span class="prompt">$</span> cat today.plan</p>
+        <ol class="today-list" id="todayList" aria-label="Today's three warmups"></ol>
+        <p class="today-done" id="todayDone">the daily plan needs JavaScript — the drill links below work without it</p>
+        <button class="sharebtn" id="shareBtn" type="button" hidden>copy today's card</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="section" id="drills" aria-label="All drills">
+    <p class="promptline lsline" aria-hidden="true"><span class="prompt">$</span> ls ./drills</p>
+    <p class="lsout" id="drillCount" aria-hidden="true">6 drills · 8 skills · new ones hatching</p>
+    <div class="chiprow" id="skillFilters" role="group" aria-label="Filter by skill"></div>
+    <ul class="grid" id="gameGrid" aria-label="Drills"></ul>
+    <noscript>
+      <p class="noscript-note">the arcade player needs JavaScript, but every drill lives on its own page — plain links:</p>
+      <ul class="plainlist">
+        <li><a href="https://sadeali.github.io/artdaily-lines/">Steady Lines</a> — ghost straight strokes through the checkpoints</li>
+        <li><a href="https://sadeali.github.io/artdaily-ellipses/">Ellipse Orbit</a> — draw clean ellipses inside their bounding planes</li>
+        <li><a href="https://sadeali.github.io/artdaily-colors/">Color Mixer</a> — mix the exact target color by eye</li>
+        <li><a href="https://sadeali.github.io/artdaily-values/">Value Squint</a> — sort values and match grays like a squinting painter</li>
+        <li><a href="https://sadeali.github.io/artdaily-symmetry/">Mirror Mirror</a> — finish the other half of the figure</li>
+        <li><a href="https://sadeali.github.io/artdaily-perspective/">Vanishing Act</a> — hunt vanishing points and aim receding edges</li>
+      </ul>
+    </noscript>
+  </section>
+
+  <p class="aboutline"><span class="comment-hash" aria-hidden="true"># </span>a warmup, not a curriculum — pick a drill, do a round, come back tomorrow</p>
+
+  <section class="section" id="progress" aria-label="Your progress">
+    <p class="promptline lsline" aria-hidden="true"><span class="prompt">$</span> cat progress.txt</p>
+    <ul class="meters" id="skillMeters" hidden></ul>
+    <p class="storenote">progress lives in this browser's localStorage — no accounts, nothing leaves your device · <button class="resetlink" id="resetBtn" type="button">reset it</button></p>
+  </section>
+</main>
+
+<dialog class="player" id="player" aria-label="Game player">
+  <div class="term player-term">
+    <div class="term-bar player-bar">
+      <i class="dot d1" aria-hidden="true"></i><i class="dot d2" aria-hidden="true"></i><i class="dot d3" aria-hidden="true"></i>
+      <span class="term-title" id="playerSlug">~/artdaily</span>
+      <span class="term-spacer"></span>
+      <a class="player-link" id="playerOpen" href="https://artdaily.sadeali.com/" target="_blank" rel="noopener">open full page ↗</a>
+      <button class="player-x" id="playerClose" type="button" aria-label="Close game">✕</button>
+    </div>
+    <iframe class="player-frame" id="playerFrame" src="about:blank" title="Art Daily game"></iframe>
+    <p class="player-foot"><span id="playerStatus" aria-live="polite"></span></p>
+  </div>
+</dialog>
+
+<footer class="footer">
+  <nav class="footnav" aria-label="Site links">
+    <a href="https://sadeali.com/">More experiments</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
+    <span aria-hidden="true">·</span>
+    <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span id="supportLinks"></span>
+  </nav>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no tracking</p>
+</footer>
+
+<script src="js/support-config.js"></script>
+<script src="js/registry.js"></script>
+<script src="js/main.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
