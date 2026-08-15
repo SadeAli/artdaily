@@ -157,13 +157,123 @@ Non-negotiable for every drill:
   be raced by "new round" landing during the reveal.
 - **Touch is the default input**: 44px targets, pointerId-guarded
   strokes, `touch-action: none` on the canvas.
-- **Anything meaning-bearing painted on canvas must pass AA in both
+- **Anything meaning-bearing painted on canvas must clear 3:1 in both
   themes.** The watercolor accents are decorative-strength on paper —
-  mix toward `--ink` (or define a `--canvas-accent` below the CSS
-  marker) for marks that carry information.
+  mix toward `--ink` (define a `--canvas-accent` below the CSS marker)
+  for marks that carry information. Measured on the light sheet, the raw
+  accents come in at **1.97 (sunny), 2.89 (mint), 2.95 (bubblegum), 3.06
+  (coral), 3.18 (sky), 3.48 (lilac)** — so on paper the palette is mostly
+  *below* the bar for a shape that carries information, and the two that
+  scrape over it have no margin. `color-mix(in srgb, var(--game-accent)
+  45%, var(--ink))` clears it for every accent, worst case 5.29. Full
+  detail in the accessibility section.
 - **Train the hand where a stroke beats a tap.** Prefer drawing as the
   input unless the lesson is genuinely a decomposition (three sliders
   for hue/saturation/lightness) or a judgement (spot the wrong figure).
+
+## Playable without a mouse, readable without colour
+
+A drill is a picture plus a sentence. Both have to survive a player who
+cannot see the picture, cannot use a pointer, or cannot separate your
+accent from the paper it is painted on. None of this is a retrofit — the
+template already does all of it, and every rule below was written after
+finding the opposite of it shipped.
+
+**One spoken channel: the hint line.** `#hint` is `aria-live="polite"`
+and carries the prompt *and* every reveal. Nothing else on the page may
+be a live region. Two polite regions written in the same tick do not
+merge — they queue, so the player hears the round's correction and then,
+behind it, the same score again. The template's score toast used to be
+`role="status"` saying `score 84 / 100` half a beat after the hint had
+said *"Round done — 84 out of 100 (best 91). Most taps landed low and
+right — aim high and left next round."* The toast is now
+`aria-hidden="true"`: a sticker, not a second voice. If your drill wants
+to say something the hint does not, put it **in the hint**.
+
+**A focusable canvas must be an operable canvas.** `tabindex="0"` on a
+`role="img"` canvas with no `keydown` handler is a tab stop that focuses
+a picture and then does nothing — a focus ring on something the keyboard
+cannot use, which reads as a broken control. The template's demo is
+pointer-only, so its canvas carries **no** `tabindex`; screen readers
+still reach it in browse mode, because that is what `role="img"` plus a
+name is for. If your drill adds key handling, add the `tabindex` in the
+same commit. Never one without the other.
+
+**The canvas's accessible name IS the picture — so keep it current.** A
+name set once in the HTML ("Lines drill area") describes a blank
+rectangle for the whole session. `js/game.js` shows the pattern:
+`describeSheet()` is called from `draw()`, so the name and the paint
+always leave from the same place, and the write is guarded on "did the
+sentence change" so a stroke drill repainting sixty times a second costs
+one `setAttribute`, not sixty. A name is **not** a live region — it is
+read when the player navigates onto the element, so it never competes
+with the hint. Hold it to the same bar as the scoring functions: it runs
+inside `draw()`, which runs inside the pointer handler, so a throw stops
+the canvas painting and kills the round under the player's finger, and
+whatever it builds gets **read out loud** — `NaN out of 100` is worse
+than saying nothing. (Watch `isFinite(null)`, which is `true`.)
+
+**Decorative glyphs get `aria-hidden`.** `→ ✓ ↻ · ♥ $` are read as
+"rightwards arrow", "check mark", "clockwise open circle arrow". The
+SDK's standalone hand-off link is the one that mattered: its accessible
+name — what a links-list announces out of context — ended *"add it to my
+Art Daily record rightwards arrow"*. Wrap the glyph in an
+`aria-hidden="true"` span and leave the sentence clean.
+
+**Do not destroy a control to update the text around it.** Removing a
+focused element drops focus to `<body>`. The hand-off bar rebuilt its
+whole contents every round, so a keyboard player who had tabbed onto
+"add it to my record" lost their place the moment the next round ended.
+The bar now reuses the link node and replaces only the sentence in front
+of it — and nothing is lost by that, because `role="status"` implies
+`aria-atomic`, so the region is re-announced in full either way.
+
+**3:1 for every mark that carries information, on both sheets.** See the
+UX bar for the palette numbers. Two traps beyond the raw accent:
+
+- *"Faint" is a look, not a licence to be unreadable.* The reveal's
+  dotted zero-ring — the scale the printed number is measured on, the
+  thing the how-to tells the player to read their mark against — was
+  drawn at `globalAlpha = 0.4`, which composites `--muted` to **1.74:1**
+  on paper and **2.02:1** in the night studio. It is now `0.85`: 3.82:1
+  on the card, and still 3.30:1 over the darkest dot of the grid it
+  crosses. Alpha is contrast; budget for it.
+- *Measure against what is actually behind the mark*, which on a drill
+  canvas is `--card` **plus the dot grid** (`--ink` at 8%), not the
+  swatch in your head.
+
+Check a colour before you commit it — no dependencies:
+
+```sh
+node -e "const L=h=>{h=h.replace('#','');const s=[0,2,4].map(i=>parseInt(h.slice(i,i+2),16)/255)
+.map(v=>v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4));return .2126*s[0]+.7152*s[1]+.0722*s[2]};
+const cr=(a,b)=>{const x=L(a),y=L(b);return ((Math.max(x,y)+.05)/(Math.min(x,y)+.05)).toFixed(2)};
+console.log('light',cr('#56A382','#FDFAF1'),' dark',cr('#5FBF97','#221D16'))"
+```
+
+**Focus must stay visible, and land somewhere sensible.** The shared
+sheet gives every link, button and `[tabindex]` a 3px `--focus` outline
+at 3.92:1 on paper and 6.56:1 in the night studio — do not switch it off,
+do not wrap a control in `overflow: hidden` that clips it, and keep the
+DOM order the reading order (the SDK inserts the hand-off bar directly
+after `.game-controls` for exactly that reason). Anything you toggle
+open needs `aria-expanded` + `aria-controls` on the button that toggles
+it, as `#btnHow` does.
+
+**Reduced motion, again.** The stylesheet flattens CSS animation and
+transition; it cannot reach a canvas tween or a `setInterval`. See the
+performance section — and never put information *only* in motion.
+
+**Touch targets come from `startRadius`, not from a hand-rolled floor.**
+Any base from 22 up clears 44px on every profile; the numbers are in the
+hardware section.
+
+Before you ship, tab through the drill with the mouse in your other hand:
+every stop should be a control you can then operate with the keyboard,
+in the order you would read the page, with a ring you can see on **both**
+sheets. Then play a round with the screen readable but the canvas
+ignored — the hint line alone should still tell you what to do and how
+you did.
 
 ## The hardware people actually own (read this before you set a tolerance)
 

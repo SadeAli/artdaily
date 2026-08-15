@@ -164,6 +164,13 @@ a { color: inherit; }
   font-weight: 700;
   line-height: 1.1;
   color: var(--coral);
+  /* 1.15rem = 18.4px, a hair UNDER the 18.66px large-text threshold — and
+     Caveat's strokes are thinner than the sans it is measured against, so
+     this is small text and owes 4.5:1. Dark theme clears it (#F08262 on the
+     8% coral wash = 6.2:1); on paper, --coral on its own wash was 2.6:1 —
+     the streak count, the one number the whole habit hangs on, was the
+     lowest-contrast text on the page. Deepened below, same hue family as
+     the other paper inks. */
   padding: 4px 12px 5px;
   border: 2px solid color-mix(in srgb, var(--coral) 75%, transparent);
   border-radius: 8px 3px 10px 4px;
@@ -171,6 +178,9 @@ a { color: inherit; }
   background: color-mix(in srgb, var(--coral) 8%, transparent);
   -webkit-mask-image: radial-gradient(circle at 30% 70%, transparent 1px, #000 2px);
 }
+/* 4.9:1 on the chip's wash even under the body's warm gradient (measured
+   against bg + the 7% sunny radial, which sits exactly over the topbar). */
+:root:not([data-theme="dark"]) .streakchip { color: #A33F30; }
 
 /* ===== Hero — a notebook page ===== */
 
@@ -406,10 +416,25 @@ a { color: inherit; }
 .record-stats { margin: 0 0 8px; font-size: 0.84rem; font-weight: 600; color: var(--muted); }
 .record-stats b { font-family: var(--hand); font-size: 1.35rem; font-weight: 700; color: var(--ink); }
 .record-strip { display: flex; flex-wrap: wrap; gap: 4px; }
-.rdot { width: 12px; height: 12px; border-radius: 3px; border: 1px solid var(--line);
-  background: color-mix(in srgb, var(--line) 22%, transparent); }
-.rdot.r1 { background: color-mix(in srgb, var(--mint) 45%, transparent); border-color: color-mix(in srgb, var(--mint) 60%, var(--line)); }
+/* "filled = you practised" is the whole message of the strip, and the strip
+   could not say it: on paper an empty day sat 1.07:1 against the page and a
+   practised one 1.50:1, so thirty days of habit rendered as a barely-there
+   smudge, and the two states were a tenth of a step apart.
+   Now the state that carries the meaning carries the contrast. An empty day
+   is an outline that clears 3:1 by itself (--muted 85% = 3.6:1 on paper,
+   4.9:1 at night); a practised day is ringed AND filled in the deepened mint
+   ink, 3.2:1 paper / 5.6:1 night for one round and 4.4:1 / 8.1:1 for three.
+   One round versus three is deliberately only a tonal step on top of that —
+   it is a bonus tier, and the note under the strip never claims otherwise.
+   The strip is aria-hidden either way; the same counts are in the record
+   line above it in words. */
+.rdot { width: 12px; height: 12px; border-radius: 3px;
+  border: 1px solid color-mix(in srgb, var(--muted) 85%, transparent);
+  background: transparent; }
+.rdot.r1 { background: color-mix(in srgb, var(--mint) 80%, transparent); border-color: var(--mint); }
 .rdot.r3 { background: var(--mint); border-color: var(--mint); }
+:root:not([data-theme="dark"]) .rdot.r1 { background: color-mix(in srgb, #3A7A5E 80%, transparent); border-color: #3A7A5E; }
+:root:not([data-theme="dark"]) .rdot.r3 { background: #3A7A5E; border-color: #3A7A5E; }
 .record-note { margin: 6px 0 0; font-size: 0.72rem; color: var(--muted); }
 
 /* ===== Milestone toast ===== */
@@ -439,6 +464,13 @@ a { color: inherit; }
   max-width: min(92vw, 460px);
   text-align: center;
 }
+/* The box has to stay in the DOM between messages so the live region is
+   never torn out of the accessibility tree (see index.html) — so an empty
+   one has to paint nothing at all. :empty matches the moment the text node
+   is removed, and with no padding, border, background or shadow a
+   zero-by-zero fixed box is invisible and (pointer-events: none above)
+   untouchable. */
+.page-toast:empty { padding: 0; border: 0; background: none; box-shadow: none; }
 
 /* ===== Jump nav — pencil tabs ===== */
 
@@ -490,8 +522,14 @@ main { flex: 1; width: 100%; }
 /* Anchor jumps must clear the sticky jumpnav. Measured: 65px on desktop,
    up to 73px on a phone once the horizontal scrollbar is a classic one.
    4.5rem (72px) lost that race by a pixel; 5.5rem (88px) clears it with
-   room for the tab row to grow. */
-.cat-section { scroll-margin-top: 5.5rem; }
+   room for the tab row to grow.
+   The same clearance is owed to KEYBOARD focus, which was never given it:
+   the browser scrolls a newly focused element into view with the same
+   scroll-margin machinery, and Shift+Tab back up the catalogue aligns the
+   card to the TOP of the viewport — i.e. underneath the pinned tab bar,
+   focus ring and all. Every focusable thing that lives below the sticky bar
+   gets the margin, not just the anchor targets. */
+.cat-section, .card, .resetlink { scroll-margin-top: 5.5rem; }
 
 .cat-head {
   display: flex;

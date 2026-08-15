@@ -283,6 +283,14 @@ window.ARTDAILY_GAMES = [
     dev: '../artdaily-games/ellipse-in-plane/', status: 'live',
   },
   {
+    slug: 'cylinder-ends', name: 'Cylinder Ends',
+    tagline: 'the far end is rounder — but how much?',
+    icon: '🥫', accent: 'sky', skills: ['ellipses', 'perspective'],
+    cat: 'form', tag: 'auto', minutes: 2,
+    url: 'https://sadeali.github.io/artdaily-cylinder-ends/',
+    dev: '../artdaily-games/cylinder-ends/', status: 'live',
+  },
+  {
     slug: 'cast-shadow', name: 'Cast Shadow',
     tagline: 'construct the shadow the light demands',
     icon: '🕯️', accent: 'sunny', skills: ['perspective', 'values'],

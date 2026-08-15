@@ -741,13 +741,29 @@
       ic.setAttribute('aria-hidden', 'true');
       li.appendChild(ic);
       li.appendChild(el('span', 'meter-name', s.label));
+      /* The tube itself was aria-hidden, so the entire section — the one
+         place the page shows long-run progress — read as "colour lv 3" and
+         nothing else: how full the tube is, which is the whole metaphor,
+         was visual-only. A progressbar with a real value says it out loud.
+         levelInfo clamps pct to 0-100 and lv to a finite integer for any
+         stored total (negative, NaN, Infinity), so the label can never
+         become "NaN% to level NaN". */
       var track = el('span', 'meter-track');
-      track.setAttribute('aria-hidden', 'true');
+      track.setAttribute('role', 'progressbar');
+      track.setAttribute('aria-valuemin', '0');
+      track.setAttribute('aria-valuemax', '100');
+      track.setAttribute('aria-valuenow', String(info.pct));
+      track.setAttribute('aria-label',
+        'level ' + info.lv + ' — ' + info.pct + '% of the way to level ' + (info.lv + 1));
       var fill = el('span', 'meter-fill');
       fill.style.setProperty('--w', info.pct + '%');
       track.appendChild(fill);
       li.appendChild(track);
-      li.appendChild(el('span', 'meter-lv', 'lv ' + info.lv));
+      /* "lv 3" is the same fact the progressbar just gave its name; keep it
+         on screen, keep it out of the announcement. */
+      var lv = el('span', 'meter-lv', 'lv ' + info.lv);
+      lv.setAttribute('aria-hidden', 'true');
+      li.appendChild(lv);
       meters.appendChild(li);
     });
   }
@@ -850,14 +866,20 @@
     /* "🪤 82 · 🎨 91 · ✏️ 70" is a cipher: three numbers with no way to
        tell which drill earned which, and to a screen reader it is three
        emoji names and three integers. Say the drill, and say whether the
-       number was a personal best — that is the whole review of the day. */
+       number was a personal best — that is the whole review of the day.
+       The names fixed half of that; the emoji were still in the text node,
+       so the day's review still opened with "mouse trap". They are
+       decoration sitting next to the name they decorate — hide them. */
     var row = el('p', 'closing-scores');
     picks.forEach(function (g, i) {
       if (i) row.appendChild(document.createTextNode(' · '));
       var s = scores[g.slug];
       var part = el('span', 'closing-score');
+      var sIcon = el('span', '', g.icon);
+      sIcon.setAttribute('aria-hidden', 'true');
+      part.appendChild(sIcon);
       part.appendChild(document.createTextNode(
-        g.icon + ' ' + g.name + ' ' + (typeof s === 'number' ? s : '–')));
+        ' ' + g.name + ' ' + (typeof s === 'number' ? s : '–')));
       if (typeof s === 'number' && s === bestFor(g.slug)) {
         part.appendChild(el('span', 'closing-pb', ' best ★'));
       }
@@ -876,7 +898,10 @@
       t.appendChild(document.createTextNode('tomorrow: '));
       tom.forEach(function (g, i) {
         if (i) t.appendChild(document.createTextNode(' · '));
-        t.appendChild(document.createTextNode(g.icon + ' ' + g.name));
+        var tmIcon = el('span', '', g.icon);
+        tmIcon.setAttribute('aria-hidden', 'true');
+        t.appendChild(tmIcon);
+        t.appendChild(document.createTextNode(' ' + g.name));
       });
       box.appendChild(t);
     }
@@ -974,7 +999,7 @@
     clearTimeout(toastTimer);
     toastTimer = null;
     var box = $('pageToast');
-    if (box) { box.textContent = ''; box.hidden = true; }
+    if (box) box.textContent = '';
   }
 
   function pumpToasts() {
@@ -986,15 +1011,19 @@
     if (player && player.open) return;
     var box = $('pageToast');
     if (!box) { toastQueue.length = 0; return; }
-    if (!toastQueue.length) { box.textContent = ''; box.hidden = true; return; }
+    if (!toastQueue.length) { box.textContent = ''; return; }
     var msg = toastQueue.shift();
     toastBusy = true;
+    /* Text only — never `hidden`. The box is a permanent role="status"
+       region; hiding it between messages took it out of the accessibility
+       tree, so every milestone was written into a region that did not exist
+       and then revealed, which AT may treat as a new region rather than an
+       announcement. Emptying it leaves the region in place (and paints
+       nothing, via .page-toast:empty). */
     box.textContent = msg;
-    box.hidden = false;
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function () {
       box.textContent = '';
-      box.hidden = true;
       toastBusy = false;
       toastTimer = setTimeout(pumpToasts, TOAST_GAP);
     }, TOAST_DWELL);
@@ -1079,6 +1108,23 @@
     return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
   }
 
+  /* The theme button is an icon with no text, and its only state cue is
+     WHICH icon is showing — which is exactly the cue a screen reader user
+     does not get (both <svg>s are aria-hidden, and only CSS decides which
+     one is displayed). "Toggle light or dark theme" is true in both states
+     and therefore useless in either: it never says where you are or where
+     pressing it goes. Name the destination instead, and keep it in step
+     with the theme via the observer that is already watching data-theme.
+     (main.js owns the click; it is a vendored network file and stays
+     untouched.) */
+  var themeBtn = $('themeToggle');
+  function syncThemeLabel() {
+    if (!themeBtn) return;
+    var next = currentTheme() === 'dark' ? 'Switch to light theme' : 'Switch to dark theme';
+    themeBtn.setAttribute('aria-label', next);
+    themeBtn.title = next;
+  }
+
   function postTheme() {
     if (!frame || !frame.contentWindow) return;
     try {
@@ -1128,7 +1174,20 @@
     openGame = g;
     openerSlug = g.slug;
     openerFrom = (from === 'today') ? 'today' : 'card';
-    if (titleEl) titleEl.textContent = g.icon + ' ' + g.name;
+    if (titleEl) {
+      /* The icon is decoration that a screen reader reads out loud as its
+         CLDR name — "artist palette Color Mixer". Split it out and hide it
+         so the bar announces the drill, not the emoji. */
+      titleEl.textContent = '';
+      var tIcon = el('span', '', g.icon);
+      tIcon.setAttribute('aria-hidden', 'true');
+      titleEl.appendChild(tIcon);
+      titleEl.appendChild(document.createTextNode(' ' + g.name));
+    }
+    /* The dialog's own name, which is what a screen reader reads the moment
+       focus lands on it below. "Game player" is true of every drill and
+       therefore tells you nothing about the one that just opened. */
+    player.setAttribute('aria-label', g.name + ' — drill player');
     if (openLink) openLink.href = url;
     frame.title = g.name;
     playerReady = false;
@@ -1142,6 +1201,20 @@
       statusEl.classList.remove('is-best');
     }
     if (!player.open) player.showModal();
+    /* Put focus on the dialog itself, every open — including the "next
+       warmup →" case where the dialog is ALREADY open and only the drill
+       changed, which used to leave focus sitting on a button whose label
+       had silently become a different drill (or which updateNextBtn was
+       about to hide out from under it).
+       Left to itself, showModal() gives the first tab stop to "open full
+       page ↗": the first thing a keyboard player could press was a link out
+       to a new tab, and the announcement was a bare link with no clue which
+       drill had opened. The dialog carries the per-drill aria-label set
+       above, so landing here says "Steady Lines — drill player, dialog" and
+       Tab still walks link → ✕ → the game → next. */
+    if (typeof player.focus === 'function') {
+      try { player.focus({ preventScroll: true }); } catch (e) { player.focus(); }
+    }
     updateNextBtn();
     document.documentElement.style.overflow = 'hidden'; /* scroll lock */
   }
@@ -1247,9 +1320,11 @@
     });
   }
 
-  /* Theme relay: follow the page toggle into the open game. */
+  /* Theme relay: follow the page toggle into the open game, and keep the
+     toggle's own label pointing at where the next press goes. */
   if (typeof MutationObserver === 'function') {
     new MutationObserver(function () {
+      syncThemeLabel();
       if (player && player.open) postTheme();
     }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   }
@@ -1314,6 +1389,12 @@
       renderAll();
       updateNextBtn();
       if (statusEl) { statusEl.textContent = ''; statusEl.classList.remove('is-best'); }
+      /* The only confirmation a reset ever gave was things vanishing —
+         the ticks, the tubes, the record. Nothing announced, so a screen
+         reader player pressed "reset it", answered the confirm, and then
+         had no way to know whether anything happened. Queued after
+         clearToasts so it is the only thing in the queue. */
+      toastPage('progress cleared — streak, ticks and paint tubes are back to empty');
     });
   }
 
@@ -1350,6 +1431,7 @@
   renderStreak();
   renderMeters();
   renderRecord();
+  syncThemeLabel();
   consumeLogHash();
   /* The closing card was only ever built at the instant the third drill
      landed (and on a cross-tab storage event). Refresh the page — or come
