@@ -24,7 +24,7 @@
 <!-- ?v= busts the CDN/browser cache on deploy: registry.js is served
      with a 4h max-age, so without this a returning visitor keeps an old
      catalogue. Bump V in every asset URL below when css/js changes. -->
-<link rel="stylesheet" href="css/style.css?v=6">
+<link rel="stylesheet" href="css/style.css?v=7">
 <script>
 (function(){var t=null;try{t=localStorage.getItem('sadeali-theme');}catch(e){}document.documentElement.dataset.theme=(t==='dark')?'dark':'light';})();
 </script>
@@ -96,6 +96,7 @@
         <li><a href="https://sadeali.github.io/artdaily-ellipse-in-plane/">Ellipse in Plane</a></li>
         <li><a href="https://sadeali.github.io/artdaily-cast-shadow/">Cast Shadow</a></li>
         <li><a href="https://sadeali.github.io/artdaily-horizon-read/">Horizon Read</a></li>
+        <li><a href="https://sadeali.github.io/artdaily-cross-contour/">Wrap the Form</a></li>
         <li><a href="https://sadeali.github.io/artdaily-crop-it/">Crop It</a></li>
         <li><a href="https://sadeali.github.io/artdaily-focal-place/">Focal Placement</a></li>
         <li><a href="https://sadeali.github.io/artdaily-contour-memory/">Contour Memory</a></li>
@@ -110,6 +111,11 @@
 
 <p class="aboutline">a warmup, not a curriculum — pick a drill, do a round, come back tomorrow</p>
 <p class="legendline">every drill scores out of 100 · the pencil marks say how: <b>math-scored</b> = pure geometry &amp; colour math · <b>fit-scored</b> = a comparison algorithm with tuning · <b>curated</b> = classic guidelines, honestly subjective</p>
+<!-- The single biggest thing about a score here, and the page never said
+     it: the numbers are eased per device (SDK PROFILE — pen ease 1.0,
+     mouse/trackpad 2.0, finger 1.5). A trackpad beginner who thinks they
+     are being judged against a pen tablet quits; say it out loud. -->
+<p class="legendline">scores are tuned to what you draw with: a mouse or trackpad is allowed twice the wobble of a pen tablet, a finger sits in between, and start dots are drawn bigger for a pen or a finger. each drill's panel says which it is scoring for — you are only ever compared with your own past rounds.</p>
 
 <section class="section" id="progress" aria-label="Your progress">
   <div class="cat-head"><h2 class="accent-mint" style="text-decoration-color: var(--mint);">your paint tubes</h2></div>
@@ -144,9 +150,9 @@
   <p class="fineprint">© SadeAli · free · no ads · no tracking</p>
 </footer>
 
-<script src="js/support-config.js?v=6"></script>
-<script src="js/registry.js?v=6"></script>
-<script src="js/main.js?v=6"></script>
-<script src="js/app.js?v=6"></script>
+<script src="js/support-config.js?v=7"></script>
+<script src="js/registry.js?v=7"></script>
+<script src="js/main.js?v=7"></script>
+<script src="js/app.js?v=7"></script>
 </body>
 </html>

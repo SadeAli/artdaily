@@ -298,6 +298,14 @@ window.ARTDAILY_GAMES = [
     url: 'https://sadeali.github.io/artdaily-horizon-read/',
     dev: '../artdaily-games/horizon-read/', status: 'live',
   },
+  {
+    slug: 'cross-contour', name: 'Wrap the Form',
+    tagline: 'draw the line that wraps around the form',
+    icon: '🍥', accent: 'lilac', skills: ['contour', 'perspective'],
+    cat: 'form', tag: 'fit', minutes: 3,
+    url: 'https://sadeali.github.io/artdaily-cross-contour/',
+    dev: '../artdaily-games/cross-contour/', status: 'live',
+  },
 
   /* ---- composition ---- */
   {

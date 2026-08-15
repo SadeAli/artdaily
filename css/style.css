@@ -112,10 +112,16 @@ a { color: inherit; }
 .topbar { display: flex; align-items: center; gap: 10px; padding: 16px 18px 6px; }
 .topbar-spacer { flex: 1; }
 
+/* Every control on this page carries min-height: 44px. A bare finger's
+   contact patch is ~9mm ≈ 44 CSS px; the old sizes here (backlink 37px,
+   theme toggle 38px, jump tabs 35px, "open full page" 38px, ✕ 42px,
+   "next warmup" 40px, "no thanks" 34px) were all comfortably tappable
+   with a mouse and all a coin-flip with a thumb. */
 .backlink {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-height: 44px;
   font-weight: 700;
   font-size: 0.82rem;
   text-decoration: none;
@@ -133,8 +139,8 @@ a { color: inherit; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   border-radius: 10px 4px 9px 5px;
   border: 1px solid var(--line);
   background: var(--card);
@@ -282,6 +288,7 @@ a { color: inherit; }
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-height: 44px;
   margin-top: 12px;
   padding: 7px 16px;
   font-family: var(--hand);
@@ -368,6 +375,9 @@ a { color: inherit; }
 .ask-form .ask-btn { border: 1px solid color-mix(in srgb, var(--mint) 55%, var(--line)); background: color-mix(in srgb, var(--mint) 22%, var(--card)); cursor: pointer; font-family: var(--hand); font-size: 1.15rem; min-height: 44px; }
 
 .ask-no {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   margin-left: 10px;
   padding: 7px 4px;
   font: inherit;
@@ -414,20 +424,33 @@ a { color: inherit; }
 
 /* ===== Jump nav — pencil tabs ===== */
 
+/* ONE row, always. The six tabs need ~724px, so between 481px and ~760px
+   they used to wrap to two rows and the bar grew to 115px — taller than
+   .cat-section's scroll-margin-top, so tapping a tab parked the heading
+   you jumped to UNDERNEATH the bar. `safe center` centres the row when it
+   fits and falls back to flex-start when it does not, which keeps the
+   first tab reachable inside the scroller. */
 .jumpnav {
   position: sticky;
   top: 0;
   z-index: 5;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: thin;   /* a hairline hint, not a second toolbar */
   gap: 6px 10px;
   justify-content: center;
+  justify-content: safe center;
   padding: 10px 16px;
   background: color-mix(in srgb, var(--bg) 88%, transparent);
   backdrop-filter: blur(3px);
   border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
 }
 .jumpnav a {
+  display: inline-flex;
+  align-items: center;
+  flex: none;          /* never squash a tab instead of scrolling */
+  min-height: 44px;
   font-family: var(--hand);
   font-size: 1.12rem;
   font-weight: 600;
@@ -446,8 +469,11 @@ main { flex: 1; width: 100%; }
 
 .section { width: 100%; max-width: 1080px; margin: 0 auto; padding: 30px 20px 4px; }
 
-/* anchor jumps must clear the sticky jumpnav */
-.cat-section { scroll-margin-top: 4.5rem; }
+/* Anchor jumps must clear the sticky jumpnav. Measured: 65px on desktop,
+   up to 73px on a phone once the horizontal scrollbar is a classic one.
+   4.5rem (72px) lost that race by a pixel; 5.5rem (88px) clears it with
+   room for the tab row to grow. */
+.cat-section { scroll-margin-top: 5.5rem; }
 
 .cat-head {
   display: flex;
@@ -660,7 +686,12 @@ a.card:hover, a.card:focus-visible {
 .meter-lv { min-width: 4.5ch; text-align: right; font-size: 0.74rem; color: var(--muted); }
 
 .storenote { margin: 14px 0 0; font-size: 0.76rem; color: var(--muted); }
+/* "reset it" sits inside a sentence at 0.76rem, so its line box is only
+   ~19px tall — half a fingertip. It cannot be padded without shoving the
+   sentence apart, so the hit area is grown with an invisible box instead:
+   19px tall on screen, 44px tall to a thumb. */
 .resetlink {
+  position: relative;
   padding: 0;
   font: inherit;
   color: inherit;
@@ -669,6 +700,15 @@ a.card:hover, a.card:focus-visible {
   text-decoration: underline;
   text-decoration-thickness: 2px;
   cursor: pointer;
+}
+.resetlink::after {
+  content: "";
+  position: absolute;
+  left: -8px;
+  right: -8px;
+  top: 50%;
+  height: 44px;
+  transform: translateY(-50%);
 }
 .resetlink:hover { color: var(--focus); }
 
@@ -735,15 +775,16 @@ a.card:hover, a.card:focus-visible {
 }
 .player-title { font-family: var(--hand); font-size: 1.3rem; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .player-spacer { flex: 1; }
-.player-link { padding: 10px 8px; font-size: 0.72rem; font-weight: 700; color: var(--link); text-decoration: none; white-space: nowrap; }
+.player-link { display: inline-flex; align-items: center; min-height: 44px; padding: 10px 8px; font-size: 0.72rem; font-weight: 700; color: var(--link); text-decoration: none; white-space: nowrap; }
 .player-link:hover { text-decoration: underline; text-decoration-thickness: 2px; }
 
 .player-x {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
+  flex: none;   /* a squeezed bar must not shave the ✕ below 44px */
+  width: 44px;
+  height: 44px;
   padding: 0;
   font: inherit;
   font-size: 1.05rem;
@@ -762,9 +803,28 @@ a.card:hover, a.card:focus-visible {
   flex: 1;
   aspect-ratio: 16 / 10;
   min-height: 220px;
-  max-height: 74vh;
+  /* dvh, not vh: vh is the LARGE viewport on phones, so with the address
+     bar shown a 74vh frame is taller than the screen and the foot (score
+     line, "next warmup") gets clipped by the sheet's overflow:hidden. */
+  max-height: 74dvh;
   border: 0;
   background: var(--bg);
+}
+
+/* HARDWARE FAIRNESS — the drill's canvas is the page's one real tolerance.
+   .player is width: min(96vw, 900px), so on a 390px phone the frame was
+   374 x 234 (16/10) = 87k px², against 900 x 562 = 506k px² for a desktop
+   mouse. Drill tolerances scale with the canvas (ArtDaily.ease multiplies
+   a FRACTION of the reference length), so the smallest canvas shrinks the
+   allowance in absolute pixels — while a fingertip's wobble stays the same
+   physical size. The least precise pointer was being handed the least room
+   to be imprecise in, which is backwards.
+   3/4 makes it 374 x 499 = 187k px², 2.1x the area, and still leaves the
+   title bar, the ✕ and the foot on screen: 44 + 499 + 38 = 581 of a ~750px
+   dvh. Anything shorter is caught by max-height: 74dvh above, which the
+   frame's flex-shrink honours down to min-height: 220px. */
+@media (max-width: 640px) and (orientation: portrait) {
+  .player-frame { aspect-ratio: 3 / 4; }
 }
 
 .player-foot {
@@ -783,6 +843,9 @@ a.card:hover, a.card:focus-visible {
 .player-foot-spacer { flex: 1; }
 
 .player-next {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   font-family: var(--hand);
   font-size: 1.1rem;
   font-weight: 700;
@@ -808,7 +871,7 @@ a.card:hover, a.card:focus-visible {
   font-weight: 700;
   font-size: 0.85rem;
 }
-.footnav a { text-decoration: none; }
+.footnav a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 2px; text-decoration: none; }
 .footnav a:hover { text-decoration: underline wavy; text-decoration-thickness: 2px; }
 #supportLinks { display: contents; }
 .heart-ink { color: var(--coral); }
@@ -826,9 +889,8 @@ a.card:hover, a.card:focus-visible {
   .grid { gap: 24px 14px; }
   .today-slot .skillchip { display: none; }
   .meter-name { width: 5.8rem; }
-  /* one scrollable row instead of a 3-row wall of pills */
-  .jumpnav { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; padding: 8px 12px; }
-  .jumpnav a { flex: none; }
+  /* the single row is set up above; just tighten the padding here */
+  .jumpnav { padding: 8px 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

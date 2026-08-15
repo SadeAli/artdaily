@@ -113,6 +113,15 @@ Non-negotiable for every drill:
   is round geometry too**: the last one stays on screen until "new round"
   is pressed, so a phone rotated while the player reads it redraws the
   mark and the truth at stale pixels and teaches the wrong lesson.
+  A reveal's *mark*, though, is not a fraction — it is **the offset that was
+  scored**. Store both ends of a miss as fractions and they re-project onto
+  the new canvas at different rates, because the truth is inset by the
+  target's own radius and the mark is not: in the template a 26px miss
+  (61 out of 100, "a little out") redrew as a 5px one — a 92, all but dead
+  centre — after a landscape→portrait rotation, and as 32px going back the
+  other way. The picture then argues with the number printed under it. Keep
+  the target in fractions and the mark at `target + (dx, dy)`, clamped onto
+  the sheet.
 - **Reveal after every attempt**, not just at round end: the truth drawn
   over their attempt, in the accent, with the delta named in words. The
   *last* attempt of a round is an attempt like any other — do not let the
@@ -159,13 +168,28 @@ ArtDaily.startRadius(28)  // widen a start zone: pen 1.7, touch 1.6, mouse 1.0
 ArtDaily.onInput(fn)      // hardware changed mid-session
 ```
 
-Both are total: `NaN`, `Infinity`, a negative or a **zero** base all come
-back usable. A zero matters more than it sounds — a zone sized off the
-canvas (`startRadius(Math.min(W, H) * 0.05)`) is computed once at boot,
-before layout, while the canvas still measures 0, and a one-pixel target
-is every bit as dead a round as a `NaN` one. `startRadius` treats a
-non-positive base as *missing* and falls back to its 28px default; `ease`
-falls back to 1. Neither ever returns a value you cannot draw or divide by.
+Both are total: `NaN`, `Infinity`, a negative or a **sub-pixel** base all
+come back usable. The tiny base matters more than it sounds — a zone sized
+off the canvas (`startRadius(Math.min(W, H) * 0.05)`) is computed once at
+boot, before layout, and a one-pixel target is every bit as dead a round as
+a `NaN` one. Guarding only an exact zero was not enough: a canvas floors its
+own measured width at 1px (`Math.max(1, rect.width)` is the standard shape),
+so the base arrives as `0.05`, not as a clean `0`, and used to come back as a
+1px target. `startRadius` now treats **any base under 1px** as missing and
+falls back to its 28px default; `ease` falls back to 1. Both also check the
+number *after* the profile factor lands, because a large-but-finite base
+overflows to `Infinity` on the multiply — and an infinite zero-point makes
+`1 - err/zero` exactly 1, so every attempt, however wild, scores a fake 100.
+Neither ever returns a value you cannot draw or divide by.
+
+**The numbers, so you never hand-roll a touch floor.** `startRadius(22)` is
+44px across on a mouse, 70 on a finger, 74 on a pen tablet; `startRadius(26)`
+is 52 / 84 / 88. Any base from 22 up already clears the 44px touch minimum on
+every profile, so a drill needs no coarse-pointer floor of its own — and
+`(pointer: coarse)` is the wrong query for one in any case. It asks whether
+the *primary* pointer is coarse, so it is **false** on a touchscreen laptop,
+the one machine where a finger meets mouse-sized zones. `(any-pointer:
+coarse)` is the question you meant.
 
 **The two knobs measure different things — never feed one into the other.**
 `startRadius` sizes what the player *aims at*; `ease` sizes where the

@@ -484,7 +484,10 @@
       if (what) body.appendChild(el('span', 'slot-what', what));
       btn.appendChild(body);
       btn.appendChild(skillChip((g.skills && g.skills[0]) || ''));
-      btn.addEventListener('click', function () { openPlayer(g); });
+      /* Tagged so closePlayer can hand focus back to THIS control rather
+         than to the catalogue card for the same drill (see closePlayer). */
+      btn.setAttribute('data-slug', g.slug);
+      btn.addEventListener('click', function () { openPlayer(g, 'today'); });
       li.appendChild(btn);
       todayList.appendChild(li);
     });
@@ -585,6 +588,21 @@
     }
     box.appendChild(strip);
     box.appendChild(el('p', 'record-note', 'the last 30 days · filled = you practised'));
+
+    /* What ❄️ means, in text a finger can reach. The rest-day rule used to
+       live in the streak chip's title= and in a 4-second toast on the day
+       it was earned: a title never opens on a touchscreen, so the one
+       device where a player is most likely to miss a day was also the one
+       where nothing ever explained the thing that saves their streak. */
+    if (streakAlive()) {
+      var st = store.streak;
+      box.appendChild(el('p', 'record-note',
+        '🔥 ' + st.count + '-day streak' +
+        (st.freezes > 0
+          ? ' · ❄️ ' + st.freezes + ' rest ' + (st.freezes === 1 ? 'day' : 'days') + ' banked'
+          : '') +
+        ' — every 5th day banks a rest day (❄️), and one missed day spends a banked rest day instead of resetting the count'));
+    }
     box.hidden = false;
   }
 
@@ -851,7 +869,7 @@
   if (nextBtn) {
     nextBtn.addEventListener('click', function () {
       var nxt = nextUnfinished();
-      if (nxt) openPlayer(nxt);
+      if (nxt) openPlayer(nxt, 'today');  /* always a checklist drill */
     });
   }
 
@@ -870,9 +888,15 @@
     } catch (e) {}
   }
 
-  var openerSlug = null; /* focus returns to this game's card on close */
+  /* Focus returns to the control that OPENED the player — which is not
+     always the catalogue card. Restoring focus always scrolls that element
+     into view, so sending a player who started from the hero checklist
+     back to a card halfway down the catalogue threw away their place on
+     the page every time they closed a drill. */
+  var openerSlug = null;
+  var openerFrom = 'card';  /* 'today' = the hero checklist · 'card' = catalogue */
 
-  function openPlayer(g) {
+  function openPlayer(g, from) {
     var url = gameUrl(g);
     if (!player || typeof player.showModal !== 'function' || !frame) {
       location.href = url; /* no <dialog> support: just visit the game */
@@ -880,6 +904,7 @@
     }
     openGame = g;
     openerSlug = g.slug;
+    openerFrom = (from === 'today') ? 'today' : 'card';
     if (titleEl) titleEl.textContent = g.icon + ' ' + g.name;
     if (openLink) openLink.href = url;
     frame.title = g.name;
@@ -895,10 +920,12 @@
     if (frame) frame.src = 'about:blank'; /* stops the game's loop */
     document.documentElement.style.overflow = '';
     if (player && player.open) player.close();
-    /* renderToday rebuilds the checklist buttons, so restore focus to
-       the (possibly re-created) card for the game that was open. */
+    /* renderToday rebuilds the checklist buttons, so look the control up
+       by slug rather than holding a node that no longer exists. */
     if (openerSlug) {
-      var back = document.querySelector('.card[data-slug="' + openerSlug + '"]');
+      var sel = '[data-slug="' + openerSlug + '"]';
+      var back = (openerFrom === 'today' && document.querySelector('.today-slot' + sel)) ||
+        document.querySelector('.card' + sel);
       if (back && typeof back.focus === 'function') back.focus();
       openerSlug = null;
     }
