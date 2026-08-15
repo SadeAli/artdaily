@@ -20,6 +20,13 @@ window.ARTDAILY_SKILLS = {
   composition: { label: 'composition', icon: '🖼️' },
 };
 
+/* A first session for someone who has never drawn here before.
+   Deliberately: one drill that needs no drawing at all (a quick win on
+   any hardware), one that is satisfying with a mouse, then one real
+   stroke drill. The random daily pick can open with something hard —
+   a first-timer should not meet Box Check as their first impression. */
+window.ARTDAILY_STARTER = ['value-trap', 'colors', 'lines'];
+
 /* Catalogue chapters — the page renders one sketchbook spread per
    category, in this order. */
 window.ARTDAILY_CATS = {
@@ -128,6 +135,14 @@ window.ARTDAILY_GAMES = [
     dev: '../artdaily-games/value-thumbnail/', status: 'live',
   },
   {
+    slug: 'hatch-ramp', name: 'Hatch a Ramp',
+    tagline: 'make a gradient with your own hand',
+    icon: '🖍️', accent: 'sunny', skills: ['values', 'line'],
+    cat: 'value', tag: 'fit', minutes: 3,
+    url: 'https://sadeali.github.io/artdaily-hatch-ramp/',
+    dev: '../artdaily-games/hatch-ramp/', status: 'live',
+  },
+  {
     slug: 'light-direction', name: 'Light Direction',
     tagline: 'read the form, place the light',
     icon: '🔦', accent: 'mint', skills: ['values'],
@@ -137,6 +152,22 @@ window.ARTDAILY_GAMES = [
   },
 
   /* ---- line & hand ---- */
+  {
+    slug: 'warm-up', name: 'Warm Up',
+    tagline: 'loosen the arm — speed over accuracy',
+    icon: '🌀', accent: 'mint', skills: ['line'],
+    cat: 'line', tag: 'auto', minutes: 2,
+    url: 'https://sadeali.github.io/artdaily-warm-up/',
+    dev: '../artdaily-games/warm-up/', status: 'live',
+  },
+  {
+    slug: 'superimposed', name: 'Superimposed Lines',
+    tagline: 'draw the same line four times',
+    icon: '✏️', accent: 'sky', skills: ['line'],
+    cat: 'line', tag: 'auto', minutes: 3,
+    url: 'https://sadeali.github.io/artdaily-superimposed/',
+    dev: '../artdaily-games/superimposed/', status: 'live',
+  },
   {
     slug: 'lines', name: 'Steady Lines',
     tagline: 'ghost straight strokes through the checkpoints',

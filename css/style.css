@@ -295,6 +295,119 @@ a { color: inherit; }
 .sharebtn:hover { transform: rotate(0deg) translateY(-2px); box-shadow: 0 4px 0 var(--shadow); }
 .sharebtn.copied { background: color-mix(in srgb, var(--mint) 24%, var(--card)); border-color: var(--mint); }
 
+/* ===== Session closure — the end of the day's warmup ===== */
+
+.closing {
+  margin-top: 16px;
+  padding: 14px 16px 16px;
+  border: 1px dashed color-mix(in srgb, var(--mint) 60%, var(--line));
+  border-radius: 6px 14px 8px 12px;
+  background: color-mix(in srgb, var(--mint) 8%, transparent);
+}
+.closing-head {
+  margin: 0;
+  font-family: var(--hand);
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+.closing-scores { margin: 2px 0 0; font-size: 0.9rem; font-weight: 700; }
+.closing-streak { margin: 6px 0 0; font-size: 0.82rem; font-weight: 700; color: var(--muted); }
+.closing-tomorrow {
+  margin: 8px 0 0;
+  font-family: var(--hand);
+  font-size: 1.2rem;
+  color: var(--muted);
+}
+.closing-btns { margin: 10px 0 0; }
+.closing .sharebtn { margin-top: 0; }
+
+/* The ask: quiet, once, dismissible, and only ever visible when a
+   support account is actually configured (see buildAsk in app.js). */
+.ask {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+}
+.ask-head {
+  margin: 0;
+  font-family: var(--hand);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+.ask-body { margin: 4px 0 10px; font-size: 0.8rem; color: var(--muted); max-width: 54ch; }
+.ask-btn {
+  display: inline-block;
+  padding: 7px 16px;
+  font-family: var(--hand);
+  font-size: 1.15rem;
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--coral) 22%, var(--card));
+  border: 1px solid color-mix(in srgb, var(--coral) 55%, var(--line));
+  border-radius: 4px 12px 5px 10px;
+  box-shadow: 0 2px 0 var(--shadow);
+}
+.ask-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 0 var(--shadow); }
+.ask-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0; }
+.ask-form input {
+  flex: 1 1 12rem;
+  min-height: 44px;
+  padding: 6px 12px;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--ink);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 4px 10px 5px 9px;
+}
+.ask-form .ask-btn { border: 1px solid color-mix(in srgb, var(--mint) 55%, var(--line)); background: color-mix(in srgb, var(--mint) 22%, var(--card)); cursor: pointer; font-family: var(--hand); font-size: 1.15rem; min-height: 44px; }
+
+.ask-no {
+  margin-left: 10px;
+  padding: 7px 4px;
+  font: inherit;
+  font-size: 0.78rem;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ===== Practice record ===== */
+
+.record { margin: 4px 0 14px; }
+.record-stats { margin: 0 0 8px; font-size: 0.84rem; font-weight: 600; color: var(--muted); }
+.record-stats b { font-family: var(--hand); font-size: 1.35rem; font-weight: 700; color: var(--ink); }
+.record-strip { display: flex; flex-wrap: wrap; gap: 4px; }
+.rdot { width: 12px; height: 12px; border-radius: 3px; border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--line) 22%, transparent); }
+.rdot.r1 { background: color-mix(in srgb, var(--mint) 45%, transparent); border-color: color-mix(in srgb, var(--mint) 60%, var(--line)); }
+.rdot.r3 { background: var(--mint); border-color: var(--mint); }
+.record-note { margin: 6px 0 0; font-size: 0.72rem; color: var(--muted); }
+
+/* ===== Milestone toast ===== */
+
+.page-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  z-index: 20;
+  transform: translateX(-50%);
+  padding: 9px 18px;
+  font-family: var(--hand);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 6px 14px 8px 12px;
+  box-shadow: 0 3px 0 var(--shadow), 0 16px 30px -18px var(--shadow);
+  max-width: min(92vw, 460px);
+  text-align: center;
+}
+
 /* ===== Jump nav — pencil tabs ===== */
 
 .jumpnav {

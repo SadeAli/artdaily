@@ -59,7 +59,9 @@
 
   /* ---- progress store ---- */
 
-  function freshStore() { return { days: {}, streak: { count: 0, last: '' }, skills: {} }; }
+  function freshStore() {
+    return { days: {}, streak: { count: 0, last: '', freezes: 0 }, skills: {}, badges: {}, seen: {} };
+  }
 
   /* Arrays sneak past typeof checks but JSON.stringify drops their named
      properties, so a corrupt array-shaped store would silently never save. */
@@ -73,7 +75,10 @@
     if (!isPlainish(s.streak)) s.streak = {};
     if (typeof s.streak.count !== 'number') s.streak.count = 0;
     if (typeof s.streak.last !== 'string') s.streak.last = '';
+    if (typeof s.streak.freezes !== 'number') s.streak.freezes = 0;
     if (!isPlainish(s.skills)) s.skills = {};
+    if (!isPlainish(s.badges)) s.badges = {};   /* badgeId -> day earned */
+    if (!isPlainish(s.seen)) s.seen = {};       /* one-time UI flags */
     return s;
   }
 
@@ -106,17 +111,46 @@
     return best;
   }
 
-  /* A lapsed streak silently dies — never show a stale count. */
+  /* A lapsed streak silently dies — never show a stale count. A banked
+     freeze extends "alive" by one more day (see touchStreak). */
+  function daysAgoKey(n) { var d = new Date(); d.setDate(d.getDate() - n); return dateKey(d); }
+
   function streakAlive() {
     var st = store.streak;
-    return st.count > 0 && (st.last === todayKey() || st.last === yesterdayKey());
+    if (st.count <= 0) return false;
+    if (st.last === todayKey() || st.last === yesterdayKey()) return true;
+    /* missed exactly one day, but a freeze can still save it */
+    return st.last === daysAgoKey(2) && st.freezes > 0;
+  }
+
+  /* Beginners miss days; a streak that dies on the first slip is a streak
+     nobody keeps. Every 5th day banks a freeze (max 2) and a single
+     missed day spends one instead of resetting the count. */
+  function touchStreak() {
+    var st = store.streak, t = todayKey(), note = null;
+    if (st.last === t) return null;                    /* already counted today */
+    if (st.last === yesterdayKey()) {
+      st.count += 1;
+    } else if (st.last === daysAgoKey(2) && st.freezes > 0) {
+      st.freezes -= 1;
+      st.count += 1;
+      note = 'freeze';
+    } else {
+      st.count = 1;
+    }
+    st.last = t;
+    if (st.count > 0 && st.count % 5 === 0 && st.freezes < 2) {
+      st.freezes += 1;
+      note = note || 'earned';
+    }
+    return note;
   }
 
   /* ---- today's warmup: deterministic 3-game spread ---- */
 
-  function daySeed() {
+  function daySeed(offset) {
     var n = new Date();
-    return Math.floor(new Date(n.getFullYear(), n.getMonth(), n.getDate()).getTime() / 86400000);
+    return Math.floor(new Date(n.getFullYear(), n.getMonth(), n.getDate() + (offset || 0)).getTime() / 86400000);
   }
 
   function slugHash(seed, slug) {
@@ -126,11 +160,26 @@
   }
 
   /* Rank live games by hash, take distinct categories first so the
-     warmup never doubles up a chapter; top back up if needed. */
-  function todayPick() {
-    var seed = daySeed();
+     warmup never doubles up a chapter; top back up if needed.
+     Pure function of the day number, so tomorrow's plan can be shown
+     today — and everyone in the world gets the same three. */
+  function pickForSeed(seed) {
+    /* Rank by hash, but bias against drills done in the last few days so
+       a daily habit stays varied, and against chapters with few drills —
+       picking one per distinct chapter made composition's 2 drills show
+       as often as line's 9. */
+    var recent = {};
+    for (var i = 1; i <= 6; i++) {
+      var k = dateKey(new Date(seed * 86400000 - i * 86400000));
+      Object.keys(dayScores(k)).forEach(function (s) { recent[s] = Math.max(recent[s] || 0, 7 - i); });
+    }
+    var perCat = {};
+    liveGames.forEach(function (g) { perCat[g.cat] = (perCat[g.cat] || 0) + 1; });
+
     var ranked = liveGames.slice().sort(function (a, b) {
-      return slugHash(seed, b.slug) - slugHash(seed, a.slug);
+      var wa = slugHash(seed, a.slug) / 4294967295 + (perCat[a.cat] || 1) * 0.06 - (recent[a.slug] || 0) * 0.25;
+      var wb = slugHash(seed, b.slug) / 4294967295 + (perCat[b.cat] || 1) * 0.06 - (recent[b.slug] || 0) * 0.25;
+      return wb - wa;
     });
     var picked = [];
     var seen = {};
@@ -142,6 +191,83 @@
       if (picked.length < 3 && picked.indexOf(g) === -1) picked.push(g);
     });
     return picked;
+  }
+
+  /* A brand-new visitor gets the curated starter session instead of the
+     random daily one — the first three minutes decide whether they ever
+     come back. After any day is logged, the normal rotation takes over. */
+  function isNewcomer() { return Object.keys(store.days).length === 0; }
+
+  function starterPick() {
+    var want = window.ARTDAILY_STARTER || [];
+    var out = [];
+    want.forEach(function (slug) {
+      var g = liveGames.filter(function (x) { return x.slug === slug; })[0];
+      if (g) out.push(g);
+    });
+    return out.length === 3 ? out : null;
+  }
+
+  function todayPick() {
+    if (isNewcomer()) {
+      var s = starterPick();
+      if (s) return s;
+    }
+    return pickForSeed(daySeed(0));
+  }
+  function tomorrowPick() { return pickForSeed(daySeed(1)); }
+
+  /* ---- milestones ---- */
+
+  /* Small and honest: each fires once, the first time it becomes true,
+     and says something the player actually did. */
+  var BADGES = [
+    { id: 'first',     icon: '🌱', name: 'first drill',      hint: 'you started' },
+    { id: 'perfect',   icon: '★',  name: 'perfect day',      hint: 'all three warmups in one day' },
+    { id: 'streak3',   icon: '🔥', name: '3 days running',   hint: 'a habit is forming' },
+    { id: 'streak7',   icon: '☄️', name: '7 days running',   hint: 'a week of practice' },
+    { id: 'streak30',  icon: '🏔️', name: '30 days running',  hint: 'this is who you are now' },
+    { id: 'hundred',   icon: '💯', name: 'a clean 100',      hint: 'nailed one exactly' },
+    { id: 'tenDrills', icon: '🎒', name: '10 different drills', hint: 'you have tried the whole studio' },
+    { id: 'allCats',   icon: '🗺️', name: 'every chapter',    hint: 'colour, value, line, form, composition, observation' },
+  ];
+
+  function totalRounds() {
+    var n = 0;
+    Object.keys(store.days).forEach(function (k) { n += Object.keys(dayScores(k)).length; });
+    return n;
+  }
+
+  function distinctSlugs() {
+    var set = {};
+    Object.keys(store.days).forEach(function (k) {
+      Object.keys(dayScores(k)).forEach(function (s) { set[s] = true; });
+    });
+    return Object.keys(set);
+  }
+
+  /* Returns the badges newly earned by this moment (never re-awards). */
+  function checkBadges(justScored, perfectToday) {
+    var got = [], slugs = distinctSlugs(), st = store.streak;
+    function give(id) {
+      if (store.badges[id]) return;
+      store.badges[id] = todayKey();
+      got.push(BADGES.filter(function (b) { return b.id === id; })[0]);
+    }
+    if (slugs.length >= 1) give('first');
+    if (perfectToday) give('perfect');
+    if (st.count >= 3) give('streak3');
+    if (st.count >= 7) give('streak7');
+    if (st.count >= 30) give('streak30');
+    if (justScored === 100) give('hundred');
+    if (slugs.length >= 10) give('tenDrills');
+    var cats = {};
+    slugs.forEach(function (s) {
+      var g = liveGames.filter(function (x) { return x.slug === s; })[0];
+      if (g) cats[g.cat] = true;
+    });
+    if (Object.keys(cats).length >= Object.keys(CATS).length) give('allCats');
+    return got.filter(Boolean);
   }
 
   /* ---- DOM builders ---- */
@@ -316,8 +442,14 @@
   function renderStreak() {
     if (!streakChip) return;
     if (streakAlive()) {
-      streakChip.textContent = '🔥 ' + store.streak.count + (store.streak.count === 1 ? ' day' : ' days');
-      streakChip.setAttribute('aria-label', store.streak.count + '-day streak');
+      var f = store.streak.freezes;
+      streakChip.textContent = '🔥 ' + store.streak.count + (store.streak.count === 1 ? ' day' : ' days') +
+        (f > 0 ? '  ❄️' + f : '');
+      streakChip.setAttribute('aria-label', store.streak.count + '-day streak' +
+        (f > 0 ? ', ' + f + ' banked rest day' + (f > 1 ? 's' : '') : ''));
+      streakChip.title = f > 0
+        ? 'Miss a day and a banked rest day covers it.'
+        : 'Practise 5 days to bank a rest day.';
       streakChip.hidden = false;
     } else {
       streakChip.hidden = true;
@@ -336,6 +468,55 @@
     var hi = (base + 1) * (base + 1);
     var pct = Math.round(((p - lo) / (hi - lo)) * 100);
     return { lv: base + 1, pct: Math.max(0, Math.min(100, pct)) };
+  }
+
+  /* ---- practice record ----
+     "No accounts" should not mean "no memory". Everything here is
+     already on disk in store.days; it just was never shown back. */
+
+  function renderRecord() {
+    var box = $('record');
+    if (!box) return;
+    var dayKeys = Object.keys(store.days).filter(function (k) {
+      return Object.keys(dayScores(k)).length > 0;
+    });
+    if (!dayKeys.length) { box.hidden = true; return; }
+
+    var rounds = totalRounds();
+    var drills = distinctSlugs().length;
+    var perfect = 0;
+    dayKeys.forEach(function (k) {
+      var picks = pickForSeed(Math.floor(new Date(k + 'T12:00:00').getTime() / 86400000));
+      var sc = dayScores(k);
+      if (picks.length && picks.every(function (g) { return typeof sc[g.slug] === 'number'; })) perfect++;
+    });
+
+    box.textContent = '';
+    var stats = el('p', 'record-stats');
+    [[dayKeys.length, dayKeys.length === 1 ? 'day practised' : 'days practised'],
+     [rounds, rounds === 1 ? 'round' : 'rounds'],
+     [drills, 'different drills'],
+     [perfect, perfect === 1 ? 'full warmup' : 'full warmups']].forEach(function (p, i) {
+      if (i) stats.appendChild(document.createTextNode(' · '));
+      var b = el('b', '', String(p[0]));
+      stats.appendChild(b);
+      stats.appendChild(document.createTextNode(' ' + p[1]));
+    });
+    box.appendChild(stats);
+
+    /* last 30 days as a dot strip — the shape of a habit, at a glance */
+    var strip = el('div', 'record-strip');
+    strip.setAttribute('aria-hidden', 'true');
+    for (var i = 29; i >= 0; i--) {
+      var d = new Date(); d.setDate(d.getDate() - i);
+      var n = Object.keys(dayScores(dateKey(d))).length;
+      var dot = el('i', 'rdot' + (n === 0 ? '' : n >= 3 ? ' r3' : ' r1'));
+      dot.title = dateKey(d) + ' — ' + n + (n === 1 ? ' round' : ' rounds');
+      strip.appendChild(dot);
+    }
+    box.appendChild(strip);
+    box.appendChild(el('p', 'record-note', 'the last 30 days · filled = you practised'));
+    box.hidden = false;
   }
 
   function renderMeters() {
@@ -381,25 +562,145 @@
     bump(g.skills && g.skills[0], score / 100);
     bump(g.skills && g.skills[1], score / 200);
 
-    var st = store.streak;
-    if (st.last !== tk) {
-      st.count = (st.last === yesterdayKey()) ? (st.count || 0) + 1 : 1;
-      st.last = tk;
-    }
+    var streakNote = touchStreak();
+
+    var picks = todayPick();
+    var scores = dayScores(tk);
+    var perfect = picks.length > 0 && picks.every(function (p) { return typeof scores[p.slug] === 'number'; });
+    var earned = checkBadges(score, perfect);
     saveStore();
 
     renderToday();
     renderStreak();
     renderMeters();
+    renderRecord();
     fillMeta(g);
     if (statusEl) {
-      var picks = todayPick();
-      var scores = dayScores(tk);
-      var perfect = picks.length > 0 && picks.every(function (p) { return typeof scores[p.slug] === 'number'; });
       statusEl.textContent = 'recorded ✓ ' + score + '/100' +
-        (perfect ? ' · ★ perfect day — copy your card up top' : '');
+        (perfect ? ' · ★ warmup complete' : '');
     }
     updateNextBtn();
+
+    if (streakNote === 'freeze') toastPage('❄️ a banked rest day covered yesterday — your streak survived');
+    else if (streakNote === 'earned') toastPage('❄️ rest day banked — miss a day and your streak still holds');
+    earned.forEach(function (b, i) {
+      setTimeout(function () { toastPage(b.icon + ' ' + b.name + ' — ' + b.hint); }, 600 * (i + 1));
+    });
+    if (perfect) renderClosing();
+  }
+
+  /* ---- session closure: the moment the day's warmup is complete ----
+     A session needs an ending. This shows what you did, what tomorrow
+     holds (the pick is deterministic, so it is knowable today), and —
+     only after real delivered value, and only if a support account is
+     actually configured — one quiet, dismissible ask. */
+
+  function renderClosing() {
+    var box = $('closing');
+    if (!box) return;
+    var scores = dayScores(todayKey());
+    var picks = todayPick();
+    box.textContent = '';
+
+    box.appendChild(el('p', 'closing-head', 'that’s today’s warmup done ★'));
+
+    var row = el('p', 'closing-scores');
+    picks.forEach(function (g, i) {
+      if (i) row.appendChild(document.createTextNode(' · '));
+      var s = scores[g.slug];
+      row.appendChild(document.createTextNode(g.icon + ' ' + (typeof s === 'number' ? s : '–')));
+    });
+    box.appendChild(row);
+
+    var st = store.streak;
+    var line = st.count > 1 ? '🔥 ' + st.count + ' days running' : '🔥 day one — come back tomorrow and it becomes a streak';
+    if (st.freezes > 0) line += ' · ❄️ ' + st.freezes + ' rest day' + (st.freezes > 1 ? 's' : '') + ' banked';
+    box.appendChild(el('p', 'closing-streak', line));
+
+    var tom = tomorrowPick();
+    if (tom.length) {
+      var t = el('p', 'closing-tomorrow');
+      t.appendChild(document.createTextNode('tomorrow: '));
+      tom.forEach(function (g, i) {
+        if (i) t.appendChild(document.createTextNode(' · '));
+        t.appendChild(document.createTextNode(g.icon + ' ' + g.name));
+      });
+      box.appendChild(t);
+    }
+
+    var btns = el('p', 'closing-btns');
+    var share = el('button', 'sharebtn', "copy today's card");
+    share.type = 'button';
+    share.addEventListener('click', function () { copyShare(share); });
+    btns.appendChild(share);
+    box.appendChild(btns);
+
+    var ask = buildAsk();
+    if (ask) box.appendChild(ask);
+
+    box.hidden = false;
+  }
+
+  /* THE ONE ASK. Deliberately the newsletter, not money: it needs no
+     payment rail, it is the higher-value ask for a habit product, and
+     "hear when new drills land" is a reason to come back rather than a
+     favour. Stage-0 — returns null unless a Buttondown name is set, so
+     it can never be a broken form. Shown only after a full warmup on a
+     3-day streak (real, repeated value), at most once, dismissible. */
+  function buildAsk() {
+    var S = window.SUPPORT || {};
+    if (!S.buttondown) return null;
+    if (store.seen.ask) return null;
+    if (store.streak.count < 3) return null;
+
+    var wrap = el('div', 'ask');
+    wrap.appendChild(el('p', 'ask-head', 'three days running — want a note when new drills land?'));
+    wrap.appendChild(el('p', 'ask-body',
+      'Art Daily is free and stays free: no ads, no accounts, nothing tracked. ' +
+      'New drills get added most months. One short email when they do — nothing else, unsubscribe anytime.'));
+
+    var form = document.createElement('form');
+    form.className = 'ask-form';
+    form.action = 'https://buttondown.email/api/emails/embed-subscribe/' + S.buttondown;
+    form.method = 'post';
+    form.target = '_blank';
+    var input = document.createElement('input');
+    input.type = 'email';
+    input.name = 'email';
+    input.required = true;
+    input.placeholder = 'you@example.com';
+    input.setAttribute('aria-label', 'Email address');
+    var send = el('button', 'ask-btn', 'keep me posted');
+    send.type = 'submit';
+    form.appendChild(input);
+    form.appendChild(send);
+    form.addEventListener('submit', function () {
+      store.seen.ask = true;
+      saveStore();
+    });
+    wrap.appendChild(form);
+
+    var no = el('button', 'ask-no', 'no thanks');
+    no.type = 'button';
+    no.addEventListener('click', function () {
+      store.seen.ask = true;
+      saveStore();
+      wrap.remove();
+    });
+    wrap.appendChild(no);
+    return wrap;
+  }
+
+  /* ---- a small page-level toast for milestones ---- */
+
+  var toastTimer = null;
+  function toastPage(msg) {
+    var box = $('pageToast');
+    if (!box) return;
+    box.textContent = msg;
+    box.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { box.hidden = true; }, 4200);
   }
 
   /* "next warmup →" in the player foot: closes the loop without
@@ -539,28 +840,29 @@
 
   var shareTimer = null;
 
-  if (shareBtn) {
-    shareBtn.addEventListener('click', function () {
-      var text = shareText();
-      function confirmCopy() {
-        shareBtn.textContent = 'copied ✓';
-        shareBtn.classList.add('copied');
-        if (shareTimer) clearTimeout(shareTimer);
-        shareTimer = setTimeout(function () {
-          shareBtn.textContent = SHARE_LABEL;
-          shareBtn.classList.remove('copied');
-        }, 1500);
-      }
-      function fallback() {
-        try { window.prompt("copy today's card:", text); } catch (e) {}
-      }
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(confirmCopy, fallback);
-      } else {
-        fallback();
-      }
-    });
+  /* Shared by the hero button and the closing card's copy. */
+  function copyShare(btn) {
+    var text = shareText();
+    function confirmCopy() {
+      btn.textContent = 'copied ✓';
+      btn.classList.add('copied');
+      if (shareTimer) clearTimeout(shareTimer);
+      shareTimer = setTimeout(function () {
+        btn.textContent = SHARE_LABEL;
+        btn.classList.remove('copied');
+      }, 1500);
+    }
+    function fallback() {
+      try { window.prompt("copy today's card:", text); } catch (e) {}
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(confirmCopy, fallback);
+    } else {
+      fallback();
+    }
   }
+
+  if (shareBtn) shareBtn.addEventListener('click', function () { copyShare(shareBtn); });
 
   /* ---- reset ---- */
 
@@ -572,6 +874,7 @@
       renderToday();
       renderStreak();
       renderMeters();
+      renderRecord();
       liveGames.forEach(fillMeta);
       if (statusEl) statusEl.textContent = '';
     });
@@ -583,6 +886,7 @@
   renderToday();
   renderStreak();
   renderMeters();
+  renderRecord();
 
   /* Day rollover: a tab left open overnight re-renders the checklist
      and streak for the new day when it next becomes visible. */

@@ -6,6 +6,11 @@
    repo's .github/FUNDING.yml.
    ============================================================ */
 window.SUPPORT = {
+  /* The newsletter is the FIRST ask here (it needs no payout rail, so it
+     can be switched on today). Paste the Buttondown username to reveal the
+     sign-up at the end of a completed warmup — see buildAsk in js/app.js. */
+  buttondown: '',       /* buttondown.email username, e.g. 'sadeali' */
+
   githubSponsors: '',   /* github.com/sponsors username, e.g. 'SadeAli' */
   kofi: '',             /* ko-fi.com page name, e.g. 'sadeali' */
   buymeacoffee: '',     /* buymeacoffee.com page name */

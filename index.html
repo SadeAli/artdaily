@@ -24,7 +24,7 @@
 <!-- ?v= busts the CDN/browser cache on deploy: registry.js is served
      with a 4h max-age, so without this a returning visitor keeps an old
      catalogue. Bump V in every asset URL below when css/js changes. -->
-<link rel="stylesheet" href="css/style.css?v=3">
+<link rel="stylesheet" href="css/style.css?v=4">
 <script>
 (function(){var t=null;try{t=localStorage.getItem('sadeali-theme');}catch(e){}document.documentElement.dataset.theme=(t==='dark')?'dark':'light';})();
 </script>
@@ -53,9 +53,12 @@
       <ol class="today-list" id="todayList" aria-label="Today's three warmups"></ol>
       <p class="today-done" id="todayDone">the daily plan needs JavaScript — the drill links below work without it</p>
       <button class="sharebtn" id="shareBtn" type="button" hidden>copy today's card</button>
+      <div class="closing" id="closing" hidden></div>
     </div>
   </div>
 </header>
+
+<div class="page-toast" id="pageToast" role="status" aria-live="polite" hidden></div>
 
 <nav class="jumpnav" id="jumpNav" aria-label="Drill categories" hidden></nav>
 
@@ -107,6 +110,7 @@
 
 <section class="section" id="progress" aria-label="Your progress">
   <div class="cat-head"><h2 class="accent-mint" style="text-decoration-color: var(--mint);">your paint tubes</h2></div>
+  <div class="record" id="record" hidden></div>
   <p class="cat-note" id="metersEmpty">empty tubes so far — play any drill and they start filling</p>
   <ul class="meters" id="skillMeters" hidden></ul>
   <p class="storenote">progress lives in this browser's localStorage — no accounts, nothing leaves your device · <button class="resetlink" id="resetBtn" type="button">reset it</button></p>
@@ -137,9 +141,9 @@
   <p class="fineprint">© SadeAli · free · no ads · no tracking</p>
 </footer>
 
-<script src="js/support-config.js?v=3"></script>
-<script src="js/registry.js?v=3"></script>
-<script src="js/main.js?v=3"></script>
-<script src="js/app.js?v=3"></script>
+<script src="js/support-config.js?v=4"></script>
+<script src="js/registry.js?v=4"></script>
+<script src="js/main.js?v=4"></script>
+<script src="js/app.js?v=4"></script>
 </body>
 </html>

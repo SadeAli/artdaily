@@ -65,6 +65,46 @@ Non-negotiable for every drill:
   input unless the lesson is genuinely a decomposition (three sliders
   for hue/saturation/lightness) or a judgement (spot the wrong figure).
 
+## The hardware people actually own (read this before you set a tolerance)
+
+Most beginners are not on a pen display. They are on a **laptop
+trackpad**, a **mouse**, a **cheap screenless tablet**, an **iPad**
+(pencil or bare finger), or a **phone**. The same stroke means very
+different things across those:
+
+- a **mouse** pivots at the wrist and cannot creep — arcs are hard,
+  clicking a small target is easy
+- a **trackpad** has a short throw, so a long stroke *physically
+  requires* lifting and re-placing: any "one continuous stroke" rule
+  fails it silently
+- a **screenless tablet** maps absolutely with the hand out of sight —
+  long sweeps are its strength, small start targets its nightmare
+- a **finger** occludes the very thing it is drawing
+
+The SDK does the adapting; use it instead of raw constants:
+
+```js
+ArtDaily.inputMode()      // 'pen' | 'mouse' | 'touch', auto-detected
+ArtDaily.ease(0.055)      // widen the zero-point: pen 1.0, mouse 2.0, touch 1.5
+ArtDaily.startRadius(28)  // widen a start zone: pen 1.7, touch 1.6, mouse 1.0
+ArtDaily.onInput(fn)      // hardware changed mid-session
+```
+
+Rules that follow from this:
+
+- **Ease every zero-point tolerance.** Before this existed, a mouse user
+  drawing a 300px line with a realistic 15px wobble scored **9/100**.
+  That is the whole retention problem in one number.
+- **Snap, don't refuse.** If a press lands near a start dot, move the
+  stroke onto the dot. Refusing a near-miss reads as a broken site to
+  someone who cannot see their own hand.
+- **Accept lifted strokes.** A press that resumes near the last lift
+  point continues the same attempt.
+- **Put a pixel floor under relative tolerances**, or a phone gets a
+  stricter standard than a desktop for the identical drill.
+- **Keep `<dd id="inputMode">` in the HUD.** The SDK fills it with
+  "scoring for mouse or trackpad" — we ease the score, so we say so.
+
 ## Real 3D, not flat guesses
 
 If a drill reasons about space or light, build the real model: a proper
