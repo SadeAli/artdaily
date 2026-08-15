@@ -83,6 +83,11 @@
     return (max != null && n > max) ? max : n;
   }
 
+  /* The one shape a day key ever has — dateKey() writes it, seedForKey()
+     takes it back apart. Declared up here because loadStore runs at boot,
+     long before the warmup section that also uses it. */
+  var DAY_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
+
   function loadStore() {
     var s = null;
     try { s = JSON.parse(localStorage.getItem(STORE_KEY)); } catch (e) { s = null; }
@@ -97,6 +102,14 @@
        door, once per load, instead of asking a dozen readers to guard. */
     Object.keys(s.days).forEach(function (k) {
       var d = s.days[k];
+      /* A key that is not a day key is not a day. Nothing can ever reach one
+         again — dayScores only ever asks for a dateKey(), and seedForKey
+         rejects it so it can never be picked for or replayed — but it still
+         got counted: renderRecord's headline is Object.keys(store.days), so
+         one junk key read as an extra "day practised", its scores as extra
+         drills done, and its slugs as extra "different drills". Drop it at
+         the door with the junk values below. */
+      if (!DAY_RE.test(k)) { delete s.days[k]; return; }
       if (!isPlainish(d)) { s.days[k] = {}; return; }
       Object.keys(d).forEach(function (slug) {
         var v = d[slug];
@@ -258,8 +271,8 @@
   /* ONE seed function, keyed by a local day key, for every caller —
      today's pick, tomorrow's preview and the practice record. Deriving
      it twice (once from local midnight, once from local noon) put the
-     record a whole day out of step everywhere east of Greenwich. */
-  var DAY_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
+     record a whole day out of step everywhere east of Greenwich.
+     (DAY_RE is declared up by loadStore, which needs it at boot.) */
 
   function seedForKey(k) {
     var p = DAY_RE.exec(String(k));
@@ -386,7 +399,14 @@
     { id: 'allCats',   icon: '🗺️', name: 'every chapter',    hint: 'colour, value, line, form, composition, observation' },
   ];
 
-  function totalRounds() {
+  /* How many drills have been finished across every day — NOT how many
+     rounds were played, which this store cannot answer and never could: a
+     day keeps only the HIGHEST score per drill (see recordResult), so five
+     goes at Value Trap on one day leave exactly one number behind. It was
+     labelled "rounds" in the practice record, which read back a smaller
+     count than the player had actually done and got smaller the more they
+     replayed. The name says what it counts now, so the label can too. */
+  function drillsLogged() {
     var n = 0;
     Object.keys(store.days).forEach(function (k) { n += Object.keys(dayScores(k)).length; });
     return n;
@@ -672,7 +692,7 @@
     });
     if (!dayKeys.length) { box.hidden = true; return; }
 
-    var rounds = totalRounds();
+    var logged = drillsLogged();
     var drills = distinctSlugs().length;
     var perfect = 0;
     dayKeys.forEach(function (k) {
@@ -683,9 +703,12 @@
 
     box.textContent = '';
     var stats = el('p', 'record-stats');
+    /* Every count in this line owes a singular — on day one the record read
+       "1 day practised · 1 round · 1 different drills · 0 full warmups", and
+       the one broken plural was the one every player sees first. */
     [[dayKeys.length, dayKeys.length === 1 ? 'day practised' : 'days practised'],
-     [rounds, rounds === 1 ? 'round' : 'rounds'],
-     [drills, 'different drills'],
+     [logged, logged === 1 ? 'drill done' : 'drills done'],
+     [drills, drills === 1 ? 'different drill' : 'different drills'],
      [perfect, perfect === 1 ? 'full warmup' : 'full warmups']].forEach(function (p, i) {
       if (i) stats.appendChild(document.createTextNode(' · '));
       var b = el('b', '', String(p[0]));
@@ -782,7 +805,7 @@
        mutation in this file is read-modify-write for the same reason. */
     setStore(loadStore());
     var tk = todayKey();
-    var firstEver = totalRounds() === 0;   /* asked BEFORE this round lands */
+    var firstEver = drillsLogged() === 0;  /* asked BEFORE this round lands */
     /* Both read BEFORE the write, or the comparison is against this very
        round and every score is trivially "your best". */
     var prevBest = bestFor(g.slug);
@@ -1309,7 +1332,13 @@
   function consumeLogHash() {
     var m = /(?:^|#|&)log=([a-z0-9-]+),(\d{1,3})/i.exec(location.hash || '');
     if (!m) return;
-    var g = gameBySlug(m[1]);
+    /* The pattern is case-insensitive but slugs are not, and the hash is
+       cleared below either way — so "#log=LINES,87" (a link retyped by hand,
+       or auto-capitalised on its way through a message) matched, cleared
+       itself, failed the exact lookup and threw the round away with nothing
+       on screen to say so. This is the LAST route a standalone score has
+       home; match the parser's own leniency instead of losing it. */
+    var g = gameBySlug(m[1].toLowerCase());
     var s = Math.max(0, Math.min(100, parseInt(m[2], 10)));
     /* Clear it first: a refresh must not replay the same score. */
     try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { location.hash = ''; }

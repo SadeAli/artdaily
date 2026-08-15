@@ -104,6 +104,14 @@ Non-negotiable for every drill:
 - **Nothing is punished for UI reasons.** Accidental taps and too-short
   strokes reset free. Misplacements are recoverable (undo / clear).
   A player never loses points to a control they misunderstood.
+  **Score only presses that mean "here": `if (ev.button > 0) return;`**
+  A right-click is a `pointerdown` like any other — primary pointer, real
+  coordinates — so an unguarded handler burns an item and scores wherever
+  the cursor sat, while the context menu opens over the reveal explaining
+  it. Same for a middle-click and for a pen's barrel button. `button` is
+  `0` for a finger and for a pen's tip, so the guard costs touch and pen
+  nothing; put it right after the `isPrimary` check, before
+  `preventDefault()`.
 - **No dead states.** Trace: do nothing · press done immediately · draw
   during a reveal · resize mid-item · press "new round" mid-round. Every
   one must land somewhere sane, and a finished round must still report
@@ -342,9 +350,16 @@ move events at all, so the gesture goes idle without ending, and the palm
 landing next used to force the queued switch through under the live hand
 (a `mouse`→`pen` switch jumped the start dot 28px → 48px and halved the
 zero-point mid-stroke). The queue now waits for a release it actually
-saw. What a drill must still do is treat `onInput` as *"resize the
-geometry"*, never as *"re-judge what is already on screen"* — see the
-reveal note under performance.
+saw — and the **newest press cancels a queue that contradicts it**, because
+a release can go missing for real: press on the canvas, drag off the
+iframe, let go over the page, and the drill never sees that `pointerup`.
+The switch queued by that vanished gesture used to be applied at the end
+of the *next* one, so a trackpad round was scored under the pen's `ease`
+(half the zero-point) with the HUD chip reading "scoring for pen" — and it
+only corrected itself a press later, one whole round too late. What a
+drill must still do is treat `onInput` as *"resize the geometry"*, never
+as *"re-judge what is already on screen"* — see the reveal note under
+performance.
 
 Rules that follow from this:
 
