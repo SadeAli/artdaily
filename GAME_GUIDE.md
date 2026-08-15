@@ -49,11 +49,13 @@ The page in turn:
   screen. Difficulty may ramp *within* a round.
 - **Honest scoring.** Score the geometry (deviation, ΔE, angle error),
   never time-on-page.
-- **Zero deps, zero network.** No CDNs, fonts, analytics, or fetches.
-  Everything the network ships is plain files (see the workspace
-  conventions in the root README).
+- **Zero build, no trackers.** Plain files, no analytics, no accounts.
+  Self-contained is the default (scenes are drawn procedurally on canvas,
+  which also hands you exact ground truth for scoring) — external
+  resources aren't banned, but you almost never need one.
 - **Theme-aware inks.** Read `--ink` / `--muted` / `--game-accent` via
-  `getComputedStyle` inside `draw()`, not once at boot.
+  `getComputedStyle` inside `draw()`, not once at boot. The sketchbook
+  is paper-first: light is the default theme, dark is the night studio.
 - **Touch is first-class.** Pointer events + `touch-action: none` on
   the canvas (the template does this); targets ≥ 40px.
 

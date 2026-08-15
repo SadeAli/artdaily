@@ -1,26 +1,28 @@
 /* ============================================================
-   app.js — the Art Daily arcade page.
-   Renders js/registry.js into cards, filters and the daily
-   warmup; hosts games in the player dialog and turns their
-   postMessage results into streaks and skill meters. All state
-   lives in THIS origin's localStorage — no accounts, no
-   network. Protocol details: GAME_GUIDE.md + sdk/.
+   app.js — the Art Daily sketchbook page.
+   Renders js/registry.js into category spreads of index cards,
+   the daily warmup checklist and the paint-tube meters; hosts
+   games in the player dialog and turns their postMessage results
+   into streaks and skill levels. All state lives in THIS
+   origin's localStorage — no accounts, no network. Protocol
+   details: GAME_GUIDE.md + sdk/.
    ============================================================ */
 (function () {
   'use strict';
 
   var GAMES = window.ARTDAILY_GAMES || [];
   var SKILLS = window.ARTDAILY_SKILLS || {};
+  var CATS = window.ARTDAILY_CATS || {};
   var STORE_KEY = 'artdaily-progress-v1';
   var HOME = 'https://artdaily.sadeali.com';
   var ACCENTS = ['coral', 'sunny', 'mint', 'sky', 'lilac', 'bubblegum'];
   var SHARE_LABEL = "copy today's card";
+  var TAG_LABELS = { auto: 'math-scored', fit: 'fit-scored', soft: 'curated' };
 
   function $(id) { return document.getElementById(id); }
 
-  var grid = $('gameGrid');
-  var chipRow = $('skillFilters');
-  var countLine = $('drillCount');
+  var catalogue = $('catalogue');
+  var jumpNav = $('jumpNav');
   var todayList = $('todayList');
   var todayDone = $('todayDone');
   var shareBtn = $('shareBtn');
@@ -29,7 +31,7 @@
   var resetBtn = $('resetBtn');
   var player = $('player');
   var frame = $('playerFrame');
-  var slugEl = $('playerSlug');
+  var titleEl = $('playerTitle');
   var openLink = $('playerOpen');
   var closeBtn = $('playerClose');
   var statusEl = $('playerStatus');
@@ -123,8 +125,8 @@
     return h >>> 0;
   }
 
-  /* Rank live games by hash, take distinct primary skills first so the
-     warmup never doubles up; top back up if fewer than 3 primaries exist. */
+  /* Rank live games by hash, take distinct categories first so the
+     warmup never doubles up a chapter; top back up if needed. */
   function todayPick() {
     var seed = daySeed();
     var ranked = liveGames.slice().sort(function (a, b) {
@@ -133,8 +135,8 @@
     var picked = [];
     var seen = {};
     ranked.forEach(function (g) {
-      var prim = (g.skills && g.skills[0]) || '';
-      if (picked.length < 3 && !seen[prim]) { seen[prim] = true; picked.push(g); }
+      var cat = g.cat || '';
+      if (picked.length < 3 && !seen[cat]) { seen[cat] = true; picked.push(g); }
     });
     ranked.forEach(function (g) {
       if (picked.length < 3 && picked.indexOf(g) === -1) picked.push(g);
@@ -163,19 +165,8 @@
     return chip;
   }
 
-  function miniBar(slug) {
-    var bar = el('span', 'card-bar');
-    bar.setAttribute('aria-hidden', 'true');
-    bar.appendChild(el('i', 'dot d1'));
-    bar.appendChild(el('i', 'dot d2'));
-    bar.appendChild(el('i', 'dot d3'));
-    bar.appendChild(el('span', 'card-slug', slug));
-    return bar;
-  }
-
   /* ---- cards ---- */
 
-  var cardRows = []; /* { el: <li>, skills: [] } for the filter */
   var metaEls = {};  /* slug -> the card's meta <p> for quick refresh */
 
   function fillMeta(g) {
@@ -208,11 +199,19 @@
     } else {
       card = el('div', 'card card-soon accent-' + g.accent);
     }
-    card.appendChild(miniBar(g.status === 'live' ? g.slug : '???'));
+    if (g.status === 'live' && g.tag && TAG_LABELS[g.tag]) {
+      var tm = el('span', 'tagmark', TAG_LABELS[g.tag]);
+      tm.title = g.tag === 'auto' ? 'scored by pure math'
+        : g.tag === 'fit' ? 'scored by a comparison algorithm'
+        : 'scored against a curated answer key';
+      card.appendChild(tm);
+    }
+    var blob = el('span', 'card-blob');
     var icon = el('span', 'card-icon', g.icon);
     icon.setAttribute('aria-hidden', 'true');
-    card.appendChild(icon);
-    card.appendChild(el('h2', 'card-title', g.name));
+    blob.appendChild(icon);
+    card.appendChild(blob);
+    card.appendChild(el('h3', 'card-title', g.name));
     card.appendChild(el('p', 'card-tagline', g.status === 'live' ? g.tagline : 'something’s hatching…'));
     if (g.status === 'live') {
       var sk = el('span', 'card-skills');
@@ -224,64 +223,52 @@
       fillMeta(g);
     }
     li.appendChild(card);
-    cardRows.push({ el: li, skills: g.skills || [] });
     return li;
   }
 
-  function renderCards() {
-    if (!grid) return;
-    grid.textContent = '';
-    cardRows = [];
-    GAMES.forEach(function (g) { grid.appendChild(buildCard(g)); });
-  }
+  /* ---- catalogue: one sketchbook spread per category ---- */
 
-  function renderCount() {
-    if (!countLine) return;
-    countLine.textContent = liveGames.length + ' drills · ' +
-      taggedSkillIds().length + ' skills · new ones hatching';
-  }
-
-  /* ---- skill filter (in-memory only, no URL state) ---- */
-
-  var activeSkill = 'all';
-  var chips = [];
-
-  function applyFilter() {
-    chips.forEach(function (c) {
-      c.btn.setAttribute('aria-pressed', c.id === activeSkill ? 'true' : 'false');
+  function renderCatalogue() {
+    if (!catalogue) return;
+    metaEls = {};
+    var catIds = Object.keys(CATS).filter(function (id) {
+      return GAMES.some(function (g) { return g.cat === id; });
     });
-    cardRows.forEach(function (row) {
-      row.el.hidden = activeSkill !== 'all' && row.skills.indexOf(activeSkill) === -1;
-    });
-  }
+    catIds.forEach(function (id, i) {
+      var cat = CATS[id];
+      var games = GAMES.filter(function (g) { return g.cat === id; });
+      var live = games.filter(function (g) { return g.status === 'live'; }).length;
+      var accent = ACCENTS[i % ACCENTS.length];
 
-  function buildChip(id, label, icon, accent) {
-    var btn = el('button', 'chip accent-' + accent);
-    btn.type = 'button';
-    if (icon) {
-      var ic = el('span', '', icon);
+      var section = el('section', 'section cat-section accent-' + accent);
+      section.id = 'cat-' + id;
+      section.setAttribute('aria-label', cat.label);
+
+      var head = el('div', 'cat-head');
+      var ic = el('span', 'cat-icon', cat.icon);
       ic.setAttribute('aria-hidden', 'true');
-      btn.appendChild(ic);
-    }
-    btn.appendChild(document.createTextNode(label));
-    btn.setAttribute('aria-pressed', id === activeSkill ? 'true' : 'false');
-    btn.addEventListener('click', function () {
-      activeSkill = id;
-      applyFilter();
-    });
-    chips.push({ id: id, btn: btn });
-    return btn;
-  }
+      head.appendChild(ic);
+      head.appendChild(el('h2', '', cat.label));
+      head.appendChild(el('span', 'cat-count', live + (live === 1 ? ' drill' : ' drills')));
+      section.appendChild(head);
+      if (cat.note) section.appendChild(el('p', 'cat-note', cat.note));
 
-  function renderFilters() {
-    if (!chipRow) return;
-    chipRow.textContent = '';
-    chips = [];
-    chipRow.appendChild(buildChip('all', 'all', '', 'mint'));
-    taggedSkillIds().forEach(function (id, i) {
-      var s = SKILLS[id] || { label: id, icon: '' };
-      chipRow.appendChild(buildChip(id, s.label, s.icon, ACCENTS[(i + 1) % ACCENTS.length]));
+      var grid = el('ul', 'grid');
+      grid.setAttribute('aria-label', cat.label + ' drills');
+      games.forEach(function (g) { grid.appendChild(buildCard(g)); });
+      section.appendChild(grid);
+      catalogue.appendChild(section);
+
+      if (jumpNav) {
+        var a = document.createElement('a');
+        a.href = '#cat-' + id;
+        a.appendChild(document.createTextNode(cat.label));
+        var n = el('span', 'n', String(live));
+        a.appendChild(n);
+        jumpNav.appendChild(a);
+      }
     });
+    if (jumpNav && jumpNav.children.length) jumpNav.hidden = false;
   }
 
   /* ---- today's warmup UI ---- */
@@ -298,15 +285,15 @@
       var li = document.createElement('li');
       var btn = el('button', 'today-slot accent-' + g.accent + (isDone ? ' done' : ''));
       btn.type = 'button';
-      var prim = SKILLS[(g.skills && g.skills[0]) || ''] || { label: '', icon: '' };
-      btn.setAttribute('aria-label', g.name + ' — ' + prim.label +
+      var cat = CATS[g.cat] || { label: '' };
+      btn.setAttribute('aria-label', g.name + ' — ' + cat.label +
         (isDone ? ' — done today, score ' + scores[g.slug] : ' — not done yet'));
+      btn.appendChild(el('span', 'today-tick', isDone ? '✓' : '☐'));
       var ic = el('span', 'slot-icon', g.icon);
       ic.setAttribute('aria-hidden', 'true');
       btn.appendChild(ic);
       btn.appendChild(el('span', 'slot-name', g.name));
       btn.appendChild(skillChip((g.skills && g.skills[0]) || ''));
-      btn.appendChild(el('span', 'today-tick', isDone ? '✓' : '▢'));
       btn.addEventListener('click', function () { openPlayer(g); });
       li.appendChild(btn);
       todayList.appendChild(li);
@@ -323,7 +310,7 @@
   function renderStreak() {
     if (!streakChip) return;
     if (streakAlive()) {
-      streakChip.textContent = '🔥 ' + store.streak.count;
+      streakChip.textContent = '🔥 ' + store.streak.count + (store.streak.count === 1 ? ' day' : ' days');
       streakChip.setAttribute('aria-label', store.streak.count + '-day streak');
       streakChip.hidden = false;
     } else {
@@ -405,7 +392,7 @@
   var openGame = null;
 
   function currentTheme() {
-    return document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
+    return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
   }
 
   function postTheme() {
@@ -422,7 +409,7 @@
       return;
     }
     openGame = g;
-    if (slugEl) slugEl.textContent = '~/artdaily/' + g.slug;
+    if (titleEl) titleEl.textContent = g.icon + ' ' + g.name;
     if (openLink) openLink.href = url;
     frame.title = g.name;
     frame.src = url + '?embed=1&theme=' + currentTheme();
@@ -475,7 +462,7 @@
     var picks = todayPick();
     var scores = dayScores(tk);
     var line = picks.map(function (g) {
-      /* Slot format per spec: icon, primary-skill label, score (or ▢). */
+      /* Slot format: icon, primary-skill label, score (or ▢). */
       var sk = SKILLS[(g.skills && g.skills[0]) || ''] || {};
       var s = scores[g.slug];
       return g.icon + ' ' + (sk.label || g.slug) + ' ' + (typeof s === 'number' ? s : '▢');
@@ -530,9 +517,7 @@
 
   /* ---- boot ---- */
 
-  renderCount();
-  renderFilters();
-  renderCards();
+  renderCatalogue();
   renderToday();
   renderStreak();
   renderMeters();

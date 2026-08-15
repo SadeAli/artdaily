@@ -1,9 +1,12 @@
 # artdaily.sadeali.com — Art Daily
 
-The daily-practice arcade of the SadeAli network: five-minute drills for
-artists — lines, ellipses, colors, values, symmetry, perspective. This repo
-is only the **page**: discovery, today's warmup, streaks and skill meters.
-Every game is its own repo on its own URL.
+The daily-practice sketchbook of the SadeAli network: a catalogue of tiny
+scored drills for artists, grouped into chapters — colour, value & light,
+line & hand, form & perspective, composition. Warm paper, washi tape,
+handwritten Caveat headings (vendored font, OFL — `fonts/LICENSE.txt`);
+dark mode is the "night studio". This repo is only the **page**: discovery,
+today's warmup checklist, streaks and the paint-tube skill meters. Every
+game is its own repo on its own URL.
 
 ## Run it
 
@@ -32,8 +35,11 @@ types (ready / result / theme). Full contract and drill design rules:
 
 Copy `../artdaily-games/game-template/` and follow its README (the
 step-by-step ship checklist). Finishing move: one new entry in
-`js/registry.js` — the card, filter chips, daily warmup and meters all
-derive from it.
+`js/registry.js` — the card, category spread, jump nav, daily warmup and
+meters all derive from it. Each entry also carries `cat` (which chapter)
+and `tag` (how it's scored: `auto` pure math · `fit` comparison
+algorithm · `soft` curated answer key — shown as the little pencil mark
+on the card).
 
 ## What gets stored (and where)
 
@@ -58,11 +64,12 @@ hidden until the matching account name is filled in — never a broken link.
 ## Structure
 
 ```
-index.html        the arcade page (hero + today plan + drill grid +
-                  progress + player dialog)
-css/style.css     shared tokens (top, untouched) + page components (below)
+index.html        the sketchbook page (hero + today's checklist + category
+                  spreads + progress + player dialog)
+css/style.css     the sketchbook theme (paper-first tokens + components)
+fonts/            Caveat (vendored, OFL) + license
 js/registry.js    THE game registry — the only place the page knows games
-js/app.js         cards, filters, daily warmup, streaks, meters, player
+js/app.js         category spreads, daily warmup, streaks, meters, player
 js/main.js        theme toggle + Stage-0 footer links
 js/support-config.js  the donation switches
 sdk/artdaily-sdk.js   canonical protocol-v1 SDK (games vendor a copy)
