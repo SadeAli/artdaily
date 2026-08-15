@@ -148,6 +148,19 @@ The step-by-step checklist (copy template → rename → build → verify →
 repo → Pages → registry entry) lives in the game template's README:
 `../artdaily-games/game-template/` in the workspace.
 
+**Two registrations, not one.** A registry entry alone leaves the drill
+invisible with JavaScript disabled. Every `status: 'live'` entry also
+needs its `url` in the `<noscript>` plain-link list in `index.html`.
+Check before pushing — three drills once shipped half-listed this way:
+
+```sh
+node -e "const fs=require('fs'),vm=require('vm'),c={window:{}};vm.createContext(c);
+vm.runInContext(fs.readFileSync('js/registry.js','utf8'),c);
+const h=fs.readFileSync('index.html','utf8');
+const m=c.window.ARTDAILY_GAMES.filter(g=>g.status==='live'&&h.indexOf(g.url)<0);
+console.log(m.length?'MISSING from <noscript>: '+m.map(g=>g.slug):'noscript list complete');"
+```
+
 ## Versioning
 
 The SDK carries `version: 1` in every message. If the protocol ever

@@ -148,10 +148,19 @@
 
   /* ---- today's warmup: deterministic 3-game spread ---- */
 
-  function daySeed(offset) {
-    var n = new Date();
-    return Math.floor(new Date(n.getFullYear(), n.getMonth(), n.getDate() + (offset || 0)).getTime() / 86400000);
+  /* ONE seed function, keyed by a local day key, for every caller —
+     today's pick, tomorrow's preview and the practice record. Deriving
+     it twice (once from local midnight, once from local noon) put the
+     record a whole day out of step everywhere east of Greenwich. */
+  var DAY_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
+
+  function seedForKey(k) {
+    var p = DAY_RE.exec(String(k));
+    if (!p) return null;
+    return Math.floor(new Date(+p[1], +p[2] - 1, +p[3]).getTime() / 86400000);
   }
+
+  function keyForOffset(n) { var d = new Date(); d.setDate(d.getDate() + (n || 0)); return dateKey(d); }
 
   function slugHash(seed, slug) {
     var h = seed ^ 0x9e3779b9;
@@ -163,14 +172,21 @@
      warmup never doubles up a chapter; top back up if needed.
      Pure function of the day number, so tomorrow's plan can be shown
      today — and everyone in the world gets the same three. */
-  function pickForSeed(seed) {
+  function pickForKey(key) {
+    var seed = seedForKey(key);
+    if (seed === null) return [];
+    var p = DAY_RE.exec(String(key));
     /* Rank by hash, but bias against drills done in the last few days so
        a daily habit stays varied, and against chapters with few drills —
        picking one per distinct chapter made composition's 2 drills show
        as often as line's 9. */
     var recent = {};
     for (var i = 1; i <= 6; i++) {
-      var k = dateKey(new Date(seed * 86400000 - i * 86400000));
+      /* Walk CALENDAR days back from the picked day. Stepping in
+         milliseconds from seed*86400000 walks back from a UTC instant,
+         which east of Greenwich skipped yesterday entirely — the one day
+         this bias exists to protect against. */
+      var k = dateKey(new Date(+p[1], +p[2] - 1, +p[3] - i));
       Object.keys(dayScores(k)).forEach(function (s) { recent[s] = Math.max(recent[s] || 0, 7 - i); });
     }
     var perCat = {};
@@ -208,14 +224,27 @@
     return out.length === 3 ? out : null;
   }
 
+  /* Which three drills a given day asked for. The starter session is a
+     property of the DAY it was served (store.seen.starter), not of "is
+     the store empty right this second" — otherwise the newcomer's first
+     result flips their curated checklist to three strangers, and the
+     record later judges that day against a triple it never showed. */
+  function picksForKey(k) {
+    if (store.seen.starter === k) {
+      var s = starterPick();
+      if (s) return s;
+    }
+    return pickForKey(k);
+  }
+
   function todayPick() {
     if (isNewcomer()) {
       var s = starterPick();
       if (s) return s;
     }
-    return pickForSeed(daySeed(0));
+    return picksForKey(todayKey());
   }
-  function tomorrowPick() { return pickForSeed(daySeed(1)); }
+  function tomorrowPick() { return pickForKey(keyForOffset(1)); }
 
   /* ---- milestones ---- */
 
@@ -486,7 +515,7 @@
     var drills = distinctSlugs().length;
     var perfect = 0;
     dayKeys.forEach(function (k) {
-      var picks = pickForSeed(Math.floor(new Date(k + 'T12:00:00').getTime() / 86400000));
+      var picks = picksForKey(k);
       var sc = dayScores(k);
       if (picks.length && picks.every(function (g) { return typeof sc[g.slug] === 'number'; })) perfect++;
     });
@@ -550,7 +579,15 @@
   /* ---- result recording ---- */
 
   function recordResult(g, score) {
+    /* Re-read before touching anything: a second tab (or this tab after
+       an overnight sleep) may have logged rounds since `store` was last
+       loaded, and writing our own snapshot back would erase them. Every
+       mutation in this file is read-modify-write for the same reason. */
+    store = loadStore();
     var tk = todayKey();
+    /* Pin the curated first session to this day BEFORE the first score
+       lands, so finishing a drill cannot swap the checklist out. */
+    if (isNewcomer() && starterPick()) store.seen.starter = tk;
     if (!isPlainish(store.days[tk])) store.days[tk] = {};
     var day = store.days[tk];
     if (typeof day[g.slug] !== 'number' || score > day[g.slug]) day[g.slug] = score;
@@ -647,6 +684,13 @@
      favour. Stage-0 — returns null unless a Buttondown name is set, so
      it can never be a broken form. Shown only after a full warmup on a
      3-day streak (real, repeated value), at most once, dismissible. */
+  /* read-modify-write, like every other mutation here */
+  function markAskSeen() {
+    store = loadStore();
+    store.seen.ask = true;
+    saveStore();
+  }
+
   function buildAsk() {
     var S = window.SUPPORT || {};
     if (!S.buttondown) return null;
@@ -674,17 +718,13 @@
     send.type = 'submit';
     form.appendChild(input);
     form.appendChild(send);
-    form.addEventListener('submit', function () {
-      store.seen.ask = true;
-      saveStore();
-    });
+    form.addEventListener('submit', function () { markAskSeen(); });
     wrap.appendChild(form);
 
     var no = el('button', 'ask-no', 'no thanks');
     no.type = 'button';
     no.addEventListener('click', function () {
-      store.seen.ask = true;
-      saveStore();
+      markAskSeen();
       wrap.remove();
     });
     wrap.appendChild(no);
@@ -694,13 +734,30 @@
   /* ---- a small page-level toast for milestones ---- */
 
   var toastTimer = null;
+  var toastQueue = [];
+
   function toastPage(msg) {
+    /* A showModal()'d <dialog> is promoted to the browser's top layer,
+       which paints above every z-index in the page — a toast fired now
+       would sit under the dialog's backdrop and auto-hide long before
+       the player closes it. Hold milestones until the dialog is gone. */
+    if (player && player.open) { toastQueue.push(msg); return; }
     var box = $('pageToast');
     if (!box) return;
     box.textContent = msg;
     box.hidden = false;
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function () { box.hidden = true; }, 4200);
+  }
+
+  function flushToasts() {
+    if (!toastQueue.length || (player && player.open)) return;
+    var q = toastQueue.slice();
+    toastQueue.length = 0;
+    q.forEach(function (m, i) {
+      if (i === 0) toastPage(m);
+      else setTimeout(function () { toastPage(m); }, 2200 * i);
+    });
   }
 
   /* "next warmup →" in the player foot: closes the loop without
@@ -780,6 +837,7 @@
       if (back && typeof back.focus === 'function') back.focus();
       openerSlug = null;
     }
+    flushToasts(); /* milestones earned inside the dialog, now visible */
   }
 
   /* Esc fallback: with focus on the dialog chrome the native cancel path
@@ -798,18 +856,63 @@
     });
   }
 
-  /* Only trust messages from the iframe we opened, for the game we
-     opened, speaking protocol v1. */
+  /* Where a drill legitimately lives, for validating a message that did
+     not come from our own iframe. */
+  function originOf(url) {
+    try { return new URL(url, location.href).origin; } catch (e) { return null; }
+  }
+
+  function gameBySlug(slug) {
+    return liveGames.filter(function (g) { return g.slug === slug; })[0] || null;
+  }
+
   window.addEventListener('message', function (ev) {
-    if (!player || !player.open || !openGame) return;
-    if (!frame || ev.source !== frame.contentWindow) return;
     var d = ev.data;
-    if (!d || d.version !== 1 || d.slug !== openGame.slug) return;
-    if (d.type === 'artdaily:ready') { postTheme(); return; }
+    if (!d || d.version !== 1) return;
+
+    /* (a) the drill embedded in our own player */
+    if (player && player.open && openGame && frame && ev.source === frame.contentWindow) {
+      if (d.slug !== openGame.slug) return;
+      if (d.type === 'artdaily:ready') { postTheme(); return; }
+      if (d.type !== 'artdaily:result') return;
+      recordResult(openGame, Math.max(0, Math.min(100, Math.round(Number(d.score) || 0))));
+      return;
+    }
+
+    /* (b) a drill playing in its own tab that we opened — its
+       window.opener is us. Trust it only if the message's origin is
+       where that drill is actually published. */
     if (d.type !== 'artdaily:result') return;
-    var score = Math.max(0, Math.min(100, Math.round(Number(d.score) || 0)));
-    recordResult(openGame, score);
+    var g = gameBySlug(d.slug);
+    if (!g || originOf(g.url) !== ev.origin) return;
+    var s = Math.max(0, Math.min(100, Math.round(Number(d.score) || 0)));
+    recordResult(g, s);
+    /* Acknowledge. A postMessage whose targetOrigin no longer matches is
+       dropped without throwing, so the drill cannot tell "posted" from
+       "delivered" on its own — it shows a recoverable link until this
+       lands, and only then swaps it for the ✓. */
+    try {
+      if (ev.source && typeof ev.source.postMessage === 'function') {
+        ev.source.postMessage(
+          { type: 'artdaily:logged', slug: g.slug, version: 1, score: s }, ev.origin);
+      }
+    } catch (e) {}
+    toastPage(g.icon + ' ' + g.name + ' ' + s + ' — added from your other tab');
   });
+
+  /* A drill opened directly (a bookmark, a shared link) has no opener,
+     so it offers a link home carrying the score: #log=slug,score */
+  function consumeLogHash() {
+    var m = /(?:^|#|&)log=([a-z0-9-]+),(\d{1,3})/i.exec(location.hash || '');
+    if (!m) return;
+    var g = gameBySlug(m[1]);
+    var s = Math.max(0, Math.min(100, parseInt(m[2], 10)));
+    /* Clear it first: a refresh must not replay the same score. */
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { location.hash = ''; }
+    if (!g) return;
+    recordResult(g, s);
+    toastPage(g.icon + ' ' + g.name + ' ' + s + ' — added to your record');
+  }
 
   /* Theme relay: follow the page toggle into the open game. */
   if (typeof MutationObserver === 'function') {
@@ -838,16 +941,18 @@
       (all ? ' · ★ perfect day' : '') + '\n' + HOME;
   }
 
-  var shareTimer = null;
-
-  /* Shared by the hero button and the closing card's copy. */
+  /* Shared by the hero button and the closing card's copy — so the reset
+     timer hangs off the BUTTON, not off this module. One shared timer
+     let the second button's copy cancel the first button's reset and
+     leave it stuck reading "copied ✓". */
   function copyShare(btn) {
     var text = shareText();
     function confirmCopy() {
       btn.textContent = 'copied ✓';
       btn.classList.add('copied');
-      if (shareTimer) clearTimeout(shareTimer);
-      shareTimer = setTimeout(function () {
+      if (btn._copyTimer) clearTimeout(btn._copyTimer);
+      btn._copyTimer = setTimeout(function () {
+        btn._copyTimer = null;
         btn.textContent = SHARE_LABEL;
         btn.classList.remove('copied');
       }, 1500);
@@ -871,6 +976,7 @@
       if (!window.confirm('reset all local progress? streak, ticks and skill levels will be wiped.')) return;
       try { localStorage.removeItem(STORE_KEY); } catch (e) {}
       store = freshStore();
+      hideClosing(); /* else it keeps showing the scores just wiped */
       renderToday();
       renderStreak();
       renderMeters();
@@ -880,6 +986,23 @@
     });
   }
 
+  /* The closing card is a snapshot of one finished day: it must go the
+     moment that day's numbers stop being true (reset, or midnight). */
+  function hideClosing() {
+    var c = $('closing');
+    if (!c) return;
+    c.textContent = '';
+    c.hidden = true;
+  }
+
+  function renderAll() {
+    renderToday();
+    renderStreak();
+    renderMeters();
+    renderRecord();
+    liveGames.forEach(fillMeta);
+  }
+
   /* ---- boot ---- */
 
   renderCatalogue();
@@ -887,17 +1010,28 @@
   renderStreak();
   renderMeters();
   renderRecord();
+  consumeLogHash();
 
   /* Day rollover: a tab left open overnight re-renders the checklist
-     and streak for the new day when it next becomes visible. */
+     and streak for the new day when it next becomes visible. It also
+     re-reads the store — a day-old snapshot in memory would otherwise be
+     written back over everything logged since. */
   var renderedDay = todayKey();
   function maybeRollover() {
     if (todayKey() === renderedDay) return;
     renderedDay = todayKey();
-    renderToday();
-    renderStreak();
-    liveGames.forEach(fillMeta);
+    store = loadStore();
+    hideClosing(); /* yesterday's closing card is not today's */
+    renderAll();
   }
   document.addEventListener('visibilitychange', maybeRollover);
   window.addEventListener('focus', maybeRollover);
+
+  /* Another tab wrote progress: adopt it rather than keep a snapshot
+     that our next save would write back over theirs. */
+  window.addEventListener('storage', function (ev) {
+    if (ev && ev.key && ev.key !== STORE_KEY) return;
+    store = loadStore();
+    renderAll();
+  });
 })();

@@ -24,7 +24,7 @@
 <!-- ?v= busts the CDN/browser cache on deploy: registry.js is served
      with a 4h max-age, so without this a returning visitor keeps an old
      catalogue. Bump V in every asset URL below when css/js changes. -->
-<link rel="stylesheet" href="css/style.css?v=4">
+<link rel="stylesheet" href="css/style.css?v=5">
 <script>
 (function(){var t=null;try{t=localStorage.getItem('sadeali-theme');}catch(e){}document.documentElement.dataset.theme=(t==='dark')?'dark':'light';})();
 </script>
@@ -69,6 +69,8 @@
       <ul class="plainlist" id="noscriptList">
         <li><a href="https://sadeali.github.io/artdaily-colors/">Color Mixer</a></li>
         <li><a href="https://sadeali.github.io/artdaily-values/">Value Squint</a></li>
+        <li><a href="https://sadeali.github.io/artdaily-warm-up/">Warm Up</a></li>
+        <li><a href="https://sadeali.github.io/artdaily-superimposed/">Superimposed Lines</a></li>
         <li><a href="https://sadeali.github.io/artdaily-lines/">Steady Lines</a></li>
         <li><a href="https://sadeali.github.io/artdaily-ellipses/">Ellipse Orbit</a></li>
         <li><a href="https://sadeali.github.io/artdaily-symmetry/">Mirror Mirror</a></li>
@@ -81,6 +83,7 @@
         <li><a href="https://sadeali.github.io/artdaily-colour-constancy/">Colour Constancy</a></li>
         <li><a href="https://sadeali.github.io/artdaily-sphere-shade/">Shade a Sphere</a></li>
         <li><a href="https://sadeali.github.io/artdaily-value-thumbnail/">Value Thumbnail</a></li>
+        <li><a href="https://sadeali.github.io/artdaily-hatch-ramp/">Hatch a Ramp</a></li>
         <li><a href="https://sadeali.github.io/artdaily-light-direction/">Light Direction</a></li>
         <li><a href="https://sadeali.github.io/artdaily-cube-from-plane/">Cube From Plane</a></li>
         <li><a href="https://sadeali.github.io/artdaily-box-check/">Box Check</a></li>
@@ -121,7 +124,7 @@
     <div class="player-bar">
       <span class="player-title" id="playerTitle">drill</span>
       <span class="player-spacer"></span>
-      <a class="player-link" id="playerOpen" href="https://artdaily.sadeali.com/" target="_blank" rel="noopener">open full page ↗</a>
+      <a class="player-link" id="playerOpen" href="https://artdaily.sadeali.com/" target="_blank" rel="opener">open full page ↗</a>
       <button class="player-x" id="playerClose" type="button" aria-label="Close game">✕</button>
     </div>
     <iframe class="player-frame" id="playerFrame" src="about:blank" title="Art Daily game"></iframe>
@@ -141,9 +144,9 @@
   <p class="fineprint">© SadeAli · free · no ads · no tracking</p>
 </footer>
 
-<script src="js/support-config.js?v=4"></script>
-<script src="js/registry.js?v=4"></script>
-<script src="js/main.js?v=4"></script>
-<script src="js/app.js?v=4"></script>
+<script src="js/support-config.js?v=5"></script>
+<script src="js/registry.js?v=5"></script>
+<script src="js/main.js?v=5"></script>
+<script src="js/app.js?v=5"></script>
 </body>
 </html>
