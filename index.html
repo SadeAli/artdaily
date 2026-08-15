@@ -85,15 +85,26 @@
         <li><a href="https://sadeali.github.io/artdaily-horizon-read/">Horizon Read</a></li>
         <li><a href="https://sadeali.github.io/artdaily-crop-it/">Crop It</a></li>
         <li><a href="https://sadeali.github.io/artdaily-focal-place/">Focal Placement</a></li>
+        <li><a href="https://sadeali.github.io/artdaily-angle-snap/">Angle Snap</a></li>
+        <li><a href="https://sadeali.github.io/artdaily-steady-tunnel/">Steady Tunnel</a></li>
+        <li><a href="https://sadeali.github.io/artdaily-even-spacing/">Even Spacing</a></li>
+        <li><a href="https://sadeali.github.io/artdaily-line-weight/">Line Weight</a></li>
+        <li><a href="https://sadeali.github.io/artdaily-contour-memory/">Contour Memory</a></li>
+        <li><a href="https://sadeali.github.io/artdaily-proportion-eye/">Proportion Eye</a></li>
+        <li><a href="https://sadeali.github.io/artdaily-negative-space/">Negative Space</a></li>
+        <li><a href="https://sadeali.github.io/artdaily-anatomy-spot/">Anatomy Spot</a></li>
+        <li><a href="https://sadeali.github.io/artdaily-gesture-capture/">Gesture Capture</a></li>
       </ul>
     </div>
   </noscript>
 </main>
 
 <p class="aboutline">a warmup, not a curriculum — pick a drill, do a round, come back tomorrow</p>
+<p class="legendline">every drill scores out of 100 · the pencil marks say how: <b>math-scored</b> = pure geometry &amp; colour math · <b>fit-scored</b> = a comparison algorithm with tuning · <b>curated</b> = classic guidelines, honestly subjective</p>
 
 <section class="section" id="progress" aria-label="Your progress">
   <div class="cat-head"><h2 class="accent-mint" style="text-decoration-color: var(--mint);">your paint tubes</h2></div>
+  <p class="cat-note" id="metersEmpty">empty tubes so far — play any drill and they start filling</p>
   <ul class="meters" id="skillMeters" hidden></ul>
   <p class="storenote">progress lives in this browser's localStorage — no accounts, nothing leaves your device · <button class="resetlink" id="resetBtn" type="button">reset it</button></p>
 </section>
@@ -107,7 +118,7 @@
       <button class="player-x" id="playerClose" type="button" aria-label="Close game">✕</button>
     </div>
     <iframe class="player-frame" id="playerFrame" src="about:blank" title="Art Daily game"></iframe>
-    <p class="player-foot"><span id="playerStatus" aria-live="polite"></span></p>
+    <p class="player-foot"><span id="playerStatus" aria-live="polite"></span><span class="player-foot-spacer"></span><button class="player-next" id="playerNext" type="button" hidden></button></p>
   </div>
 </dialog>
 

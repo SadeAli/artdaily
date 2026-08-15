@@ -39,6 +39,41 @@ The page in turn:
   scores, and turns them into today's-warmup ticks, the daily streak
   and per-skill meters (all in this origin's localStorage).
 
+## The UX bar (learned the hard way, from a full-catalogue audit)
+
+Non-negotiable for every drill:
+
+- **The first screen teaches the verb.** Before anyone opens the how-to,
+  the hint line plus the visible affordances must say what to do. If a
+  player has to guess what the canvas wants, the drill has failed.
+- **Nothing is punished for UI reasons.** Accidental taps and too-short
+  strokes reset free. Misplacements are recoverable (undo / clear).
+  A player never loses points to a control they misunderstood.
+- **No dead states.** Trace: do nothing · press done immediately · draw
+  during a reveal · resize mid-item · press "new round" mid-round. Every
+  one must land somewhere sane, and a finished round must still report
+  exactly once.
+- **Reveal after every attempt**, not just at round end: the truth drawn
+  over their attempt, in the accent, with the delta named in words.
+- **Touch is the default input**: 44px targets, pointerId-guarded
+  strokes, `touch-action: none` on the canvas.
+- **Anything meaning-bearing painted on canvas must pass AA in both
+  themes.** The watercolor accents are decorative-strength on paper —
+  mix toward `--ink` (or define a `--canvas-accent` below the CSS
+  marker) for marks that carry information.
+- **Train the hand where a stroke beats a tap.** Prefer drawing as the
+  input unless the lesson is genuinely a decomposition (three sliders
+  for hue/saturation/lightness) or a judgement (spot the wrong figure).
+
+## Real 3D, not flat guesses
+
+If a drill reasons about space or light, build the real model: a proper
+pinhole projection, real light vectors against real surface normals,
+real circles projected onto real planes. The ground truth is then
+correct by construction and the reveal is convincing rather than
+approximately right. Keep the scoring functions pure so they can be
+unit-tested against an independently derived case.
+
 ## Drill design rules
 
 - **30–60 second rounds.** It's a daily warmup, not a session. Report a

@@ -329,6 +329,9 @@ main { flex: 1; width: 100%; }
 
 .section { width: 100%; max-width: 1080px; margin: 0 auto; padding: 30px 20px 4px; }
 
+/* anchor jumps must clear the sticky jumpnav */
+.cat-section { scroll-margin-top: 4.5rem; }
+
 .cat-head {
   display: flex;
   align-items: baseline;
@@ -456,6 +459,24 @@ a.card:hover, a.card:focus-visible {
   border-bottom: 2px solid color-mix(in srgb, var(--accent, var(--sunny)) 55%, transparent);
 }
 
+/* played-today: a little grader's stamp in the corner */
+.card.is-done::after {
+  content: "✓";
+  position: absolute;
+  top: 6px;
+  left: 10px;
+  font-family: var(--hand);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--accent-ink, var(--mint));
+  border: 2px solid color-mix(in srgb, var(--accent-ink, var(--mint)) 65%, transparent);
+  border-radius: 999px;
+  width: 26px;
+  height: 26px;
+  line-height: 22px;
+  transform: rotate(-8deg);
+}
+
 .card-soon { border-style: dashed; box-shadow: none; }
 .card-soon::before { opacity: 0.5; }
 .card-soon .card-title, .card-soon .card-tagline { color: var(--muted); }
@@ -474,6 +495,17 @@ a.card:hover, a.card:focus-visible {
   font-size: 1.3rem;
   color: var(--muted);
 }
+
+.legendline {
+  width: 100%;
+  max-width: 1080px;
+  margin: 6px auto 0;
+  padding: 0 20px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.legendline b { color: var(--ink); border-bottom: 2px solid color-mix(in srgb, var(--sunny) 55%, transparent); }
 
 /* ===== Progress — paint tubes ===== */
 
@@ -552,7 +584,15 @@ a.card:hover, a.card:focus-visible {
 }
 .player::backdrop { background: rgba(30, 24, 15, 0.55); }
 
-.player-sheet { width: 100%; overflow: hidden; }
+/* dvh-driven: the sheet may never outgrow the viewport (landscape
+   phones must always reach the ✕), the frame flexes, chrome stays. */
+.player-sheet {
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - 20px);
+}
 
 /* tape across the dialog's top corners */
 .player-sheet::before {
@@ -578,22 +618,23 @@ a.card:hover, a.card:focus-visible {
 }
 .player-title { font-family: var(--hand); font-size: 1.3rem; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .player-spacer { flex: 1; }
-.player-link { font-size: 0.72rem; font-weight: 700; color: var(--link); text-decoration: none; white-space: nowrap; }
+.player-link { padding: 10px 8px; font-size: 0.72rem; font-weight: 700; color: var(--link); text-decoration: none; white-space: nowrap; }
 .player-link:hover { text-decoration: underline; text-decoration-thickness: 2px; }
 
 .player-x {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 42px;
+  height: 42px;
   padding: 0;
   font: inherit;
+  font-size: 1.05rem;
   font-weight: 900;
   color: var(--muted);
   background: transparent;
   border: 0;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
 }
 .player-x:hover { color: var(--focus); background: color-mix(in srgb, var(--line) 40%, transparent); }
@@ -601,8 +642,9 @@ a.card:hover, a.card:focus-visible {
 .player-frame {
   display: block;
   width: 100%;
+  flex: 1;
   aspect-ratio: 16 / 10;
-  min-height: 340px;
+  min-height: 220px;
   max-height: 74vh;
   border: 0;
   background: var(--bg);
@@ -611,14 +653,31 @@ a.card:hover, a.card:focus-visible {
 .player-foot {
   display: flex;
   align-items: center;
+  gap: 10px;
   margin: 0;
   min-height: 2.2em;
-  padding: 6px 16px;
+  padding: 6px 10px 6px 16px;
   border-top: 1px dashed var(--line);
   font-size: 0.76rem;
   font-weight: 700;
   color: var(--muted);
+  flex: none;
 }
+.player-foot-spacer { flex: 1; }
+
+.player-next {
+  font-family: var(--hand);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ink);
+  padding: 5px 14px;
+  border: 1px solid color-mix(in srgb, var(--mint) 55%, var(--line));
+  border-radius: 4px 10px 5px 9px;
+  background: color-mix(in srgb, var(--mint) 18%, var(--card));
+  cursor: pointer;
+  white-space: nowrap;
+}
+.player-next:hover { transform: translateY(-1px); box-shadow: 0 2px 0 var(--shadow); }
 
 /* ===== Footer ===== */
 
@@ -646,11 +705,13 @@ a.card:hover, a.card:focus-visible {
   .hero-sheet::before { left: 8px; }
   .hero-sheet::after { left: 36px; }
   .section { padding: 24px 14px 2px; }
-  .aboutline { padding: 0 14px; }
+  .aboutline, .legendline { padding: 0 14px; }
   .grid { gap: 24px 14px; }
   .today-slot .skillchip { display: none; }
-  .player-frame { min-height: 300px; }
   .meter-name { width: 5.8rem; }
+  /* one scrollable row instead of a 3-row wall of pills */
+  .jumpnav { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; padding: 8px 12px; }
+  .jumpnav a { flex: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

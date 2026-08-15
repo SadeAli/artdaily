@@ -1,8 +1,10 @@
 # artdaily.sadeali.com — Art Daily
 
-The daily-practice sketchbook of the SadeAli network: a catalogue of tiny
-scored drills for artists, grouped into chapters — colour, value & light,
-line & hand, form & perspective, composition. Warm paper, washi tape,
+The daily-practice sketchbook of the SadeAli network: a catalogue of 33 tiny
+scored drills for artists, grouped into six chapters — colour, value & light,
+line & hand, form & perspective, composition, observation & memory. Most
+drills are drawn, not clicked: you commit a stroke and the geometry judges
+it. Warm paper, washi tape,
 handwritten Caveat headings (vendored font, OFL — `fonts/LICENSE.txt`);
 dark mode is the "night studio". This repo is only the **page**: discovery,
 today's warmup checklist, streaks and the paint-tube skill meters. Every

@@ -168,6 +168,7 @@
   /* ---- cards ---- */
 
   var metaEls = {};  /* slug -> the card's meta <p> for quick refresh */
+  var cardEls = {};  /* slug -> the card element, for the done-stamp */
 
   function fillMeta(g) {
     var m = metaEls[g.slug];
@@ -175,12 +176,14 @@
     m.textContent = '';
     var t = '~' + g.minutes + ' min';
     var best = bestFor(g.slug);
-    if (best !== null) t += ' · best ' + best;
+    if (best !== null) t += ' · best ' + best + '/100';
     m.appendChild(document.createTextNode(t));
-    if (playedToday(g.slug)) {
+    var done = playedToday(g.slug);
+    if (done) {
       m.appendChild(document.createTextNode(' · '));
       m.appendChild(el('span', 'meta-done', 'today ✓'));
     }
+    if (cardEls[g.slug]) cardEls[g.slug].classList.toggle('is-done', done);
   }
 
   function buildCard(g) {
@@ -219,6 +222,8 @@
       card.appendChild(sk);
       var meta = el('p', 'card-meta');
       metaEls[g.slug] = meta;
+      cardEls[g.slug] = card;
+      card.setAttribute('data-slug', g.slug);
       card.appendChild(meta);
       fillMeta(g);
     }
@@ -231,6 +236,7 @@
   function renderCatalogue() {
     if (!catalogue) return;
     metaEls = {};
+    cardEls = {};
     var catIds = Object.keys(CATS).filter(function (id) {
       return GAMES.some(function (g) { return g.cat === id; });
     });
@@ -336,6 +342,8 @@
     if (!meters) return;
     var ids = taggedSkillIds();
     var any = ids.some(function (id) { return (Number(store.skills[id]) || 0) > 0; });
+    var empty = $('metersEmpty');
+    if (empty) empty.hidden = any;
     meters.textContent = '';
     if (!any) { meters.hidden = true; return; }
     meters.hidden = false;
@@ -384,7 +392,44 @@
     renderStreak();
     renderMeters();
     fillMeta(g);
-    if (statusEl) statusEl.textContent = 'recorded ✓ score ' + score;
+    if (statusEl) {
+      var picks = todayPick();
+      var scores = dayScores(tk);
+      var perfect = picks.length > 0 && picks.every(function (p) { return typeof scores[p.slug] === 'number'; });
+      statusEl.textContent = 'recorded ✓ ' + score + '/100' +
+        (perfect ? ' · ★ perfect day — copy your card up top' : '');
+    }
+    updateNextBtn();
+  }
+
+  /* "next warmup →" in the player foot: closes the loop without
+     forcing a trip back to the hero. */
+  var nextBtn = $('playerNext');
+
+  function nextUnfinished() {
+    var scores = dayScores(todayKey());
+    var picks = todayPick().filter(function (p) {
+      return typeof scores[p.slug] !== 'number' && (!openGame || p.slug !== openGame.slug);
+    });
+    return picks.length ? picks[0] : null;
+  }
+
+  function updateNextBtn() {
+    if (!nextBtn) return;
+    var nxt = (player && player.open) ? nextUnfinished() : null;
+    if (nxt) {
+      nextBtn.textContent = 'next: ' + nxt.name + ' →';
+      nextBtn.hidden = false;
+    } else {
+      nextBtn.hidden = true;
+    }
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', function () {
+      var nxt = nextUnfinished();
+      if (nxt) openPlayer(nxt);
+    });
   }
 
   /* ---- player dialog ---- */
@@ -402,6 +447,8 @@
     } catch (e) {}
   }
 
+  var openerSlug = null; /* focus returns to this game's card on close */
+
   function openPlayer(g) {
     var url = gameUrl(g);
     if (!player || typeof player.showModal !== 'function' || !frame) {
@@ -409,12 +456,14 @@
       return;
     }
     openGame = g;
+    openerSlug = g.slug;
     if (titleEl) titleEl.textContent = g.icon + ' ' + g.name;
     if (openLink) openLink.href = url;
     frame.title = g.name;
     frame.src = url + '?embed=1&theme=' + currentTheme();
     if (statusEl) statusEl.textContent = 'waiting for a finished round…';
-    player.showModal();
+    if (!player.open) player.showModal();
+    updateNextBtn();
     document.documentElement.style.overflow = 'hidden'; /* scroll lock */
   }
 
@@ -423,7 +472,20 @@
     if (frame) frame.src = 'about:blank'; /* stops the game's loop */
     document.documentElement.style.overflow = '';
     if (player && player.open) player.close();
+    /* renderToday rebuilds the checklist buttons, so restore focus to
+       the (possibly re-created) card for the game that was open. */
+    if (openerSlug) {
+      var back = document.querySelector('.card[data-slug="' + openerSlug + '"]');
+      if (back && typeof back.focus === 'function') back.focus();
+      openerSlug = null;
+    }
   }
+
+  /* Esc fallback: with focus on the dialog chrome the native cancel path
+     fires, but this also catches Esc bubbling anywhere in the page. */
+  window.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape' && player && player.open) closePlayer();
+  });
 
   if (closeBtn) closeBtn.addEventListener('click', closePlayer);
   if (player) {
@@ -521,4 +583,17 @@
   renderToday();
   renderStreak();
   renderMeters();
+
+  /* Day rollover: a tab left open overnight re-renders the checklist
+     and streak for the new day when it next becomes visible. */
+  var renderedDay = todayKey();
+  function maybeRollover() {
+    if (todayKey() === renderedDay) return;
+    renderedDay = todayKey();
+    renderToday();
+    renderStreak();
+    liveGames.forEach(fillMeta);
+  }
+  document.addEventListener('visibilitychange', maybeRollover);
+  window.addEventListener('focus', maybeRollover);
 })();

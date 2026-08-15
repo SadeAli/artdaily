@@ -161,6 +161,38 @@ window.ARTDAILY_GAMES = [
     url: 'https://sadeali.github.io/artdaily-symmetry/',
     dev: '../artdaily-games/symmetry/', status: 'live',
   },
+  {
+    slug: 'angle-snap', name: 'Angle Snap',
+    tagline: 'strike the asked angle without a grid',
+    icon: '🧭', accent: 'sunny', skills: ['line'],
+    cat: 'line', tag: 'auto', minutes: 3,
+    url: 'https://sadeali.github.io/artdaily-angle-snap/',
+    dev: '../artdaily-games/angle-snap/', status: 'live',
+  },
+  {
+    slug: 'steady-tunnel', name: 'Steady Tunnel',
+    tagline: 'steer one stroke through the narrowing pass',
+    icon: '🌀', accent: 'coral', skills: ['line'],
+    cat: 'line', tag: 'auto', minutes: 3,
+    url: 'https://sadeali.github.io/artdaily-steady-tunnel/',
+    dev: '../artdaily-games/steady-tunnel/', status: 'live',
+  },
+  {
+    slug: 'even-spacing', name: 'Even Spacing',
+    tagline: 'tick and hatch at a steady rhythm',
+    icon: '📏', accent: 'bubblegum', skills: ['line'],
+    cat: 'line', tag: 'auto', minutes: 3,
+    url: 'https://sadeali.github.io/artdaily-even-spacing/',
+    dev: '../artdaily-games/even-spacing/', status: 'live',
+  },
+  {
+    slug: 'line-weight', name: 'Line Weight',
+    tagline: "redraw the stroke's taper on purpose",
+    icon: '🖋️', accent: 'sky', skills: ['line'],
+    cat: 'line', tag: 'fit', minutes: 3,
+    url: 'https://sadeali.github.io/artdaily-line-weight/',
+    dev: '../artdaily-games/line-weight/', status: 'live',
+  },
 
   /* ---- form & perspective ---- */
   {
@@ -246,12 +278,45 @@ window.ARTDAILY_GAMES = [
     dev: '../artdaily-games/focal-place/', status: 'live',
   },
 
-  /* ---- observation ---- */
+  /* ---- observation & memory ---- */
   {
-    slug: 'contour', name: '?????',
-    tagline: 'something’s hatching…',
-    icon: '🫥', accent: 'sunny', skills: ['contour'],
-    cat: 'observation', tag: 'fit', minutes: 0,
-    url: '', dev: '', status: 'soon',
+    slug: 'contour-memory', name: 'Contour Memory',
+    tagline: 'see it, lose it, redraw it',
+    icon: '🫥', accent: 'sunny', skills: ['contour', 'shapes'],
+    cat: 'observation', tag: 'fit', minutes: 3,
+    url: 'https://sadeali.github.io/artdaily-contour-memory/',
+    dev: '../artdaily-games/contour-memory/', status: 'live',
+  },
+  {
+    slug: 'proportion-eye', name: 'Proportion Eye',
+    tagline: 'mark the halves and thirds by eye',
+    icon: '⚖️', accent: 'mint', skills: ['shapes'],
+    cat: 'observation', tag: 'auto', minutes: 2,
+    url: 'https://sadeali.github.io/artdaily-proportion-eye/',
+    dev: '../artdaily-games/proportion-eye/', status: 'live',
+  },
+  {
+    slug: 'negative-space', name: 'Negative Space',
+    tagline: 'draw the gap, not the object',
+    icon: '🕳️', accent: 'sky', skills: ['shapes', 'contour'],
+    cat: 'observation', tag: 'fit', minutes: 3,
+    url: 'https://sadeali.github.io/artdaily-negative-space/',
+    dev: '../artdaily-games/negative-space/', status: 'live',
+  },
+  {
+    slug: 'anatomy-spot', name: 'Anatomy Spot',
+    tagline: 'find the figure with the wrong proportions',
+    icon: '🔍', accent: 'bubblegum', skills: ['shapes'],
+    cat: 'observation', tag: 'auto', minutes: 2,
+    url: 'https://sadeali.github.io/artdaily-anatomy-spot/',
+    dev: '../artdaily-games/anatomy-spot/', status: 'live',
+  },
+  {
+    slug: 'gesture-capture', name: 'Gesture Capture',
+    tagline: 'catch the line of action in seconds',
+    icon: '💃', accent: 'lilac', skills: ['line', 'contour'],
+    cat: 'observation', tag: 'soft', minutes: 4,
+    url: 'https://sadeali.github.io/artdaily-gesture-capture/',
+    dev: '../artdaily-games/gesture-capture/', status: 'live',
   },
 ];
