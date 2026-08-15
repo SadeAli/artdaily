@@ -18,6 +18,11 @@
   var ACCENTS = ['coral', 'sunny', 'mint', 'sky', 'lilac', 'bubblegum'];
   var SHARE_LABEL = "copy today's card";
   var TAG_LABELS = { auto: 'math-scored', fit: 'fit-scored', soft: 'curated' };
+  var STREAK_NOTES = {
+    freeze: '❄️ a banked rest day covered yesterday — your streak survived',
+    earned: '❄️ rest day banked — miss a day and your streak still holds',
+    both:   '❄️ a banked rest day covered yesterday — and you banked another',
+  };
 
   function $(id) { return document.getElementById(id); }
 
@@ -67,15 +72,26 @@
      properties, so a corrupt array-shaped store would silently never save. */
   function isPlainish(o) { return !!o && typeof o === 'object' && !Array.isArray(o); }
 
+  /* Counters need their RANGE checked, not just their type. A streak count
+     that arrives negative (a half-written store, an older writer, a hand
+     edit) type-checks as a number and then survives every guard: the chip
+     stays hidden and the streak badges stay locked while the player
+     practises daily, one silent day per day, until it climbs back past 0. */
+  function whole(n, max) {
+    n = Math.floor(Number(n));
+    if (!isFinite(n) || n < 0) n = 0;
+    return (max != null && n > max) ? max : n;
+  }
+
   function loadStore() {
     var s = null;
     try { s = JSON.parse(localStorage.getItem(STORE_KEY)); } catch (e) { s = null; }
     if (!isPlainish(s)) s = {};
     if (!isPlainish(s.days)) s.days = {};
     if (!isPlainish(s.streak)) s.streak = {};
-    if (typeof s.streak.count !== 'number') s.streak.count = 0;
     if (typeof s.streak.last !== 'string') s.streak.last = '';
-    if (typeof s.streak.freezes !== 'number') s.streak.freezes = 0;
+    s.streak.count = whole(s.streak.count);
+    s.streak.freezes = whole(s.streak.freezes, 2);  /* 2 = the cap touchStreak banks to */
     if (!isPlainish(s.skills)) s.skills = {};
     if (!isPlainish(s.badges)) s.badges = {};   /* badgeId -> day earned */
     if (!isPlainish(s.seen)) s.seen = {};       /* one-time UI flags */
@@ -141,7 +157,10 @@
     st.last = t;
     if (st.count > 0 && st.count % 5 === 0 && st.freezes < 2) {
       st.freezes += 1;
-      note = note || 'earned';
+      /* Spending a freeze and banking one can land on the same day
+         (count 4 → miss a day → play → 5). Say both, or the player is
+         handed a rest day nobody ever mentions. */
+      note = (note === 'freeze') ? 'both' : 'earned';
     }
     return note;
   }
@@ -490,8 +509,14 @@
   /* Quadratic level curve: level N starts at (N-1)² points, so the
      first levels come fast and later ones ask for real practice. */
   function levelInfo(points) {
-    var p = Number(points) || 0;
-    if (p < 0) p = 0;
+    var p = Number(points);
+    /* A non-finite total (a store holding 1e999 parses straight to
+       Infinity) made lo and hi both Infinity, so pct came out NaN and the
+       meter rendered "lv Infinity" with a `--w: NaN%` fill. The cap also
+       keeps (base+1)² exact, which is what stops hi - lo from collapsing
+       to 0 and dividing by zero. */
+    if (!isFinite(p) || p < 0) p = 0;
+    if (p > 1e9) p = 1e9;
     var base = Math.floor(Math.sqrt(p));
     var lo = base * base;
     var hi = (base + 1) * (base + 1);
@@ -601,9 +626,7 @@
 
     var streakNote = touchStreak();
 
-    var picks = todayPick();
-    var scores = dayScores(tk);
-    var perfect = picks.length > 0 && picks.every(function (p) { return typeof scores[p.slug] === 'number'; });
+    var perfect = todayComplete();
     var earned = checkBadges(score, perfect);
     saveStore();
 
@@ -618,12 +641,21 @@
     }
     updateNextBtn();
 
-    if (streakNote === 'freeze') toastPage('❄️ a banked rest day covered yesterday — your streak survived');
-    else if (streakNote === 'earned') toastPage('❄️ rest day banked — miss a day and your streak still holds');
+    if (STREAK_NOTES[streakNote]) toastPage(STREAK_NOTES[streakNote]);
     earned.forEach(function (b, i) {
-      setTimeout(function () { toastPage(b.icon + ' ' + b.name + ' — ' + b.hint); }, 600 * (i + 1));
+      toastTimers.push(setTimeout(function () {
+        toastPage(b.icon + ' ' + b.name + ' — ' + b.hint);
+      }, 600 * (i + 1)));
     });
     if (perfect) renderClosing();
+  }
+
+  /* Is today's warmup finished right now? ONE definition — the result
+     path, the cross-tab path and the closing card all ask this, and a
+     second copy of the rule is a second chance to disagree with it. */
+  function todayComplete() {
+    var picks = todayPick(), sc = dayScores(todayKey());
+    return picks.length > 0 && picks.every(function (g) { return typeof sc[g.slug] === 'number'; });
   }
 
   /* ---- session closure: the moment the day's warmup is complete ----
@@ -735,6 +767,19 @@
 
   var toastTimer = null;
   var toastQueue = [];
+  var toastTimers = [];   /* pending milestone toasts, cancellable */
+
+  /* Wiping progress must also wipe the congratulations already in flight —
+     otherwise "🌱 first drill — you started" lands half a second after the
+     player deleted the drill it is talking about. */
+  function clearToasts() {
+    toastTimers.forEach(function (t) { clearTimeout(t); });
+    toastTimers.length = 0;
+    toastQueue.length = 0;
+    clearTimeout(toastTimer);
+    var box = $('pageToast');
+    if (box) { box.textContent = ''; box.hidden = true; }
+  }
 
   function toastPage(msg) {
     /* A showModal()'d <dialog> is promoted to the browser's top layer,
@@ -756,7 +801,7 @@
     toastQueue.length = 0;
     q.forEach(function (m, i) {
       if (i === 0) toastPage(m);
-      else setTimeout(function () { toastPage(m); }, 2200 * i);
+      else toastTimers.push(setTimeout(function () { toastPage(m); }, 2200 * i));
     });
   }
 
@@ -976,12 +1021,10 @@
       if (!window.confirm('reset all local progress? streak, ticks and skill levels will be wiped.')) return;
       try { localStorage.removeItem(STORE_KEY); } catch (e) {}
       store = freshStore();
-      hideClosing(); /* else it keeps showing the scores just wiped */
-      renderToday();
-      renderStreak();
-      renderMeters();
-      renderRecord();
-      liveGames.forEach(fillMeta);
+      clearToasts();  /* milestones already scheduled are no longer true */
+      hideClosing();  /* else it keeps showing the scores just wiped */
+      renderAll();
+      updateNextBtn();
       if (statusEl) statusEl.textContent = '';
     });
   }
@@ -1001,6 +1044,15 @@
     renderMeters();
     renderRecord();
     liveGames.forEach(fillMeta);
+  }
+
+  /* The closing card is a snapshot of a finished day, so it has to follow
+     the day both ways: another tab can complete the warmup (show it) or
+     reset the whole store (drop it, rather than keep displaying scores
+     that no longer exist anywhere). */
+  function syncClosing() {
+    if (todayComplete()) renderClosing();
+    else hideClosing();
   }
 
   /* ---- boot ---- */
@@ -1033,5 +1085,7 @@
     if (ev && ev.key && ev.key !== STORE_KEY) return;
     store = loadStore();
     renderAll();
+    syncClosing();
+    updateNextBtn();
   });
 })();

@@ -23,9 +23,11 @@ A game must:
 
 1. Vendor `sdk/artdaily-sdk.js` unmodified as `js/artdaily-sdk.js`.
 2. Call `ArtDaily.init({ slug: '<slug>' })` on load.
-3. Call `ArtDaily.report(score)` — an integer 0–100 — every time a
-   player *finishes* a drill (not on partial progress; streaks on the
-   page are honest: earned by completing, not by visiting).
+3. Call `ArtDaily.report(score)` — 0–100, rounded and clamped for you —
+   **exactly once** every time a player *finishes* a drill, on every path
+   that can finish one: the last item, a timer expiring, a self-rating,
+   "new round" pressed during a reveal. Not on partial progress; streaks
+   on the page are honest, earned by completing, not by visiting.
 4. Repaint through `ArtDaily.onTheme(draw)` so embedded theme switches
    restyle the canvas.
 5. Work standalone at its own URL (the SDK shows/hides the chrome).
@@ -52,7 +54,10 @@ Non-negotiable for every drill:
 - **No dead states.** Trace: do nothing · press done immediately · draw
   during a reveal · resize mid-item · press "new round" mid-round. Every
   one must land somewhere sane, and a finished round must still report
-  exactly once.
+  exactly once. **Store round geometry as fractions of the canvas, not
+  pixels** — a phone rotated mid-round takes the canvas from 900px to
+  390px, and anything remembered at x=826 is then off the canvas, can
+  never be touched, and the round can never finish or report.
 - **Reveal after every attempt**, not just at round end: the truth drawn
   over their attempt, in the accent, with the delta named in words.
 - **Touch is the default input**: 44px targets, pointerId-guarded
@@ -85,10 +90,24 @@ The SDK does the adapting; use it instead of raw constants:
 
 ```js
 ArtDaily.inputMode()      // 'pen' | 'mouse' | 'touch', auto-detected
+ArtDaily.inputLabel()     // 'mouse or trackpad' — what the HUD chip says
 ArtDaily.ease(0.055)      // widen the zero-point: pen 1.0, mouse 2.0, touch 1.5
 ArtDaily.startRadius(28)  // widen a start zone: pen 1.7, touch 1.6, mouse 1.0
 ArtDaily.onInput(fn)      // hardware changed mid-session
 ```
+
+**The two knobs measure different things — never feed one into the other.**
+`startRadius` sizes what the player *aims at*; `ease` sizes where the
+*score* reaches zero. They deliberately rank the hardware in opposite
+orders (a pen gets the biggest target and the strictest scoring), so
+`ease(startRadius(r) * 2)` compounds them and inverts the result — it
+scored a finger *more* generously than a trackpad. Always ease your own
+base constant: `startRadius(BASE)` to draw, `ease(BASE * 2)` to score.
+
+A profile switch never lands mid-press: the SDK detects the hardware on
+`pointerdown` but queues the change until the release, so `onInput` can
+rebuild geometry freely without the target moving under a live stroke,
+and a stroke is always scored under the same `ease` it was drawn under.
 
 Rules that follow from this:
 
@@ -113,6 +132,31 @@ real circles projected onto real planes. The ground truth is then
 correct by construction and the reveal is convincing rather than
 approximately right. Keep the scoring functions pure so they can be
 unit-tested against an independently derived case.
+
+## Scoring functions: pure, total, monotonic
+
+Keep them as **pure functions at the top of `js/game.js`** — no canvas, no
+DOM, no state — so they lift straight into node. Every one must hold:
+
+- **finite 0–100 for any input.** Empty arrays, zero sizes, `NaN`,
+  collinear points, a zero-length reference stroke. Never `NaN`, never a
+  throw. `NaN` loses every comparison it touches, so one leak makes the
+  whole round score `NaN` in silence, and `report()` files it as a bare 0
+  the player cannot explain. Guard divisors with `isFinite(x) && x > 0`.
+- **monotonic in the error.** More wrong can never score higher.
+- **a perfect input ≥ 95, garbage ≤ 30, and 100 reachable.**
+
+`report()` is the last line of defence, not the first: it clamps to 0–100
+and turns anything non-finite into **0** — a divide-by-zero used to clamp
+*upward* to a fake perfect 100 and write it to the permanent best.
+
+Re-verify after any scoring change:
+
+```sh
+node --check js/game.js
+# then lift the pure functions into node and hammer them:
+#   perfect >= 95 · garbage <= 30 · monotonic · degenerate -> finite 0-100
+```
 
 ## Drill design rules
 
