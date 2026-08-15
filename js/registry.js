@@ -28,10 +28,13 @@ window.ARTDAILY_SKILLS = {
 window.ARTDAILY_STARTER = ['value-trap', 'colors', 'lines'];
 
 /* Catalogue chapters — the page renders one sketchbook spread per
-   category, in this order. */
+   category, in this order. A chapter note is the first sentence a
+   beginner reads about a whole subject, so it has to gloss its own
+   jargon: "value" is the word most likely to bounce off someone on day
+   one, and it turns up in four drill names. */
 window.ARTDAILY_CATS = {
-  colour:      { label: 'colour',             icon: '🎨', note: 'the eye-to-hue translation everything else depends on' },
-  value:       { label: 'value & light',      icon: '🌗', note: 'squint — the value pattern is the picture' },
+  colour:      { label: 'colour',             icon: '🎨', note: 'seeing a colour clearly enough to mix it' },
+  value:       { label: 'value & light',      icon: '🌗', note: 'value = how light or dark a thing is, colour aside — squint and it is the whole picture' },
   line:        { label: 'line & hand',        icon: '✏️', note: 'confident strokes, drawn from the shoulder' },
   form:        { label: 'form & perspective', icon: '📦', note: 'boxes, planes, and the horizon that rules them' },
   composition: { label: 'composition',        icon: '🖼️', note: 'where things sit in the frame' },
@@ -78,7 +81,10 @@ window.ARTDAILY_GAMES = [
   },
   {
     slug: 'value-trap', name: 'Value Trap',
-    tagline: 'find the colour that matches the value',
+    /* First drill of the starter session, so this tagline is the first
+       instruction a beginner ever reads here: it echoes the drill's own
+       opening hint instead of naming "value" at them. */
+    tagline: 'tap the colour as light as the grey',
     icon: '🪤', accent: 'sunny', skills: ['values', 'colors'],
     cat: 'colour', tag: 'auto', minutes: 2,
     url: 'https://sadeali.github.io/artdaily-value-trap/',
@@ -170,7 +176,9 @@ window.ARTDAILY_GAMES = [
   },
   {
     slug: 'lines', name: 'Steady Lines',
-    tagline: 'ghost straight strokes through the checkpoints',
+    /* "ghost" is studio jargon and the drill shows two dots, not
+       checkpoints — say what the hand does. */
+    tagline: 'press on A, pull one straight stroke to B',
     icon: '✏️', accent: 'mint', skills: ['line'],
     cat: 'line', tag: 'auto', minutes: 3,
     url: 'https://sadeali.github.io/artdaily-lines/',

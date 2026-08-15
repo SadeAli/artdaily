@@ -458,21 +458,31 @@
     var picks = todayPick();
     var scores = dayScores(todayKey());
     var done = 0;
+    var minutes = 0;
     todayList.textContent = '';
     picks.forEach(function (g) {
       var isDone = typeof scores[g.slug] === 'number';
       if (isDone) done++;
+      minutes += Number(g.minutes) || 0;
       var li = document.createElement('li');
       var btn = el('button', 'today-slot accent-' + g.accent + (isDone ? ' done' : ''));
       btn.type = 'button';
-      var cat = CATS[g.cat] || { label: '' };
-      btn.setAttribute('aria-label', g.name + ' — ' + cat.label +
-        (isDone ? ' — done today, score ' + scores[g.slug] : ' — not done yet'));
+      /* Second line: the drill's own instruction before you play it,
+         your score after. A name and a skill chip alone ("Value Trap ·
+         values") tell a first-timer nothing about what their hand is
+         about to do — and once played, the day's score was invisible
+         here until the closing card appeared. */
+      var what = isDone ? 'done · ' + scores[g.slug] + '/100' : (g.tagline || '');
+      btn.setAttribute('aria-label', g.name + (what ? ' — ' + what : '') +
+        (isDone ? '' : ' — not done yet'));
       btn.appendChild(el('span', 'today-tick', isDone ? '✓' : '☐'));
       var ic = el('span', 'slot-icon', g.icon);
       ic.setAttribute('aria-hidden', 'true');
       btn.appendChild(ic);
-      btn.appendChild(el('span', 'slot-name', g.name));
+      var body = el('span', 'slot-body');
+      body.appendChild(el('span', 'slot-name', g.name));
+      if (what) body.appendChild(el('span', 'slot-what', what));
+      btn.appendChild(body);
       btn.appendChild(skillChip((g.skills && g.skills[0]) || ''));
       btn.addEventListener('click', function () { openPlayer(g); });
       li.appendChild(btn);
@@ -480,9 +490,14 @@
     });
     var all = picks.length > 0 && done === picks.length;
     if (todayDone) {
-      todayDone.textContent = all
-        ? done + '/' + picks.length + ' done · ★ perfect day'
-        : done + '/' + picks.length + ' done · perfect day ★ when all three';
+      /* "0/3 done · perfect day ★ when all three" is a scoreboard, and a
+         scoreboard means nothing to someone who has not played yet. On a
+         cold first visit say the price and the verb instead. */
+      todayDone.textContent = (isNewcomer() && picks.length)
+        ? 'your first three · about ' + minutes + ' min in total · pick one to start'
+        : all
+          ? done + '/' + picks.length + ' done · ★ perfect day'
+          : done + '/' + picks.length + ' done · perfect day ★ when all three';
     }
     if (shareBtn) shareBtn.hidden = done < 1;
   }
@@ -610,6 +625,7 @@
        mutation in this file is read-modify-write for the same reason. */
     store = loadStore();
     var tk = todayKey();
+    var firstEver = totalRounds() === 0;   /* asked BEFORE this round lands */
     /* Pin the curated first session to this day BEFORE the first score
        lands, so finishing a drill cannot swap the checklist out. */
     if (isNewcomer() && starterPick()) store.seen.starter = tk;
@@ -636,8 +652,12 @@
     renderRecord();
     fillMeta(g);
     if (statusEl) {
+      /* The very first score anyone sees here is a bare number out of
+         100, which reads like a grade on a test. Say what it actually is
+         the one time it matters. */
       statusEl.textContent = 'recorded ✓ ' + score + '/100' +
-        (perfect ? ' · ★ warmup complete' : '');
+        (perfect ? ' · ★ warmup complete'
+          : firstEver ? ' — only your best sticks, so go again' : '');
     }
     updateNextBtn();
 
@@ -864,7 +884,7 @@
     if (openLink) openLink.href = url;
     frame.title = g.name;
     frame.src = url + '?embed=1&theme=' + currentTheme();
-    if (statusEl) statusEl.textContent = 'waiting for a finished round…';
+    if (statusEl) statusEl.textContent = 'finish a round and your score lands here';
     if (!player.open) player.showModal();
     updateNextBtn();
     document.documentElement.style.overflow = 'hidden'; /* scroll lock */

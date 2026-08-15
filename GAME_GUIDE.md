@@ -28,6 +28,19 @@ A game must:
    that can finish one: the last item, a timer expiring, a self-rating,
    "new round" pressed during a reveal. Not on partial progress; streaks
    on the page are honest, earned by completing, not by visiting.
+   It hands back what the drill needs to say something true about the
+   round:
+
+   ```js
+   var res = ArtDaily.report(roundScore(attempts));
+   // { score: 62,          the clamped, rounded 0–100 that was filed
+   //   best: 62,           the standing personal best AFTER this round
+   //   isNewBest: true,    this round beat it
+   //   isFirst: true }     nothing had ever been recorded before
+   ```
+
+   `isFirst` exists because `isNewBest` is trivially true on it — see the
+   first-thirty-seconds section below before you write that toast.
 4. Repaint through `ArtDaily.onTheme(draw)` so embedded theme switches
    restyle the canvas.
 5. Work standalone at its own URL (the SDK shows/hides the chrome).
@@ -41,13 +54,52 @@ The page in turn:
   scores, and turns them into today's-warmup ticks, the daily streak
   and per-skill meters (all in this origin's localStorage).
 
+## The first thirty seconds (the only thirty a beginner gives you)
+
+Almost every drill that loses a player loses them here, and almost never
+to a bug. Open your own drill cold, the way someone who has never drawn
+before opens it, and answer four questions honestly:
+
+1. **Does the first screen teach the verb?** The hint line plus what is
+   visibly drawn, before anyone opens the how-to. Name the thing on the
+   canvas in the words for the thing on the canvas: if what you drew is a
+   dot in the middle of a ring, the hint says *tap the centre dot*, not
+   *tap the bullseye*.
+2. **Is the first item genuinely easy?** Not scored more kindly — an
+   easier ITEM. Uniform-random placement will sooner or later open a
+   round with the target jammed in a corner, and a beginner reads that as
+   the drill being unfair before they have any idea what fair looks like
+   here. Put item one in the middle, at the gentle end of whatever the
+   drill ramps; the ramp belongs *inside* the round.
+3. **Is any word jargon the drill does not teach on the spot?** Value,
+   hue, ellipse degree, station point, ΔE, foreshortening — every one is
+   fine to *use* and none is fine to *assume*. Either show it on the
+   canvas in the same breath or use the ordinary word.
+4. **Is the first reveal a lesson, or just a number?** A score with no
+   correction attached teaches nothing: nobody can tell 58 from 72 by
+   feel, and a bare number says nothing about which way to move. Draw the
+   truth over the attempt, and name the miss in words the player already
+   owns — "a little high and left" beats "Δ 14.2 px" every time. Grade
+   those words against the same tolerance the score uses, or the sentence
+   and the number will contradict each other and the drill will read as
+   broken.
+
+The very first round of all needs its own copy. With no previous best,
+`isNewBest` is trivially true, so an unguarded drill greets every new
+player with **"new best!"** — a celebration of nothing, fired on the one
+round where they most needed to be told what the number is *for*. Branch
+on `report()`'s `isFirst`, say what the score is a bar for, and start
+celebrating from round two.
+
+The template's `js/game.js` implements all five; it is a five-tap demo
+precisely so the pattern is readable.
+
 ## The UX bar (learned the hard way, from a full-catalogue audit)
 
 Non-negotiable for every drill:
 
-- **The first screen teaches the verb.** Before anyone opens the how-to,
-  the hint line plus the visible affordances must say what to do. If a
-  player has to guess what the canvas wants, the drill has failed.
+- **The first screen teaches the verb** — see above; it is the single
+  most common way a finished, correct drill still fails.
 - **Nothing is punished for UI reasons.** Accidental taps and too-short
   strokes reset free. Misplacements are recoverable (undo / clear).
   A player never loses points to a control they misunderstood.
@@ -57,9 +109,20 @@ Non-negotiable for every drill:
   exactly once. **Store round geometry as fractions of the canvas, not
   pixels** — a phone rotated mid-round takes the canvas from 900px to
   390px, and anything remembered at x=826 is then off the canvas, can
-  never be touched, and the round can never finish or report.
+  never be touched, and the round can never finish or report. **A reveal
+  is round geometry too**: the last one stays on screen until "new round"
+  is pressed, so a phone rotated while the player reads it redraws the
+  mark and the truth at stale pixels and teaches the wrong lesson.
 - **Reveal after every attempt**, not just at round end: the truth drawn
-  over their attempt, in the accent, with the delta named in words.
+  over their attempt, in the accent, with the delta named in words. The
+  *last* attempt of a round is an attempt like any other — do not let the
+  round-end score wipe out its correction.
+- **If a reveal holds the screen, the drill must not score what lands on
+  it.** A tap during the beat has nothing honest to be judged against —
+  the next item is not drawn yet. Ignore it, never count it, and make the
+  beat short enough (~0.6s) that nobody is waiting on it. Finish the last
+  item *synchronously* instead of behind the beat, so `report()` can never
+  be raced by "new round" landing during the reveal.
 - **Touch is the default input**: 44px targets, pointerId-guarded
   strokes, `touch-action: none` on the canvas.
 - **Anything meaning-bearing painted on canvas must pass AA in both
@@ -95,6 +158,14 @@ ArtDaily.ease(0.055)      // widen the zero-point: pen 1.0, mouse 2.0, touch 1.5
 ArtDaily.startRadius(28)  // widen a start zone: pen 1.7, touch 1.6, mouse 1.0
 ArtDaily.onInput(fn)      // hardware changed mid-session
 ```
+
+Both are total: `NaN`, `Infinity`, a negative or a **zero** base all come
+back usable. A zero matters more than it sounds — a zone sized off the
+canvas (`startRadius(Math.min(W, H) * 0.05)`) is computed once at boot,
+before layout, while the canvas still measures 0, and a one-pixel target
+is every bit as dead a round as a `NaN` one. `startRadius` treats a
+non-positive base as *missing* and falls back to its 28px default; `ease`
+falls back to 1. Neither ever returns a value you cannot draw or divide by.
 
 **The two knobs measure different things — never feed one into the other.**
 `startRadius` sizes what the player *aims at*; `ease` sizes where the
@@ -145,6 +216,11 @@ DOM, no state — so they lift straight into node. Every one must hold:
   the player cannot explain. Guard divisors with `isFinite(x) && x > 0`.
 - **monotonic in the error.** More wrong can never score higher.
 - **a perfect input ≥ 95, garbage ≤ 30, and 100 reachable.**
+
+The function that turns an error into the reveal's *words* belongs up here
+too, and is held to the same bar: total for any input, monotonic in the
+same error, and graded against the same tolerance the score uses. Split
+them and you eventually print "dead centre" beside a 40.
 
 `report()` is the last line of defence, not the first: it clamps to 0–100
 and turns anything non-finite into **0** — a divide-by-zero used to clamp

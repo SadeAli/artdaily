@@ -268,9 +268,13 @@ a { color: inherit; }
 }
 .today-slot.done .today-tick { color: var(--accent-ink, var(--mint)); }
 .slot-icon { font-size: 1.15rem; flex: none; }
-.slot-name { font-family: var(--hand); font-size: 1.3rem; font-weight: 600; }
+/* name over "what you'll do" (or the score, once done) */
+.slot-body { display: flex; flex-direction: column; min-width: 0; }
+.slot-name { font-family: var(--hand); font-size: 1.3rem; font-weight: 600; line-height: 1.15; }
+.slot-what { font-size: 0.74rem; font-weight: 600; line-height: 1.3; color: var(--muted); }
 .today-slot.done .slot-name { text-decoration: line-through; text-decoration-thickness: 2px; text-decoration-color: color-mix(in srgb, var(--ink) 55%, transparent); }
-.today-slot .skillchip { margin-left: auto; }
+.today-slot.done .slot-what { color: var(--accent-ink, var(--mint)); font-weight: 700; }
+.today-slot .skillchip { margin-left: auto; flex: none; }
 
 .today-done { margin: 12px 0 0; font-size: 0.76rem; font-weight: 700; color: var(--muted); }
 
