@@ -88,6 +88,22 @@
     try { s = JSON.parse(localStorage.getItem(STORE_KEY)); } catch (e) { s = null; }
     if (!isPlainish(s)) s = {};
     if (!isPlainish(s.days)) s.days = {};
+    /* A day holds finished rounds, and a finished round is a whole number
+       out of 100 — recordResult clamps every score it writes. Anything else
+       in there is corruption (a hand edit, a half-written store, an older
+       writer), and it does not sit quietly: a value of Infinity read back
+       out as "best Infinity/100" under a card and "done · Infinity/100" on
+       the checklist, and a negative one as "best -4/100". Clean it at the
+       door, once per load, instead of asking a dozen readers to guard. */
+    Object.keys(s.days).forEach(function (k) {
+      var d = s.days[k];
+      if (!isPlainish(d)) { s.days[k] = {}; return; }
+      Object.keys(d).forEach(function (slug) {
+        var v = d[slug];
+        if (typeof v !== 'number' || !isFinite(v)) { delete d[slug]; return; }
+        d[slug] = Math.max(0, Math.min(100, Math.round(v)));
+      });
+    });
     if (!isPlainish(s.streak)) s.streak = {};
     if (typeof s.streak.last !== 'string') s.streak.last = '';
     s.streak.count = whole(s.streak.count);
@@ -99,6 +115,27 @@
   }
 
   var store = loadStore();
+
+  /* ---- derived-state caches ----
+     bestFor and pickForKey are pure functions of store.days, and both were
+     recomputed from scratch on every render. fillMeta asks bestFor once per
+     drill (37 full walks of every logged day); renderRecord asks picksForKey
+     once per LOGGED DAY, and each of those ranks the whole catalogue with a
+     hash per comparison. Measured on a one-year store that is ~1.25 MILLION
+     hash rounds for a single recorded score — tens of milliseconds of blocked
+     main thread at the exact moment the player is waiting to see their number,
+     and it grows with every day they practise. Both caches are dropped whole
+     the moment anything writes to the store, so a stale one cannot outlive a
+     round. */
+  var bestCache = null;
+  var pickCache = Object.create(null);
+
+  function invalidateDerived() { bestCache = null; pickCache = Object.create(null); }
+
+  /* Every path that swaps the whole store in goes through here, so no caller
+     has to remember that the caches exist. In-place writes call
+     invalidateDerived() directly. */
+  function setStore(s) { store = s; invalidateDerived(); return store; }
 
   function saveStore() {
     try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch (e) {}
@@ -118,13 +155,25 @@
 
   function playedToday(slug) { return typeof dayScores(todayKey())[slug] === 'number'; }
 
-  function bestFor(slug) {
-    var best = null;
+  /* slug -> highest score ever recorded for it. One walk of the store
+     answers every drill, instead of one walk per drill. */
+  function bestIndex() {
+    if (bestCache) return bestCache;
+    var m = Object.create(null);
     Object.keys(store.days).forEach(function (k) {
-      var v = dayScores(k)[slug];
-      if (typeof v === 'number' && (best === null || v > best)) best = v;
+      var d = dayScores(k);
+      Object.keys(d).forEach(function (s) {
+        var v = d[s];
+        if (typeof v === 'number' && (m[s] === undefined || v > m[s])) m[s] = v;
+      });
     });
-    return best;
+    bestCache = m;
+    return m;
+  }
+
+  function bestFor(slug) {
+    var v = bestIndex()[slug];
+    return v === undefined ? null : v;
   }
 
   /* The page's whole promise about scoring is on the legend line: "you are
@@ -228,11 +277,23 @@
 
   /* Rank live games by hash, take distinct categories first so the
      warmup never doubles up a chapter; top back up if needed.
-     Pure function of the day number, so tomorrow's plan can be shown
-     today — and everyone in the world gets the same three. */
+     Pure function of the day number, so tomorrow's plan can be shown today
+     and the record can replay what any past day asked for.
+     NOT globally aligned, despite what this comment used to claim: the seed
+     comes from LOCAL midnight, so on the same calendar date a player east
+     of Greenwich gets seed N-1 and one west of it gets seed N — two valid,
+     self-consistent rotations, one day apart. Fixing that would rewrite
+     which drills every past day asked for, and with it the "full warmups"
+     count in the practice record, so it is a migration, not a tweak. */
   function pickForKey(key) {
     var seed = seedForKey(key);
     if (seed === null) return [];
+    /* Same day key + same store = same three drills, so rank once. Callers
+       ask constantly: renderToday, todayComplete, nextUnfinished, shareText
+       and renderClosing all want today's triple for a single recorded score,
+       and renderRecord replays one key per logged day. */
+    var cached = pickCache[key];
+    if (cached) return cached;
     var p = DAY_RE.exec(String(key));
     /* Rank by hash, but bias against drills done in the last few days so
        a daily habit stays varied, and against chapters with few drills —
@@ -250,11 +311,16 @@
     var perCat = {};
     liveGames.forEach(function (g) { perCat[g.cat] = (perCat[g.cat] || 0) + 1; });
 
-    var ranked = liveGames.slice().sort(function (a, b) {
-      var wa = slugHash(seed, a.slug) / 4294967295 + (perCat[a.cat] || 1) * 0.06 - (recent[a.slug] || 0) * 0.25;
-      var wb = slugHash(seed, b.slug) / 4294967295 + (perCat[b.cat] || 1) * 0.06 - (recent[b.slug] || 0) * 0.25;
-      return wb - wa;
+    /* Weigh each drill ONCE. The comparator used to hash both sides on every
+       comparison, so ranking 37 drills cost ~n·log n hashes instead of n —
+       about ten times the work, repeated for every day in the record. Sort is
+       stable and the weights are identical, so the order is unchanged. */
+    var weighed = liveGames.map(function (g) {
+      return { g: g, w: slugHash(seed, g.slug) / 4294967295 +
+        (perCat[g.cat] || 1) * 0.06 - (recent[g.slug] || 0) * 0.25 };
     });
+    weighed.sort(function (a, b) { return b.w - a.w; });
+    var ranked = weighed.map(function (x) { return x.g; });
     var picked = [];
     var seen = {};
     ranked.forEach(function (g) {
@@ -264,6 +330,7 @@
     ranked.forEach(function (g) {
       if (picked.length < 3 && picked.indexOf(g) === -1) picked.push(g);
     });
+    pickCache[key] = picked;
     return picked;
   }
 
@@ -687,12 +754,17 @@
 
   /* ---- result recording ---- */
 
-  function recordResult(g, score) {
+  /* `lead` (optional) is how the CALLER wants this round announced on the
+     page toast — the paths with no player foot to write into. It is built
+     here, not by the caller, because it needs the delta sentence, and it is
+     queued BEFORE any milestone: the answer to what you just did comes
+     first, the congratulations follow. */
+  function recordResult(g, score, lead) {
     /* Re-read before touching anything: a second tab (or this tab after
        an overnight sleep) may have logged rounds since `store` was last
        loaded, and writing our own snapshot back would erase them. Every
        mutation in this file is read-modify-write for the same reason. */
-    store = loadStore();
+    setStore(loadStore());
     var tk = todayKey();
     var firstEver = totalRounds() === 0;   /* asked BEFORE this round lands */
     /* Both read BEFORE the write, or the comparison is against this very
@@ -706,6 +778,8 @@
     if (!isPlainish(store.days[tk])) store.days[tk] = {};
     var day = store.days[tk];
     if (typeof day[g.slug] !== 'number' || score > day[g.slug]) day[g.slug] = score;
+    /* the day just changed under the caches — every read below must be new */
+    invalidateDerived();
 
     function bump(id, pts) {
       if (!id) return;
@@ -740,14 +814,14 @@
     }
     updateNextBtn();
 
+    /* Just hand these to the queue — it paces them (see toastPage). They
+       used to be fired on a 600ms ladder while each toast asked for 4200ms
+       of reading time, so a streak note plus two badges was three sentences
+       that each got 600ms on screen and clobbered one another mid-word. */
+    if (typeof lead === 'function') toastPage(lead(score, note));
     if (STREAK_NOTES[streakNote]) toastPage(STREAK_NOTES[streakNote]);
-    earned.forEach(function (b, i) {
-      toastTimers.push(setTimeout(function () {
-        toastPage(b.icon + ' ' + b.name + ' — ' + b.hint);
-      }, 600 * (i + 1)));
-    });
+    earned.forEach(function (b) { toastPage(b.icon + ' ' + b.name + ' — ' + b.hint); });
     if (perfect) renderClosing();
-    return note;   /* the out-of-player paths put it in their toast */
   }
 
   /* Is today's warmup finished right now? ONE definition — the result
@@ -828,7 +902,7 @@
      3-day streak (real, repeated value), at most once, dismissible. */
   /* read-modify-write, like every other mutation here */
   function markAskSeen() {
-    store = loadStore();
+    setStore(loadStore());
     store.seen.ask = true;
     saveStore();
   }
@@ -875,45 +949,65 @@
 
   /* ---- a small page-level toast for milestones ---- */
 
+  /* ONE queue, ONE timer. Three separate schedulers used to write into this
+     one box — a 4200ms auto-hide, a 600ms milestone ladder in recordResult
+     and a 2200ms flush ladder — so whichever fired last simply overwrote
+     whatever was on screen. Finish your first day and "🌱 first drill" was
+     replaced 600ms later by "★ perfect day", which was replaced again: three
+     congratulations, none of them readable, and (the box is aria-live) three
+     announcements cutting each other off. Now a message is queued, shown for
+     its full dwell, blanked for a beat so the next one registers as new, and
+     only then replaced. */
+  var TOAST_DWELL = 3800;   /* time one message stays up */
+  var TOAST_GAP = 240;      /* blank beat between two messages */
+  var TOAST_MAX = 6;        /* a burst is a handful of milestones, never more */
   var toastTimer = null;
   var toastQueue = [];
-  var toastTimers = [];   /* pending milestone toasts, cancellable */
+  var toastBusy = false;
 
   /* Wiping progress must also wipe the congratulations already in flight —
      otherwise "🌱 first drill — you started" lands half a second after the
      player deleted the drill it is talking about. */
   function clearToasts() {
-    toastTimers.forEach(function (t) { clearTimeout(t); });
-    toastTimers.length = 0;
     toastQueue.length = 0;
+    toastBusy = false;
     clearTimeout(toastTimer);
+    toastTimer = null;
     var box = $('pageToast');
     if (box) { box.textContent = ''; box.hidden = true; }
   }
 
-  function toastPage(msg) {
+  function pumpToasts() {
+    if (toastBusy) return;
     /* A showModal()'d <dialog> is promoted to the browser's top layer,
-       which paints above every z-index in the page — a toast fired now
+       which paints above every z-index in the page — a toast shown now
        would sit under the dialog's backdrop and auto-hide long before
        the player closes it. Hold milestones until the dialog is gone. */
-    if (player && player.open) { toastQueue.push(msg); return; }
+    if (player && player.open) return;
     var box = $('pageToast');
-    if (!box) return;
+    if (!box) { toastQueue.length = 0; return; }
+    if (!toastQueue.length) { box.textContent = ''; box.hidden = true; return; }
+    var msg = toastQueue.shift();
+    toastBusy = true;
     box.textContent = msg;
     box.hidden = false;
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { box.hidden = true; }, 4200);
+    toastTimer = setTimeout(function () {
+      box.textContent = '';
+      box.hidden = true;
+      toastBusy = false;
+      toastTimer = setTimeout(pumpToasts, TOAST_GAP);
+    }, TOAST_DWELL);
   }
 
-  function flushToasts() {
-    if (!toastQueue.length || (player && player.open)) return;
-    var q = toastQueue.slice();
-    toastQueue.length = 0;
-    q.forEach(function (m, i) {
-      if (i === 0) toastPage(m);
-      else toastTimers.push(setTimeout(function () { toastPage(m); }, 2200 * i));
-    });
+  function toastPage(msg) {
+    if (!msg) return;
+    toastQueue.push(msg);
+    if (toastQueue.length > TOAST_MAX) toastQueue.splice(0, toastQueue.length - TOAST_MAX);
+    pumpToasts();
   }
+
+  function flushToasts() { pumpToasts(); }
 
   /* "next warmup →" in the player foot: closes the loop without
      forcing a trip back to the hero. */
@@ -959,7 +1053,13 @@
     var c = $('closing');
     if (!c || c.hidden) return;
     c.setAttribute('tabindex', '-1');
-    if (typeof c.focus === 'function') c.focus();
+    /* focus() scrolls the element into view by itself, and scrollIntoView
+       then scrolls to a different spot — two jumps for one press, which
+       reads as the page arguing with you. Suppress the first where the
+       option is supported and let the deliberate one land. */
+    if (typeof c.focus === 'function') {
+      try { c.focus({ preventScroll: true }); } catch (e) { c.focus(); }
+    }
     if (typeof c.scrollIntoView === 'function') c.scrollIntoView({ block: 'center' });
   }
 
@@ -994,6 +1094,31 @@
   var openerSlug = null;
   var openerFrom = 'card';  /* 'today' = the hero checklist · 'card' = catalogue */
 
+  /* Is the iframe currently pointed at a drill? dialog.close() fires its
+     'close' event asynchronously and that lands back in closePlayer, so
+     without this the frame was navigated to about:blank twice per exit —
+     a whole extra document teardown during the one frame the player is
+     watching the dialog disappear. */
+  var frameLoaded = false;
+  /* The waiting line has two states and they are not the same promise:
+     the drill is still arriving, versus the drill is up and listening. */
+  var playerReady = false;
+  var gotResult = false;
+
+  /* A drill on a phone can take a second or two to arrive, and until it
+     does the player is looking at an empty rectangle under the words
+     "finish a round and your score lands here" — which reads as a page
+     that swallowed the tap. Say "opening" until the drill checks in. */
+  function markPlayerReady() {
+    if (playerReady || gotResult || !openGame) return;
+    playerReady = true;
+    if (statusEl) statusEl.textContent = 'finish a round and your score lands here';
+  }
+
+  /* Fallback for a drill whose SDK never posts artdaily:ready — the iframe
+     load event always fires. Ignored for the about:blank teardown. */
+  if (frame) frame.addEventListener('load', function () { if (frameLoaded) markPlayerReady(); });
+
   function openPlayer(g, from) {
     var url = gameUrl(g);
     if (!player || typeof player.showModal !== 'function' || !frame) {
@@ -1006,9 +1131,12 @@
     if (titleEl) titleEl.textContent = g.icon + ' ' + g.name;
     if (openLink) openLink.href = url;
     frame.title = g.name;
+    playerReady = false;
+    gotResult = false;
     frame.src = url + '?embed=1&theme=' + currentTheme();
+    frameLoaded = true;
     if (statusEl) {
-      statusEl.textContent = 'finish a round and your score lands here';
+      statusEl.textContent = 'opening ' + g.name + '…';
       /* the previous drill's new-best colour must not tint this drill's
          "waiting" line */
       statusEl.classList.remove('is-best');
@@ -1020,7 +1148,10 @@
 
   function closePlayer() {
     openGame = null;
-    if (frame) frame.src = 'about:blank'; /* stops the game's loop */
+    if (frame && frameLoaded) {
+      frameLoaded = false;
+      frame.src = 'about:blank'; /* stops the game's loop */
+    }
     document.documentElement.style.overflow = '';
     if (player && player.open) player.close();
     /* renderToday rebuilds the checklist buttons, so look the control up
@@ -1068,8 +1199,9 @@
     /* (a) the drill embedded in our own player */
     if (player && player.open && openGame && frame && ev.source === frame.contentWindow) {
       if (d.slug !== openGame.slug) return;
-      if (d.type === 'artdaily:ready') { postTheme(); return; }
+      if (d.type === 'artdaily:ready') { postTheme(); markPlayerReady(); return; }
       if (d.type !== 'artdaily:result') return;
+      gotResult = true;   /* a late load event must not overwrite the score */
       recordResult(openGame, Math.max(0, Math.min(100, Math.round(Number(d.score) || 0))));
       return;
     }
@@ -1081,7 +1213,12 @@
     var g = gameBySlug(d.slug);
     if (!g || originOf(g.url) !== ev.origin) return;
     var s = Math.max(0, Math.min(100, Math.round(Number(d.score) || 0)));
-    var note = recordResult(g, s);
+    /* The status line lives in the player foot, which is not on screen for
+       a drill played in its own tab — so the delta has to ride the toast. */
+    recordResult(g, s, function (sc, note) {
+      return g.icon + ' ' + g.name + ' ' + sc + (note ? ' · ' + note : '') +
+        ' — from your other tab';
+    });
     /* Acknowledge. A postMessage whose targetOrigin no longer matches is
        dropped without throwing, so the drill cannot tell "posted" from
        "delivered" on its own — it shows a recoverable link until this
@@ -1092,10 +1229,6 @@
           { type: 'artdaily:logged', slug: g.slug, version: 1, score: s }, ev.origin);
       }
     } catch (e) {}
-    /* The status line lives in the player foot, which is not on screen for
-       a drill played in its own tab — so the delta has to ride the toast. */
-    toastPage(g.icon + ' ' + g.name + ' ' + s + (note ? ' · ' + note : '') +
-      ' — from your other tab');
   });
 
   /* A drill opened directly (a bookmark, a shared link) has no opener,
@@ -1108,9 +1241,10 @@
     /* Clear it first: a refresh must not replay the same score. */
     try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { location.hash = ''; }
     if (!g) return;
-    var note = recordResult(g, s);
-    toastPage(g.icon + ' ' + g.name + ' ' + s + (note ? ' · ' + note : '') +
-      ' — added to your record');
+    recordResult(g, s, function (sc, note) {
+      return g.icon + ' ' + g.name + ' ' + sc + (note ? ' · ' + note : '') +
+        ' — added to your record';
+    });
   }
 
   /* Theme relay: follow the page toggle into the open game. */
@@ -1174,7 +1308,7 @@
     resetBtn.addEventListener('click', function () {
       if (!window.confirm('reset all local progress? streak, ticks and skill levels will be wiped.')) return;
       try { localStorage.removeItem(STORE_KEY); } catch (e) {}
-      store = freshStore();
+      setStore(freshStore());
       clearToasts();  /* milestones already scheduled are no longer true */
       hideClosing();  /* else it keeps showing the scores just wiped */
       renderAll();
@@ -1232,7 +1366,7 @@
   function maybeRollover() {
     if (todayKey() === renderedDay) return;
     renderedDay = todayKey();
-    store = loadStore();
+    setStore(loadStore());
     hideClosing(); /* yesterday's closing card is not today's */
     renderAll();
   }
@@ -1243,7 +1377,7 @@
      that our next save would write back over theirs. */
   window.addEventListener('storage', function (ev) {
     if (ev && ev.key && ev.key !== STORE_KEY) return;
-    store = loadStore();
+    setStore(loadStore());
     renderAll();
     syncClosing();
     updateNextBtn();

@@ -74,7 +74,9 @@ js/registry.js    THE game registry — the only place the page knows games
 js/app.js         category spreads, daily warmup, streaks, meters, player
 js/main.js        theme toggle + Stage-0 footer links
 js/support-config.js  the donation switches
-sdk/artdaily-sdk.js   canonical protocol-v1 SDK (games vendor a copy)
+sdk/artdaily-sdk.js   canonical protocol-v1 SDK — every game vendors a
+                  byte-identical copy as its own js/artdaily-sdk.js, so a
+                  fix goes in HERE and is re-synced outward, never forked
 GAME_GUIDE.md     how to build + register a game
 robots.txt        allows all crawlers + points at the sitemap
 sitemap.xml       the single page

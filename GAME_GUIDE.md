@@ -188,6 +188,7 @@ ArtDaily.inputMode()      // 'pen' | 'mouse' | 'touch', auto-detected
 ArtDaily.inputLabel()     // 'mouse or trackpad' — what the HUD chip says
 ArtDaily.ease(0.055)      // widen the zero-point: pen 1.0, mouse 2.0, touch 1.5
 ArtDaily.startRadius(28)  // widen a start zone: pen 1.7, touch 1.6, mouse 1.0
+ArtDaily.samples(ev)      // every position a pointermove carried, oldest first
 ArtDaily.onInput(fn)      // hardware changed mid-session
 ```
 
@@ -226,6 +227,14 @@ A profile switch never lands mid-press: the SDK detects the hardware on
 `pointerdown` but queues the change until the release, so `onInput` can
 rebuild geometry freely without the target moving under a live stroke,
 and a stroke is always scored under the same `ease` it was drawn under.
+That holds even for a stroke that *pauses* — a held-still nib emits no
+move events at all, so the gesture goes idle without ending, and the palm
+landing next used to force the queued switch through under the live hand
+(a `mouse`→`pen` switch jumped the start dot 28px → 48px and halved the
+zero-point mid-stroke). The queue now waits for a release it actually
+saw. What a drill must still do is treat `onInput` as *"resize the
+geometry"*, never as *"re-judge what is already on screen"* — see the
+reveal note under performance.
 
 Rules that follow from this:
 
@@ -241,6 +250,70 @@ Rules that follow from this:
   stricter standard than a desktop for the identical drill.
 - **Keep `<dd id="inputMode">` in the HUD.** The SDK fills it with
   "scoring for mouse or trackpad" — we ease the score, so we say so.
+
+## Performance, or: the hand has to feel listened to
+
+A drill is one loop — hand moves, screen answers. Latency and lost samples
+do not read to a beginner as "this page is slow", they read as *"I cannot
+draw"*, which is the thing they were already afraid of. All the numbers
+below are measured on the template, before and after.
+
+**Sample at the digitizer's rate; paint at the display's.** These are two
+different rates and conflating them costs you one or the other:
+
+- A browser dispatches at most one `pointermove` per frame, but the pen
+  samples at 120–1000Hz and hands the frame's whole run of positions over
+  on that single event. Read only the event and the rest are thrown away:
+  the corner of a fast flick vanishes and a drill that scores geometry
+  scores a straight line the player did not draw. That is a *fidelity* bug
+  that surfaces as a *fairness* bug — fast confident strokes score worse
+  than slow timid ones, the exact opposite of what a drawing drill should
+  be teaching. Use `ArtDaily.samples(ev)`: always an array, oldest first,
+  `[ev]` where coalescing is unavailable, never a throw.
+- Repaint **at most once per frame** — `if (rafId === null) rafId =
+  requestAnimationFrame(…)`. A repaint per sample is several full-canvas
+  washes inside one frame with all but the last thrown away, and every one
+  of them is main-thread time the next sample is queued behind.
+- The one exception is the press that just landed. A tap whose own mark
+  waits a frame reads as a dropped tap; paint that one inline.
+
+**Never resolve style inside the loop.** `getPropertyValue()` on a computed
+style cannot answer until style has been resolved, and `draw()` is
+normally called immediately after the hint line's text changed — so every
+repaint flushed a style recalculation to fetch four values that only ever
+move when the theme does. Cache them per theme and drop the cache in
+`onTheme` (never cache an empty read: on a cold boot the stylesheet may
+not be parsed yet). One round of five taps in the template: **10
+`getComputedStyle` calls and 40 property reads → 0.**
+
+**Coalesce resize.** `window.resize` and `ResizeObserver` both fire in
+bursts for one drag, and every fit that really changes size reallocates
+the canvas backing store *and* clears it. Measure and repaint at most once
+a frame, and only when the size actually moved (a phone's URL bar fires
+resize constantly at an unchanged width). One 40-event drag in the
+template: **40 measurements / 40 reallocations / 40 repaints → 1 / 1 / 1.**
+
+**A reveal's scale is history, like its mark.** Store the zero-point *with*
+the reveal and draw that, never `ease()` again. `ease()` answers for the
+hardware in use *now*, and the hardware can change while the reveal is on
+screen: plugging a pen in at the end of a round fires `onInput`, the drill
+repaints, and the dotted ring redraws at half its radius under a printed
+"66 out of 100" — 88px → 44px in the template, the picture arguing with
+the number, exactly like re-projecting the mark. The number is history and
+so is the scale it was measured against.
+
+**One owner per timer.** A reveal beat, a countdown and a toast all
+outlive the frame that started them, so every path that ends a round must
+clear the ones it is ending — `newRound` cancels the abandoned round's
+queued advance, `finishRound` cancels its own. Two timers racing to call
+`report()` is how a round gets filed twice.
+
+**Reduced motion is not only a CSS problem.** The shared stylesheet
+flattens every animation and transition under `prefers-reduced-motion`,
+but it cannot reach a canvas tween or a `setInterval` you wrote. Check
+`matchMedia('(prefers-reduced-motion: reduce)')` yourself before animating
+from JS, and never put information *only* in motion — a pulse that a
+reduced-motion player never sees has to be a word or a mark as well.
 
 ## Real 3D, not flat guesses
 
@@ -306,8 +379,11 @@ node --check js/game.js
   which also hands you exact ground truth for scoring) — external
   resources aren't banned, but you almost never need one.
 - **Theme-aware inks.** Read `--ink` / `--muted` / `--game-accent` via
-  `getComputedStyle` inside `draw()`, not once at boot. The sketchbook
-  is paper-first: light is the default theme, dark is the night studio.
+  `getComputedStyle`, keyed on the theme rather than frozen at boot — the
+  values move when `data-theme` moves and at no other time, so read them
+  once *per theme*, not once per repaint (see the performance section).
+  The sketchbook is paper-first: light is the default theme, dark is the
+  night studio.
 - **Touch is first-class.** Pointer events + `touch-action: none` on
   the canvas (the template does this); targets ≥ 40px.
 
