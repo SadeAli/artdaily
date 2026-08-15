@@ -21,7 +21,10 @@
 <meta name="twitter:image" content="https://artdaily.sadeali.com/og.png">
 <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🎨&lt;/text&gt;&lt;/svg&gt;">
 <link rel="preload" href="fonts/caveat-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="css/style.css">
+<!-- ?v= busts the CDN/browser cache on deploy: registry.js is served
+     with a 4h max-age, so without this a returning visitor keeps an old
+     catalogue. Bump V in every asset URL below when css/js changes. -->
+<link rel="stylesheet" href="css/style.css?v=3">
 <script>
 (function(){var t=null;try{t=localStorage.getItem('sadeali-theme');}catch(e){}document.documentElement.dataset.theme=(t==='dark')?'dark':'light';})();
 </script>
@@ -134,9 +137,9 @@
   <p class="fineprint">© SadeAli · free · no ads · no tracking</p>
 </footer>
 
-<script src="js/support-config.js"></script>
-<script src="js/registry.js"></script>
-<script src="js/main.js"></script>
-<script src="js/app.js"></script>
+<script src="js/support-config.js?v=3"></script>
+<script src="js/registry.js?v=3"></script>
+<script src="js/main.js?v=3"></script>
+<script src="js/app.js?v=3"></script>
 </body>
 </html>
