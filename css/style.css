@@ -321,7 +321,18 @@ a { color: inherit; }
   font-size: 1.6rem;
   font-weight: 700;
 }
-.closing-scores { margin: 2px 0 0; font-size: 0.9rem; font-weight: 700; }
+.closing-scores { margin: 2px 0 0; font-size: 0.9rem; font-weight: 700; line-height: 1.6; }
+/* the drill name and its number must never be split across a line break —
+   a wrapped "Vanishing Point / Hunt 71" is the emoji cipher all over
+   again. The "best ★" tag is allowed to drop instead (its leading space
+   is inside .closing-pb, so normal white-space there restores exactly one
+   break opportunity), which keeps the longest name in the registry inside
+   a 320px hero sheet. */
+.closing-score { white-space: nowrap; }
+.closing-pb { white-space: normal; font-size: 0.76rem; font-weight: 700; color: var(--mint); }
+:root:not([data-theme="dark"]) .closing-pb { color: #3A7A5E; }
+/* the summary gets focus when "see today's card →" is pressed */
+.closing:focus { outline: 2px dashed var(--focus); outline-offset: 4px; }
 .closing-streak { margin: 6px 0 0; font-size: 0.82rem; font-weight: 700; color: var(--muted); }
 .closing-tomorrow {
   margin: 8px 0 0;
@@ -827,10 +838,15 @@ a.card:hover, a.card:focus-visible {
   .player-frame { aspect-ratio: 3 / 4; }
 }
 
+/* wrap, not overflow: the status line now carries the score AND the delta
+   in words ("recorded ✓ 62/100 — 19 under your best of 81"), which on a
+   phone is wider than the foot. Without wrapping the flex row pushed the
+   "next" button past the sheet's overflow: hidden edge. */
 .player-foot {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: 6px 10px;
   margin: 0;
   min-height: 2.2em;
   padding: 6px 10px 6px 16px;
@@ -840,7 +856,10 @@ a.card:hover, a.card:focus-visible {
   color: var(--muted);
   flex: none;
 }
-.player-foot-spacer { flex: 1; }
+#playerStatus { min-width: 0; flex: 1 1 auto; }
+#playerStatus.is-best { color: var(--mint); }
+:root:not([data-theme="dark"]) #playerStatus.is-best { color: #3A7A5E; }
+.player-foot-spacer { flex: 1 1 0; }
 
 .player-next {
   display: inline-flex;

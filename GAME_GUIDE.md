@@ -78,11 +78,12 @@ before opens it, and answer four questions honestly:
 4. **Is the first reveal a lesson, or just a number?** A score with no
    correction attached teaches nothing: nobody can tell 58 from 72 by
    feel, and a bare number says nothing about which way to move. Draw the
-   truth over the attempt, and name the miss in words the player already
-   owns — "a little high and left" beats "Δ 14.2 px" every time. Grade
-   those words against the same tolerance the score uses, or the sentence
-   and the number will contradict each other and the drill will read as
-   broken.
+   truth over the attempt, name the miss in words the player already
+   owns — "a little high and left" beats "Δ 14.2 px" every time — and
+   draw the *scale* it is measured against, or the picture still cannot be
+   read (see the UX bar). Grade those words against the same tolerance the
+   score uses, or the sentence and the number will contradict each other
+   and the drill will read as broken.
 
 The very first round of all needs its own copy. With no previous best,
 `isNewBest` is trivially true, so an unguarded drill greets every new
@@ -126,6 +127,28 @@ Non-negotiable for every drill:
   over their attempt, in the accent, with the delta named in words. The
   *last* attempt of a round is an attempt like any other — do not let the
   round-end score wipe out its correction.
+- **Draw the scale the score is measured on**, not only the miss. Truth +
+  attempt + gap still leaves the number unreadable if nothing on screen
+  says how big a gap is a big gap. The trap: the shape you drew to be
+  *aimed at* is not that scale, and is not even proportional to it —
+  `startRadius` and `ease` rank the hardware in opposite orders on purpose,
+  so in the template a tap landing exactly on the drawn ring is **75 out of
+  100 on a mouse and 16 on a pen tablet**. Draw the zero-point faintly in
+  the reveal (a dotted ring, a tolerance corridor, the accepted colour
+  band) so a mark can be read against it. Reveal only: during play it is
+  just a second thing to aim at.
+- **Name the round's habit, not only each attempt's.** Five misses that all
+  go the same way are one mistake, not five, and it is the correction that
+  outlives the round — per-item words fix the next attempt, a bias line
+  fixes the next round. Hold it to the same bar as the scoring (pure,
+  total, at the top of the file) and keep it **silent unless the lean is
+  both consistent and worth acting on** — the template requires most
+  attempts on the same side *and* a mean offset over ~10% of the tolerance,
+  or it would invent a pattern out of noise. Say what to do, not just what
+  happened: *"most taps landed low and right — aim high and left next
+  round"*. Tie the count to the same side as the mean, or two wild misses
+  one way outvote three small ones the other and the sentence points
+  backwards.
 - **If a reveal holds the screen, the drill must not score what lands on
   it.** A tap during the beat has nothing honest to be judged against —
   the next item is not drawn yet. Ignore it, never count it, and make the
@@ -245,6 +268,16 @@ The function that turns an error into the reveal's *words* belongs up here
 too, and is held to the same bar: total for any input, monotonic in the
 same error, and graded against the same tolerance the score uses. Split
 them and you eventually print "dead centre" beside a 40.
+
+Grading against the right number is not enough — **cut the adjective bands
+where the SCORE changes character**, not at tidy fractions of the tolerance.
+The words sit beside the number in the same sentence, so a ladder skewed
+toward the good end lies quietly: the template graded correctly and still
+printed *"A hair low — 71 out of 100"*, and a beginner told they were a hair
+off stops correcting. Its bands are now named in score terms — 92+ dead
+centre, 75+ a hair, 50+ a little, 20+ well, under 20 way out — and a test
+walks the whole error range asserting the two never disagree at the ends
+(no "dead centre" under 90, no score of 0 without "way out").
 
 `report()` is the last line of defence, not the first: it clamps to 0–100
 and turns anything non-finite into **0** — a divide-by-zero used to clamp

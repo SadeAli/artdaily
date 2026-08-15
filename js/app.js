@@ -127,6 +127,45 @@
     return best;
   }
 
+  /* The page's whole promise about scoring is on the legend line: "you are
+     only ever compared with your own past rounds". It was never kept — a
+     finished round said "recorded ✓ 62/100" and stopped, so a number that
+     was 19 below the player's own best and a number that beat it read
+     identically. Worse, a day keeps only its HIGHEST score (see
+     recordResult), so a second, weaker go announced "recorded ✓ 62" while
+     the checklist behind the dialog still said 81 and nothing explained
+     the contradiction.
+
+     PURE: (score, todayPrev, prevBest) -> the delta in words. todayPrev is
+     what today already holds for this drill (null if this is the first go
+     today); prevBest is the all-time best BEFORE this round (null if the
+     drill has never been played). Both are read before the write. */
+  function deltaNote(score, todayPrev, prevBest) {
+    function num(v) { return typeof v === 'number' && isFinite(v); }
+    /* Every number that reaches the sentence goes through r(): scores
+       arrive rounded, but a hand-edited or half-written store can hold a
+       float, and "13 under your best of 71.2" is not a sentence anyone
+       should read on a page that promises whole numbers out of 100. */
+    function r(v) { return Math.round(v); }
+    if (!num(score)) return '';
+    if (num(todayPrev)) {
+      var d = r(score) - r(todayPrev);
+      if (d > 0) {
+        return (num(prevBest) && r(score) > r(prevBest))
+          ? 'new best · +' + d + ' on your last go'
+          : '+' + d + ' on your last go today';
+      }
+      if (d === 0) return 'same as your last go today';
+      /* Say what the record actually kept, or the checklist behind the
+         dialog looks like it is lying. */
+      return (-d) + ' under your last go · today keeps the ' + r(todayPrev);
+    }
+    if (!num(prevBest)) return 'first go at this drill — this is the mark to beat';
+    if (r(score) > r(prevBest)) return 'new best · +' + (r(score) - r(prevBest)) + ' on your old ' + r(prevBest);
+    if (r(score) === r(prevBest)) return 'matched your best of ' + r(prevBest);
+    return (r(prevBest) - r(score)) + ' under your best of ' + r(prevBest);
+  }
+
   /* A lapsed streak silently dies — never show a stale count. A banked
      freeze extends "alive" by one more day (see touchStreak). */
   function daysAgoKey(n) { var d = new Date(); d.setDate(d.getDate() - n); return dateKey(d); }
@@ -471,8 +510,20 @@
          your score after. A name and a skill chip alone ("Value Trap ·
          values") tell a first-timer nothing about what their hand is
          about to do — and once played, the day's score was invisible
-         here until the closing card appeared. */
-      var what = isDone ? 'done · ' + scores[g.slug] + '/100' : (g.tagline || '');
+         here until the closing card appeared.
+         The score alone is still half a sentence: 78/100 means nothing
+         without the only yardstick this page has, the player's own best.
+         The player-foot status names it too, but that line dies with the
+         dialog — this one stays on the page all day. */
+      var what;
+      if (isDone) {
+        var sc = scores[g.slug];
+        var bst = bestFor(g.slug);
+        what = 'done · ' + sc + '/100 · ' +
+          (typeof bst === 'number' && bst > sc ? 'your best ' + bst : 'your best yet');
+      } else {
+        what = g.tagline || '';
+      }
       btn.setAttribute('aria-label', g.name + (what ? ' — ' + what : '') +
         (isDone ? '' : ' — not done yet'));
       btn.appendChild(el('span', 'today-tick', isDone ? '✓' : '☐'));
@@ -644,6 +695,11 @@
     store = loadStore();
     var tk = todayKey();
     var firstEver = totalRounds() === 0;   /* asked BEFORE this round lands */
+    /* Both read BEFORE the write, or the comparison is against this very
+       round and every score is trivially "your best". */
+    var prevBest = bestFor(g.slug);
+    var todayPrev = dayScores(tk)[g.slug];
+    if (typeof todayPrev !== 'number') todayPrev = null;
     /* Pin the curated first session to this day BEFORE the first score
        lands, so finishing a drill cannot swap the checklist out. */
     if (isNewcomer() && starterPick()) store.seen.starter = tk;
@@ -664,18 +720,23 @@
     var earned = checkBadges(score, perfect);
     saveStore();
 
+    /* The very first score anyone sees here is a bare number out of 100,
+       which reads like a grade on a test. Say what it actually is the one
+       time it matters; after that, name the delta against their own past. */
+    var note = firstEver
+      ? 'your very first round · only your best on a drill sticks, so go again'
+      : deltaNote(score, todayPrev, prevBest);
+
     renderToday();
     renderStreak();
     renderMeters();
     renderRecord();
     fillMeta(g);
     if (statusEl) {
-      /* The very first score anyone sees here is a bare number out of
-         100, which reads like a grade on a test. Say what it actually is
-         the one time it matters. */
       statusEl.textContent = 'recorded ✓ ' + score + '/100' +
-        (perfect ? ' · ★ warmup complete'
-          : firstEver ? ' — only your best sticks, so go again' : '');
+        (note ? ' — ' + note : '') +
+        (perfect ? ' · ★ warmup complete' : '');
+      statusEl.classList.toggle('is-best', note.indexOf('new best') === 0);
     }
     updateNextBtn();
 
@@ -686,6 +747,7 @@
       }, 600 * (i + 1)));
     });
     if (perfect) renderClosing();
+    return note;   /* the out-of-player paths put it in their toast */
   }
 
   /* Is today's warmup finished right now? ONE definition — the result
@@ -711,11 +773,21 @@
 
     box.appendChild(el('p', 'closing-head', 'that’s today’s warmup done ★'));
 
+    /* "🪤 82 · 🎨 91 · ✏️ 70" is a cipher: three numbers with no way to
+       tell which drill earned which, and to a screen reader it is three
+       emoji names and three integers. Say the drill, and say whether the
+       number was a personal best — that is the whole review of the day. */
     var row = el('p', 'closing-scores');
     picks.forEach(function (g, i) {
       if (i) row.appendChild(document.createTextNode(' · '));
       var s = scores[g.slug];
-      row.appendChild(document.createTextNode(g.icon + ' ' + (typeof s === 'number' ? s : '–')));
+      var part = el('span', 'closing-score');
+      part.appendChild(document.createTextNode(
+        g.icon + ' ' + g.name + ' ' + (typeof s === 'number' ? s : '–')));
+      if (typeof s === 'number' && s === bestFor(g.slug)) {
+        part.appendChild(el('span', 'closing-pb', ' best ★'));
+      }
+      row.appendChild(part);
     });
     box.appendChild(row);
 
@@ -857,17 +929,43 @@
 
   function updateNextBtn() {
     if (!nextBtn) return;
-    var nxt = (player && player.open) ? nextUnfinished() : null;
+    if (!(player && player.open)) { nextBtn.hidden = true; return; }
+    var nxt = nextUnfinished();
     if (nxt) {
       nextBtn.textContent = 'next: ' + nxt.name + ' →';
+      nextBtn.setAttribute('data-act', 'next');
       nextBtn.hidden = false;
-    } else {
-      nextBtn.hidden = true;
+      return;
     }
+    /* Finishing the third drill printed "★ warmup complete" in the foot and
+       then offered nothing: the closing card — the day's three scores,
+       tomorrow's pick, the share button — renders in the hero, behind the
+       modal. Close from a catalogue card and focus goes back to that card
+       halfway down the page, so the summary was never seen at all. */
+    if (todayComplete()) {
+      nextBtn.textContent = "see today's card →";
+      nextBtn.setAttribute('data-act', 'card');
+      nextBtn.hidden = false;
+      return;
+    }
+    nextBtn.hidden = true;
+  }
+
+  /* Close the dialog and land on the day's summary — focus included, since
+     the scroll that focus() causes is half the point and the other half is
+     that a screen reader arrives at the scores instead of the catalogue. */
+  function showClosing() {
+    closePlayer();
+    var c = $('closing');
+    if (!c || c.hidden) return;
+    c.setAttribute('tabindex', '-1');
+    if (typeof c.focus === 'function') c.focus();
+    if (typeof c.scrollIntoView === 'function') c.scrollIntoView({ block: 'center' });
   }
 
   if (nextBtn) {
     nextBtn.addEventListener('click', function () {
+      if (nextBtn.getAttribute('data-act') === 'card') { showClosing(); return; }
       var nxt = nextUnfinished();
       if (nxt) openPlayer(nxt, 'today');  /* always a checklist drill */
     });
@@ -909,7 +1007,12 @@
     if (openLink) openLink.href = url;
     frame.title = g.name;
     frame.src = url + '?embed=1&theme=' + currentTheme();
-    if (statusEl) statusEl.textContent = 'finish a round and your score lands here';
+    if (statusEl) {
+      statusEl.textContent = 'finish a round and your score lands here';
+      /* the previous drill's new-best colour must not tint this drill's
+         "waiting" line */
+      statusEl.classList.remove('is-best');
+    }
     if (!player.open) player.showModal();
     updateNextBtn();
     document.documentElement.style.overflow = 'hidden'; /* scroll lock */
@@ -978,7 +1081,7 @@
     var g = gameBySlug(d.slug);
     if (!g || originOf(g.url) !== ev.origin) return;
     var s = Math.max(0, Math.min(100, Math.round(Number(d.score) || 0)));
-    recordResult(g, s);
+    var note = recordResult(g, s);
     /* Acknowledge. A postMessage whose targetOrigin no longer matches is
        dropped without throwing, so the drill cannot tell "posted" from
        "delivered" on its own — it shows a recoverable link until this
@@ -989,7 +1092,10 @@
           { type: 'artdaily:logged', slug: g.slug, version: 1, score: s }, ev.origin);
       }
     } catch (e) {}
-    toastPage(g.icon + ' ' + g.name + ' ' + s + ' — added from your other tab');
+    /* The status line lives in the player foot, which is not on screen for
+       a drill played in its own tab — so the delta has to ride the toast. */
+    toastPage(g.icon + ' ' + g.name + ' ' + s + (note ? ' · ' + note : '') +
+      ' — from your other tab');
   });
 
   /* A drill opened directly (a bookmark, a shared link) has no opener,
@@ -1002,8 +1108,9 @@
     /* Clear it first: a refresh must not replay the same score. */
     try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { location.hash = ''; }
     if (!g) return;
-    recordResult(g, s);
-    toastPage(g.icon + ' ' + g.name + ' ' + s + ' — added to your record');
+    var note = recordResult(g, s);
+    toastPage(g.icon + ' ' + g.name + ' ' + s + (note ? ' · ' + note : '') +
+      ' — added to your record');
   }
 
   /* Theme relay: follow the page toggle into the open game. */
@@ -1072,7 +1179,7 @@
       hideClosing();  /* else it keeps showing the scores just wiped */
       renderAll();
       updateNextBtn();
-      if (statusEl) statusEl.textContent = '';
+      if (statusEl) { statusEl.textContent = ''; statusEl.classList.remove('is-best'); }
     });
   }
 
@@ -1110,6 +1217,12 @@
   renderMeters();
   renderRecord();
   consumeLogHash();
+  /* The closing card was only ever built at the instant the third drill
+     landed (and on a cross-tab storage event). Refresh the page — or come
+     back later the same day — and the day's whole review was gone: no
+     scores, no tomorrow, no share, even though the day was still complete.
+     syncClosing shows it when today IS finished and hides it otherwise. */
+  syncClosing();
 
   /* Day rollover: a tab left open overnight re-renders the checklist
      and streak for the new day when it next becomes visible. It also

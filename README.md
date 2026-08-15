@@ -1,6 +1,6 @@
 # artdaily.sadeali.com — Art Daily
 
-The daily-practice sketchbook of the SadeAli network: a catalogue of 36 tiny
+The daily-practice sketchbook of the SadeAli network: a catalogue of 37 tiny
 scored drills for artists, grouped into six chapters — colour, value & light,
 line & hand, form & perspective, composition, observation & memory. Most
 drills are drawn, not clicked: you commit a stroke and the geometry judges
