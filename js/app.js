@@ -287,9 +287,24 @@
          gap, but only when the best is a HIGHER number than both figures
          already in the sentence: otherwise it is either the go we just
          compared against or a mark this round has already beaten. */
-      var chase = (num(prevBest) && r(prevBest) > r(todayPrev) && r(prevBest) > r(score))
-        ? ' · still ' + (r(prevBest) - r(score)) + ' under your best of ' + r(prevBest)
-        : '';
+      var chase = '';
+      if (num(prevBest) && r(prevBest) > r(todayPrev)) {
+        if (r(prevBest) > r(score)) {
+          chase = ' · still ' + (r(prevBest) - r(score)) + ' under your best of ' + r(prevBest);
+        } else if (r(prevBest) === r(score)) {
+          /* LEVEL with an older mark is news, and it was the one outcome
+             this clause dropped on the floor. Scoring exactly your best of
+             88 on a fresh go says "matched your best of 88"; scoring the
+             same 88 on a SECOND go the same day said "+28 on your last go
+             today" and nothing else — the identical round, told about the
+             identical record, in one case and silent in the other. The
+             player was left to notice for themselves that they had drawn
+             level, on the reveal where they were most likely watching for
+             it. (Only reachable when the round beat today's earlier go —
+             a lower or equal score cannot also equal a HIGHER best.) */
+          chase = ' · matched your best of ' + r(prevBest);
+        }
+      }
       if (d > 0) {
         return (num(prevBest) && r(score) > r(prevBest))
           ? 'new best · +' + d + ' on your last go'
@@ -481,7 +496,13 @@
     { id: 'streak7',   icon: '☄️', name: '7 days running',   hint: 'a week of practice' },
     { id: 'streak30',  icon: '🏔️', name: '30 days running',  hint: 'this is who you are now' },
     { id: 'hundred',   icon: '💯', name: 'a clean 100',      hint: 'nailed one exactly' },
-    { id: 'tenDrills', icon: '🎒', name: '10 different drills', hint: 'you have tried the whole studio' },
+    /* "you have tried the whole studio" was true when the studio was ten
+       drills. The registry is 40 live today, so the badge congratulated a
+       player for a quarter of the catalogue by telling them there was
+       nothing left to see — on the one screen whose whole job is to make
+       them want the other thirty. Say breadth, which is what ten different
+       drills actually proves, and stay true at any catalogue size. */
+    { id: 'tenDrills', icon: '🎒', name: '10 different drills', hint: 'you are getting around the studio' },
     { id: 'allCats',   icon: '🗺️', name: 'every chapter',    hint: 'colour, value, line, form, composition, observation' },
   ];
 

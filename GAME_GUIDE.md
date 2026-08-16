@@ -200,7 +200,9 @@ Non-negotiable for every drill:
   *aimed at* is not that scale, and is not even proportional to it —
   `startRadius` and `ease` rank the hardware in opposite orders on purpose,
   so in the template a tap landing exactly on the drawn ring is **75 out of
-  100 on a mouse and 16 on a pen tablet**. Draw the zero-point faintly in
+  100 on a mouse, 51 on a pen tablet and 50 on a finger** (it was 75 against
+  **16** before the template floored its zero-point — see the acquisition
+  floor in the hardware section). Draw the zero-point faintly in
   the reveal (a dotted ring, a tolerance corridor, the accepted colour
   band) so a mark can be read against it. Reveal only: during play it is
   just a second thing to aim at.
@@ -509,44 +511,82 @@ the *primary* pointer is coarse, so it is **false** on a touchscreen laptop,
 the one machine where a finger meets mouse-sized zones. `(any-pointer:
 coarse)` is the question you meant.
 
-**The two knobs measure different things — never feed one into the other.**
-`startRadius` sizes what the player *aims at*; `ease` sizes where the
-*score* reaches zero. They deliberately rank the hardware in opposite
-orders (a pen gets the biggest target and the strictest scoring), so
-`ease(startRadius(r) * 2)` compounds them and inverts the result — it
-scored a finger *more* generously than a trackpad. Always ease your own
-base constant: `startRadius(BASE)` to draw, `ease(BASE * 2)` to score.
+**The two knobs measure different things — never multiply one by the
+other.** `startRadius` sizes what the player *aims at*; `ease` sizes where
+the *score* reaches zero. They rank the hardware in opposite orders on
+purpose, because they measure two different difficulties:
 
-**And the `× 2` is a floor, not a flourish.** Because the two knobs move in
-opposite directions, `ease(BASE × k)` has to out-run the *widest* start
-factor in the table or the score reaches zero **inside the ring the player
-was told to aim at**. On the pen profile the drawn ring is `1.7 × BASE`
-and the zero-point is `k × BASE`, so any `k` at or below **1.7** pays
-nothing for landing on that ring's own edge; on a finger the crossover is
-`1.6 / 1.5 = 1.07`. Scoring a tap that lands exactly on the drawn ring,
-measured on the template's `BASE = 22`:
+| | what it is slack *for* | most | least |
+|---|---|---|---|
+| `ease` | **executing** a stroke — a mouse pivots at the wrist and cannot creep | mouse ×2.0 | pen ×1.0 |
+| `startRadius` | **finding** a target — a screenless tablet works with the hand out of sight | pen ×1.7 | mouse ×1.0 |
+
+So `ease(startRadius(r) * 2)` compounds the two factors and inverts the
+result — it scored a finger *more* generously than a trackpad. Always pass
+your own base constant to each knob, never one knob's answer to the other:
+`startRadius(BASE)` to draw, `ease(BASE * 2)` to score.
+
+**Then ask which difficulty your drill actually grades.** If the score *is*
+the finding — tap it, hit it, stop on it, land in it — then `ease` alone is
+the wrong ruler, and using it grades your **least-sighted player hardest**.
+On the template's `BASE = 22`, scoring a tap that lands exactly on the ring
+it drew for you:
 
 ```
-  ease(BASE × k)        pen   mouse   finger
-  k = 1                   0      50        0     <- ring edge is a zero
-  k = 1.7                 1      71       38
-  k = 2  (the template)  16      75       47
-  k = 3                  44      83       65
+  zero-point                          pen   mouse   finger
+  ease(BASE × 1)                        0      50        0   <- ring edge is a zero
+  ease(BASE × 1.7)                      1      71       38
+  ease(BASE × 2)                       16      75       47
+  ease(BASE × 3)                       44      83       65
+  max(ease(BASE×2), startRadius(BASE×2))
+                       (the template)  51      75       50
 ```
 
-Two things follow. Never ship under `k = 2`: below it a pen tablet and a
-finger are scoring **nothing** at the edge of the affordance you drew for
-them while a mouse is still scoring 50 — the same fairness inversion the
-paragraph above warns about, arriving through a different door. And notice
-the spread never actually closes: even at `k = 2` the identical landing is
-worth 16 and 75. That is *why* the zero-ring has to be drawn in the reveal
-— a player cannot read their mark against a scale nothing on screen shows
-them. Check your own two numbers before you ship:
+Raising `k` does close the gap, but it closes it by making **everyone**
+looser — at `k = 3` a trackpad, the most precise thing on the list, gets a
+132px zero-point on a 22px ring, and the reveal's zero-ring grows past the
+edges of a phone sheet (73% of it visible against 84% at `k = 2`). The
+**acquisition floor** closes the same gap without touching the trackpad
+column at all:
+
+```js
+function zeroPoint() {
+  return Math.max(ArtDaily.ease(BASE_R * 2), ArtDaily.startRadius(BASE_R * 2));
+}
+```
+
+A max is a floor, **not** a compound: whichever reason for slack applies to
+the hardware in the player's hand, they get that one, and neither factor is
+ever multiplied by the other. Pass `BASE × 2` *into* `startRadius` rather
+than doubling its result — the SDK guards that multiply against overflow
+and your own `* 2` does not, and an infinite zero-point makes `1 - err/zero`
+exactly 1, so every wild attempt scores a fake 100. Five taps at each
+device's realistic error, on the template's demo:
+
+```
+                     honest round        sloppy round
+  ease(BASE × 2)     90 / 80 / 55        75 / 59 / 18   <- trackpad / finger / tablet
+  acquisition floor  90 / 81 / 73        75 / 61 / 52
+```
+
+The trackpad column does not move by a single point. Nobody was made more
+generous; the worst-served device simply stopped being punished for its
+hardware — **18 out of 100 for an honestly sloppy round is a player who
+closes the tab.** The floor has one more effect worth having: the zero-point
+is then always wider than the drawn ring, so the dotted scale in your reveal
+can never be swallowed by the target it is measured from.
+
+The spread still does not close *completely* — the identical landing is 51
+and 75 — and it never will while one score has to serve three machines. That
+is *why* the zero-ring has to be drawn in the reveal: a player cannot read
+their mark against a scale nothing on screen shows them. Check your own
+numbers before you ship:
 
 ```sh
 node -e "var S={pen:1.7,mouse:1.0,touch:1.6},E={pen:1,mouse:2,touch:1.5};
-var BASE=22, K=2;   // <- your drill's constants
-for(var m in S){var r=Math.round(BASE*S[m]),z=BASE*K*E[m];
+var BASE=22, K=2, FLOOR=true;   // <- your drill's constants
+for(var m in S){var r=Math.round(BASE*S[m]),
+z=Math.max(BASE*K*E[m], FLOOR?Math.round(BASE*K*S[m]):0);
 console.log(m.padEnd(6),'ring',r,'zero',z,'| ring edge scores',
   Math.round(Math.max(0,1-r/z)*100));}"
 ```
@@ -586,14 +626,23 @@ Rules that follow from this:
   the point in the other direction — a pen gets the **biggest** start zones
   (`1.7`, bigger than a finger's) precisely because acquiring a target with
   the hand out of sight is the hardest thing it does — so any drill whose
-  score *is* an acquisition (tap it, hit it, stop on it) is currently
-  grading its least-sighted player hardest. Until the profile splits:
-  **read the pen column of your own numbers before you call the tuning
-  done**, and give an acquisition-scored drill a larger `k` (the floor
-  table above) rather than the bare minimum. On the template's demo, five taps
-  at each device's realistic error land at **90 (trackpad) · 80 (finger) ·
-  55 (screenless tablet)** — passable, but the same five taps made
-  *sloppily* land at 75 · 59 · **19**.
+  score *is* an acquisition (tap it, hit it, stop on it) and that reads its
+  tolerance from `ease` alone is grading its least-sighted player hardest.
+  Until the profile splits, that is what the **acquisition floor** above is
+  for, and the template now ships it. Five taps at each device's realistic
+  radial error (9px trackpad · 13px finger · 20px screenless tablet for an
+  honest attempt; 22 · 27 · 36 for a careless one) on the template's demo:
+
+  ```
+                       honest          sloppy
+    ease(BASE × 2)     90 · 80 · 55    75 · 59 · 18
+    acquisition floor  90 · 81 · 73    75 · 61 · 52
+  ```
+
+  **Read the pen column of your own numbers before you call the tuning
+  done.** An honest attempt on the worst-supported device has to land
+  mid-range; 18 out of 100 is not a hard drill, it is a player who closes
+  the tab and concludes they cannot draw.
 - **Snap, don't refuse.** If a press lands near a start dot, move the
   stroke onto the dot. Refusing a near-miss reads as a broken site to
   someone who cannot see their own hand.
@@ -669,10 +718,13 @@ template: **40 measurements / 40 reallocations / 40 repaints → 1 / 1 / 1.**
 the reveal and draw that, never `ease()` again. `ease()` answers for the
 hardware in use *now*, and the hardware can change while the reveal is on
 screen: plugging a pen in at the end of a round fires `onInput`, the drill
-repaints, and the dotted ring redraws at half its radius under a printed
-"66 out of 100" — 88px → 44px in the template, the picture arguing with
-the number, exactly like re-projecting the mark. The number is history and
-so is the scale it was measured against.
+repaints, and the dotted ring redraws at a different radius under a printed
+"66 out of 100" — the picture arguing with the number, exactly like
+re-projecting the mark. On a tolerance read from `ease` alone that swing is
+the whole `2.0 / 1.0` of the profile table, **half the radius**; the
+template's acquisition floor narrows its own case to 88px → 75px, which is
+smaller and still wrong. The number is history and so is the scale it was
+measured against.
 
 **One owner per timer.** A reveal beat, a countdown and a toast all
 outlive the frame that started them, so every path that ends a round must

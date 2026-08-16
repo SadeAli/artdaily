@@ -903,7 +903,29 @@ a.card:hover, a.card:focus-visible {
   width: 100%;
   flex: 1;
   aspect-ratio: 16 / 10;
-  min-height: 220px;
+  /* The floor has to YIELD, or it clips the very thing it was raised to
+     protect. .player-sheet is a column flexbox with overflow: hidden and
+     max-height: calc(100dvh - 20px); the bar cannot shrink (its ✕ is 44px,
+     + 18px padding = 63px measured) and .player-foot is flex: none (its
+     "next warmup" button is 44px, + 12px padding = 57px measured). So the
+     sheet's floor is 63 + min-height + 57, and with a hard 220px that is
+     340px against a box only 100dvh - 20 tall: every viewport under 360px
+     of dvh pushed the FOOT out through overflow: hidden.
+     Measured in Firefox against this stylesheet, "next" shown: 568x320
+     lost 41px of a 57px foot, 780x340 lost 21px. That is a phone held
+     SIDEWAYS — which is exactly how a finger holds a phone to pull a long
+     stroke — and what vanished was the score reveal ("recorded ✓ 62/100 —
+     new best…") and the only way on to the next drill. The ✕ survived, so
+     the round simply ended with nothing to show for it.
+     min(220px, 48dvh) holds the foot on screen down to a 280px-tall
+     viewport — a Galaxy Fold cover screen turned sideways, the shortest
+     thing that browses — and resolves to EXACTLY 220px on anything 459px
+     tall or more, i.e. every phone in portrait, every tablet and every
+     desktop, unchanged. (50dvh was one pixel short at 280: the sheet's own
+     1px top and bottom borders are part of the box too.) Between the two,
+     min-height does not bind at all — flex: 1 already grows the frame past
+     it — so the canvas only ever gives up the pixels the chrome needs. */
+  min-height: min(220px, 48dvh);
   /* dvh, not vh: vh is the LARGE viewport on phones, so with the address
      bar shown a 74vh frame is taller than the screen and the foot (score
      line, "next warmup") gets clipped by the sheet's overflow:hidden. */

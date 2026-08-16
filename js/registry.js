@@ -204,6 +204,14 @@ window.ARTDAILY_GAMES = [
     dev: '../artdaily-games/ellipses/', status: 'live',
   },
   {
+    slug: 'draw-through', name: 'Draw Through',
+    tagline: 'three laps that land on each other',
+    icon: '🛟', accent: 'coral', skills: ['ellipses', 'line'],
+    cat: 'line', tag: 'fit', minutes: 3,
+    url: 'https://sadeali.github.io/artdaily-draw-through/',
+    dev: '../artdaily-games/draw-through/', status: 'live',
+  },
+  {
     slug: 'symmetry', name: 'Mirror Mirror',
     tagline: 'finish the other half of the figure',
     icon: '🦋', accent: 'lilac', skills: ['symmetry', 'shapes'],
