@@ -314,6 +314,14 @@ window.ARTDAILY_GAMES = [
     url: 'https://sadeali.github.io/artdaily-cross-contour/',
     dev: '../artdaily-games/cross-contour/', status: 'live',
   },
+  {
+    slug: 'down-the-row', name: 'Down the Row',
+    tagline: 'the gaps close up — draw the next post',
+    icon: '🪵', accent: 'mint', skills: ['perspective', 'line'],
+    cat: 'form', tag: 'auto', minutes: 3,
+    url: 'https://sadeali.github.io/artdaily-down-the-row/',
+    dev: '../artdaily-games/down-the-row/', status: 'live',
+  },
 
   /* ---- composition ---- */
   {

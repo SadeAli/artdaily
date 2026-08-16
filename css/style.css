@@ -135,10 +135,22 @@ a { color: inherit; }
 }
 .backlink:hover { transform: rotate(0deg) translateY(-2px); box-shadow: 0 4px 0 var(--shadow); }
 
+/* flex: none is the whole reason this stays 44px wide. `width` on a flex item
+   is only its BASE size — .topbar is a flex row, and once the backlink and a
+   live streak chip stop fitting, every shrinkable item gives up pixels. The
+   theme toggle was the item that gave them up: measured in Firefox against
+   this stylesheet with a "🔥 5 days ❄️1" chip in the bar, it rendered
+   33 x 44 on a 320px phone and 21 x 44 on a 280px cover screen — a control
+   declared 44 square, shaved to under half a fingertip on exactly the
+   cheapest hardware. .player-x already carries this for the identical reason
+   ("a squeezed bar must not shave the ✕ below 44px"); the lesson never made
+   it up to the topbar. The two text items either side of it can wrap and
+   lose pixels harmlessly. A square icon cannot. */
 .iconbtn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex: none;
   width: 44px;
   height: 44px;
   border-radius: 10px 4px 9px 5px;
@@ -878,8 +890,22 @@ a.card:hover, a.card:focus-visible {
    3/4 makes it 374 x 499 = 187k px², 2.1x the area, and still leaves the
    title bar, the ✕ and the foot on screen: 44 + 499 + 38 = 581 of a ~750px
    dvh. Anything shorter is caught by max-height: 74dvh above, which the
-   frame's flex-shrink honours down to min-height: 220px. */
-@media (max-width: 640px) and (orientation: portrait) {
+   frame's flex-shrink honours down to min-height: 220px.
+
+   PORTRAIT IS THE WHOLE CONDITION — the `max-width: 640px` this rule used
+   to carry left every portrait TABLET behind, which is the single most
+   finger-driven device class there is. Measured in Firefox against this
+   stylesheet: an iPad mini (744 x 1133) got a 712 x 445 frame and an iPad
+   (820 x 1180) got 785 x 491 — a canvas that ended 490px down a 1180px
+   screen, with 560px of viewport sitting empty underneath it, because a
+   745px-wide tablet is not a 640px-wide phone. A finger's contact patch is
+   ~44px whatever it is resting on, so the tablet was scoring the least
+   precise pointer on the second-smallest canvas on the site.
+   No drill meets a new shape from this: 3/4 is exactly what every phone
+   already hands them, and 74dvh + flex-shrink still cap the height, so a
+   barely-portrait window (1000 x 1050) lands on the dvh cap, not on a
+   1200px frame. */
+@media (orientation: portrait) {
   .player-frame { aspect-ratio: 3 / 4; }
 }
 

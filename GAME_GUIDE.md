@@ -384,6 +384,40 @@ orders (a pen gets the biggest target and the strictest scoring), so
 scored a finger *more* generously than a trackpad. Always ease your own
 base constant: `startRadius(BASE)` to draw, `ease(BASE * 2)` to score.
 
+**And the `× 2` is a floor, not a flourish.** Because the two knobs move in
+opposite directions, `ease(BASE × k)` has to out-run the *widest* start
+factor in the table or the score reaches zero **inside the ring the player
+was told to aim at**. On the pen profile the drawn ring is `1.7 × BASE`
+and the zero-point is `k × BASE`, so any `k` at or below **1.7** pays
+nothing for landing on that ring's own edge; on a finger the crossover is
+`1.6 / 1.5 = 1.07`. Scoring a tap that lands exactly on the drawn ring,
+measured on the template's `BASE = 22`:
+
+```
+  ease(BASE × k)        pen   mouse   finger
+  k = 1                   0      50        0     <- ring edge is a zero
+  k = 1.7                 1      71       38
+  k = 2  (the template)  16      75       47
+  k = 3                  44      83       65
+```
+
+Two things follow. Never ship under `k = 2`: below it a pen tablet and a
+finger are scoring **nothing** at the edge of the affordance you drew for
+them while a mouse is still scoring 50 — the same fairness inversion the
+paragraph above warns about, arriving through a different door. And notice
+the spread never actually closes: even at `k = 2` the identical landing is
+worth 16 and 75. That is *why* the zero-ring has to be drawn in the reveal
+— a player cannot read their mark against a scale nothing on screen shows
+them. Check your own two numbers before you ship:
+
+```sh
+node -e "var S={pen:1.7,mouse:1.0,touch:1.6},E={pen:1,mouse:2,touch:1.5};
+var BASE=22, K=2;   // <- your drill's constants
+for(var m in S){var r=Math.round(BASE*S[m]),z=BASE*K*E[m];
+console.log(m.padEnd(6),'ring',r,'zero',z,'| ring edge scores',
+  Math.round(Math.max(0,1-r/z)*100));}"
+```
+
 A profile switch never lands mid-press: the SDK detects the hardware on
 `pointerdown` but queues the change until the release, so `onInput` can
 rebuild geometry freely without the target moving under a live stroke,
@@ -409,6 +443,24 @@ Rules that follow from this:
 - **Ease every zero-point tolerance.** Before this existed, a mouse user
   drawing a 300px line with a realistic 15px wobble scored **9/100**.
   That is the whole retention problem in one number.
+- **`'pen'` is two different machines, and the profile is tuned for the
+  kinder one.** `pointerType` cannot tell an iPad or a Cintiq — nib on
+  glass, hand right on the line — from a cheap screenless tablet, which
+  maps absolutely with the hand somewhere else entirely. Both land on
+  `ease: 1.0`, the strictest row in the table, so the bullet above *re-run
+  on the pen profile* still says **9/100**: `ease(0.055 × 300)` is 16.5px
+  there, and 15px of wobble on a 300px line is 9. The SDK already concedes
+  the point in the other direction — a pen gets the **biggest** start zones
+  (`1.7`, bigger than a finger's) precisely because acquiring a target with
+  the hand out of sight is the hardest thing it does — so any drill whose
+  score *is* an acquisition (tap it, hit it, stop on it) is currently
+  grading its least-sighted player hardest. Until the profile splits:
+  **read the pen column of your own numbers before you call the tuning
+  done**, and give an acquisition-scored drill a larger `k` (the floor
+  table above) rather than the bare minimum. On the template's demo, five taps
+  at each device's realistic error land at **90 (trackpad) · 80 (finger) ·
+  55 (screenless tablet)** — passable, but the same five taps made
+  *sloppily* land at 75 · 59 · **19**.
 - **Snap, don't refuse.** If a press lands near a start dot, move the
   stroke onto the dot. Refusing a near-miss reads as a broken site to
   someone who cannot see their own hand.
