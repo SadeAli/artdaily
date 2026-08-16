@@ -130,18 +130,45 @@
          drills done, and its slugs as extra "different drills". Drop it at
          the door with the junk values below. */
       if (!isDayKey(k)) { delete s.days[k]; return; }
-      if (!isPlainish(d)) { s.days[k] = {}; return; }
+      if (!isPlainish(d)) { delete s.days[k]; return; }
       Object.keys(d).forEach(function (slug) {
         var v = d[slug];
         if (typeof v !== 'number' || !isFinite(v)) { delete d[slug]; return; }
         d[slug] = Math.max(0, Math.min(100, Math.round(v)));
       });
+      /* A day IS its scores, so a day left holding none is not a day
+         practised — and the empty husk is not harmless. isNewcomer() counts
+         KEYS in store.days, so one junk day ({"2026-08-16":{"lines":1e999}},
+         whose only value the scrub above just dropped) silently robs a
+         first-time visitor of the curated starter session and hands them the
+         random rotation instead. Nothing here ever writes an empty day —
+         recordResult creates one and fills it in the very next statement —
+         so dropping it can only ever remove corruption. */
+      if (!Object.keys(d).length) delete s.days[k];
     });
     if (!isPlainish(s.streak)) s.streak = {};
     if (typeof s.streak.last !== 'string') s.streak.last = '';
     s.streak.count = whole(s.streak.count);
     s.streak.freezes = whole(s.streak.freezes, 2);  /* 2 = the cap touchStreak banks to */
     if (!isPlainish(s.skills)) s.skills = {};
+    /* Skill totals owe the same RANGE check streak.count gets above, and for
+       a worse reason: bump() reads a total back, adds to it and writes it out
+       again, so a value that arrives non-finite or negative is not one wrong
+       pixel — it is a tube that can NEVER fill again (Infinity + 0.9 is
+       Infinity, and levelInfo then draws that as a permanent "lv 1, 0%"), or
+       one that silently eats the next several rounds climbing back to zero.
+       An Infinity in here is louder still: renderMeters' "has anyone got any
+       points?" test is `> 0`, which Infinity passes, so a single corrupt
+       total hid the "empty tubes so far — play any drill and they start
+       filling" line and printed all nine tubes empty at level 1 instead.
+       Repair at the door, once per load. 1e9 is levelInfo's own cap, so a
+       repaired total still renders — and keeps bump()'s (x + pts) from
+       overflowing to Infinity later. */
+    Object.keys(s.skills).forEach(function (id) {
+      var v = Number(s.skills[id]);
+      if (!isFinite(v) || v < 0) { delete s.skills[id]; return; }
+      s.skills[id] = Math.min(1e9, Math.round(v * 100) / 100);
+    });
     if (!isPlainish(s.badges)) s.badges = {};   /* badgeId -> day earned */
     if (!isPlainish(s.seen)) s.seen = {};       /* one-time UI flags */
     return s;
@@ -152,7 +179,7 @@
   /* ---- derived-state caches ----
      bestFor and pickForKey are pure functions of store.days, and both were
      recomputed from scratch on every render. fillMeta asks bestFor once per
-     drill (one full walk of every logged day PER DRILL in the registry, 38
+     drill (one full walk of every logged day PER DRILL in the registry, 40
      of them today and one more with every drill shipped); renderRecord asks picksForKey
      once per LOGGED DAY, and each of those ranks the whole catalogue with a
      hash per comparison. Measured on a one-year store that is ~1.25 MILLION
@@ -807,7 +834,7 @@
     var logged = drillsLogged();
     var drills = distinctSlugs().length;
     /* Counting a day's keys is free; working out WHICH three drills it asked
-       for is 39 hashes plus a sort of the whole catalogue — per logged day,
+       for is 40 hashes plus a sort of the whole catalogue — per logged day,
        every time this renders, and it renders on every recorded score. A day
        holding fewer drills than the warmup asks for cannot be a full warmup,
        whatever it asked for, so that day never needs the ranking at all.
@@ -1519,7 +1546,13 @@
   /* A drill opened directly (a bookmark, a shared link) has no opener,
      so it offers a link home carrying the score: #log=slug,score */
   function consumeLogHash() {
-    var m = /(?:^|#|&)log=([a-z0-9-]+),(\d{1,3})/i.exec(location.hash || '');
+    /* (?!\d) is the difference between reading a score and inventing one.
+       Without it \d{1,3} happily took the FIRST THREE DIGITS of a longer
+       run and threw the rest away, so a mangled "#log=lines,1234" parsed as
+       123 and a truncated one as whatever prefix fitted — and the clamp
+       below then filed it as a flawless 100 and handed out the "a clean
+       100" badge for it, permanently. Match a whole number or nothing. */
+    var m = /(?:^|#|&)log=([a-z0-9-]+),(\d{1,3})(?!\d)/i.exec(location.hash || '');
     if (!m) return;
     /* The pattern is case-insensitive but slugs are not, and the hash is
        cleared below either way — so "#log=LINES,87" (a link retyped by hand,
@@ -1528,10 +1561,15 @@
        on screen to say so. This is the LAST route a standalone score has
        home; match the parser's own leniency instead of losing it. */
     var g = gameBySlug(m[1].toLowerCase());
-    var s = Math.max(0, Math.min(100, parseInt(m[2], 10)));
+    var s = parseInt(m[2], 10);
     /* Clear it first: a refresh must not replay the same score. */
     try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { location.hash = ''; }
-    if (!g) return;
+    /* Drop it rather than clamp it. Every drill's SDK writes a whole number
+       out of 100 into this link, so 0-100 is not a preference here, it is
+       the only thing the value can legitimately be — and a clamp turns
+       "#log=lines,870" into a perfect score and a milestone the player never
+       earned. Nothing valid is ever refused by this line. */
+    if (!g || !(s >= 0 && s <= 100)) return;
     recordResult(g, s, function (sc, note) {
       return g.icon + ' ' + g.name + ' ' + sc + (note ? ' · ' + note : '') +
         ' — added to your record';
@@ -1669,6 +1707,23 @@
     setStore(loadStore());
     hideClosing(); /* yesterday's closing card is not today's */
     renderAll();
+    /* The player foot is yesterday's too, and it does not merely look
+       stale — it lies. "next warmup →" keeps whatever label it was given
+       last night while its click handler recomputes the pick at press time,
+       so a tab left open across midnight offered "next: Steady Lines →" and
+       opened Box Check. And the status line kept "recorded ✓ 91/100 · ★
+       warmup complete" for a warmup that is no longer today's, three feet
+       from a checklist showing 0/3. The cross-tab handler has always
+       refreshed the button for exactly this reason; the rollover never did.
+       The waiting line only goes back up if the drill is actually up —
+       otherwise "opening Steady Lines…" is still the true sentence. (A
+       recorded result proves it is up even when the ready handshake never
+       arrived, which is why gotResult counts here too.) */
+    updateNextBtn();
+    if (statusEl && player && player.open && (playerReady || gotResult)) {
+      statusEl.textContent = 'finish a round and your score lands here';
+      statusEl.classList.remove('is-best');
+    }
   }
   document.addEventListener('visibilitychange', maybeRollover);
   window.addEventListener('focus', maybeRollover);

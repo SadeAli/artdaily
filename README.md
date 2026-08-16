@@ -1,6 +1,6 @@
 # artdaily.sadeali.com — Art Daily
 
-The daily-practice sketchbook of the SadeAli network: a catalogue of 39 tiny
+The daily-practice sketchbook of the SadeAli network: a catalogue of 40 tiny
 scored drills for artists, grouped into six chapters — colour, value & light,
 line & hand, form & perspective, composition, observation & memory. Most
 drills are drawn, not clicked: you commit a stroke and the geometry judges
@@ -53,7 +53,10 @@ Everything is localStorage, no accounts, nothing leaves the browser:
   Day keys use the **local** timezone; a missed day quietly ends the streak.
   The progress section has a reset link.
 - `artdaily-best-<slug>` (each game's own origin) — the personal best the
-  SDK keeps for standalone play.
+  SDK keeps for standalone play. When the browser refuses that store at all
+  (private mode, or third-party storage blocked inside the player iframe)
+  the SDK falls back to an in-memory best for the sitting, so a drill never
+  greets a returning player with "that is your bar now" every round.
 - `sadeali-theme` — the network-wide light/dark choice.
 
 ## Support / monetization switches (Stage 0)

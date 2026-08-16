@@ -40,7 +40,14 @@ A game must:
    ```
 
    `isFirst` exists because `isNewBest` is trivially true on it — see the
-   first-thirty-seconds section below before you write that toast.
+   first-thirty-seconds section below before you write that toast. Both
+   flags stay honest even where `localStorage` cannot be used at all
+   (private mode throws on `setItem`; a browser blocking third-party
+   storage throws on `getItem` too, *inside the player iframe*, which is the
+   arcade's main path): the SDK mirrors the best in memory for the sitting.
+   Without that mirror every round came back `isFirst`, so a drill said
+   *"that is your bar now"* after an 84 and then again after the 20 that
+   followed, with 20 standing in the HUD's `best` column.
 4. Repaint through `ArtDaily.onTheme(draw)` so embedded theme switches
    restyle the canvas.
 5. Work standalone at its own URL (the SDK shows/hides the chrome).
@@ -135,6 +142,33 @@ Non-negotiable for every drill:
   `0` for a finger and for a pen's tip, so the guard costs touch and pen
   nothing; put it right after the `isPrimary` check, before
   `preventDefault()`.
+- **Score where you painted, not where the rect says.** The shared sheet is
+  `* { box-sizing: border-box }` and `.game-canvas` has a 1px border, so
+  `getBoundingClientRect()` measures the **border** box while the bitmap is
+  stretched into the **content** box — two pixels narrower and two shorter.
+  The reflex `{ x: ev.clientX - rect.left }` then compares a border-box
+  coordinate against a drawing-space one: off by the border at one edge and
+  by the accumulated stretch at the other. Measured on the template at
+  1100px, a tap landing *exactly on the drawn dot* read as **1.26px out —
+  97 out of 100** on the pen profile, and a perfect round capped at 99. A
+  drill whose 100 depends on where the target happened to spawn is not
+  scoring the hand, and "a score of 100 must be possible" quietly stops
+  being true anywhere but the middle of the sheet. Map through the content
+  box, which `clientWidth`/`clientHeight` already are and which the
+  `getBoundingClientRect()` you just called has already flushed layout for:
+
+  ```js
+  var rect = canvas.getBoundingClientRect();
+  var cw = canvas.clientWidth || rect.width, ch = canvas.clientHeight || rect.height;
+  var bx = (rect.width - cw) / 2, by = (rect.height - ch) / 2;
+  return { x: (ev.clientX - rect.left - bx) * W / cw,
+           y: (ev.clientY - rect.top  - by) * H / ch };
+  ```
+
+  With no border that is `bx = by = 0` and a scale of exactly 1 — the plain
+  subtraction again, wherever the plain subtraction was already right. The
+  same trap eats any padding you add to a canvas, and it gets worse, not
+  better, as the border gets thicker.
 - **No dead states.** Trace: do nothing · press done immediately · draw
   during a reveal · resize mid-item · press "new round" mid-round. Every
   one must land somewhere sane, and a finished round must still report
@@ -273,7 +307,7 @@ every drill at once. The standalone hand-off bar is written from inside
 `report()` — the same tick your `finishRound` writes the hint — so a
 standalone screen-reader player heard the whole round-end sentence and
 then, queued behind it, *"scored 84 — add it to my Art Daily record"*,
-every round, in all 39 drills. The score there is not news; the drill just
+every round, in all 40 drills. The score there is not news; the drill just
 said it in a fuller sentence. What is news is that a route home exists, and
 that is news **once**. The bar now carries `role="status"` for its first
 paint of the sitting and drops the role after it: it keeps updating on
