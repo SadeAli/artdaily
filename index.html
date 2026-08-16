@@ -32,7 +32,7 @@
 <!-- ?v= busts the CDN/browser cache on deploy: registry.js is served
      with a 4h max-age, so without this a returning visitor keeps an old
      catalogue. Bump V in every asset URL below when css/js changes. -->
-<link rel="stylesheet" href="css/style.css?v=12">
+<link rel="stylesheet" href="css/style.css?v=13">
 <script>
 (function(){var t=null;try{t=localStorage.getItem('sadeali-theme');}catch(e){}document.documentElement.dataset.theme=(t==='dark')?'dark':'light';})();
 </script>
@@ -58,7 +58,15 @@
 
 <header class="hero">
   <div class="sheet hero-sheet">
-    <p class="hero-eyebrow">the studio habit · five minutes a day</p>
+    <!-- The price claim, and it was wrong by ~2x against the plan printed
+         three lines below it. A day's warmup is three drills; simulated over
+         730 consecutive days the total is min 6 / median 9 / max 12 minutes
+         (mean 9.08) and NOT ONE day came in at five. The curated first
+         session is 9 minutes, and the newcomer line under the checklist says
+         so out loud — so the first screen contradicted itself in the first
+         two seconds. Quote the honest unit the page actually asks for
+         ("pick one to start", "pick a drill, do a round"): one drill. -->
+    <p class="hero-eyebrow">the studio habit · one drill, 2–4 minutes</p>
     <h1 class="hero-title"><span class="tilt">art</span> daily</h1>
     <p class="hero-sub">a sketchbook of tiny scored drills — reps for the hand and the eye, with instant feedback</p>
     <div class="today">
@@ -81,6 +89,17 @@
 <div class="page-toast" id="pageToast" role="status" aria-live="polite"></div>
 
 <nav class="jumpnav" id="jumpNav" aria-label="Drill categories" hidden></nav>
+
+<!-- These two lines used to sit AFTER </main> — i.e. after all 38 cards.
+     Between them they are (a) the only sentence that says what the whole
+     catalogue is for, and (b) the only gloss for "math-scored / fit-scored /
+     curated", which are printed in the corner of the very first card a
+     beginner scrolls to. A gloss that arrives 38 cards after its own jargon
+     is not a gloss, and the tagmark's title= is no answer: a title never
+     opens on a touchscreen. Both moved above the catalogue; the longer
+     hardware note stays below as the deeper footnote. -->
+<p class="aboutline">a warmup, not a curriculum — pick a drill, do a round, come back tomorrow</p>
+<p class="legendline">every drill scores out of 100, and you are only ever compared with your own past rounds · the pencil mark in a card's corner says how it is scored: <b>math-scored</b> = pure geometry &amp; colour math · <b>fit-scored</b> = a comparison algorithm with tuning · <b>curated</b> = classic guidelines, honestly subjective</p>
 
 <main id="catalogue" aria-label="Drill catalogue">
   <noscript>
@@ -130,13 +149,14 @@
   </noscript>
 </main>
 
-<p class="aboutline">a warmup, not a curriculum — pick a drill, do a round, come back tomorrow</p>
-<p class="legendline">every drill scores out of 100 · the pencil marks say how: <b>math-scored</b> = pure geometry &amp; colour math · <b>fit-scored</b> = a comparison algorithm with tuning · <b>curated</b> = classic guidelines, honestly subjective</p>
 <!-- The single biggest thing about a score here, and the page never said
      it: the numbers are eased per device (SDK PROFILE — pen ease 1.0,
      mouse/trackpad 2.0, finger 1.5). A trackpad beginner who thinks they
-     are being judged against a pen tablet quits; say it out loud. -->
-<p class="legendline">scores are tuned to what you draw with: a mouse or trackpad is allowed twice the wobble of a pen tablet, a finger sits in between, and start dots are drawn bigger for a pen or a finger. each drill's panel says which it is scoring for — you are only ever compared with your own past rounds.</p>
+     are being judged against a pen tablet quits; say it out loud.
+     The "only ever compared with your own past rounds" promise moved to the
+     legend line ABOVE the catalogue — a beginner needs it before they pick a
+     drill, not after they have scrolled past every card on the page. -->
+<p class="legendline">scores are tuned to what you draw with: a mouse or trackpad is allowed twice the wobble of a pen tablet, a finger sits in between, and start dots are drawn bigger for a pen or a finger. each drill's panel says which it is scoring for.</p>
 
 <section class="section" id="progress" aria-label="Your progress">
   <div class="cat-head"><h2 class="accent-mint" style="text-decoration-color: var(--mint);">your paint tubes</h2></div>
@@ -181,9 +201,9 @@
   <p class="fineprint">© SadeAli · free · no ads · no tracking</p>
 </footer>
 
-<script src="js/support-config.js?v=12"></script>
-<script src="js/registry.js?v=12"></script>
-<script src="js/main.js?v=12"></script>
-<script src="js/app.js?v=12"></script>
+<script src="js/support-config.js?v=13"></script>
+<script src="js/registry.js?v=13"></script>
+<script src="js/main.js?v=13"></script>
+<script src="js/app.js?v=13"></script>
 </body>
 </html>

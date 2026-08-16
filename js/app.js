@@ -132,7 +132,8 @@
   /* ---- derived-state caches ----
      bestFor and pickForKey are pure functions of store.days, and both were
      recomputed from scratch on every render. fillMeta asks bestFor once per
-     drill (37 full walks of every logged day); renderRecord asks picksForKey
+     drill (one full walk of every logged day PER DRILL in the registry, 38
+     of them today and one more with every drill shipped); renderRecord asks picksForKey
      once per LOGGED DAY, and each of those ranks the whole catalogue with a
      hash per comparison. Measured on a one-year store that is ~1.25 MILLION
      hash rounds for a single recorded score — tens of milliseconds of blocked
@@ -325,7 +326,7 @@
     liveGames.forEach(function (g) { perCat[g.cat] = (perCat[g.cat] || 0) + 1; });
 
     /* Weigh each drill ONCE. The comparator used to hash both sides on every
-       comparison, so ranking 37 drills cost ~n·log n hashes instead of n —
+       comparison, so ranking the whole catalogue cost ~n·log n hashes instead of n —
        about ten times the work, repeated for every day in the record. Sort is
        stable and the weights are identical, so the order is unchanged. */
     var weighed = liveGames.map(function (g) {
@@ -724,7 +725,12 @@
       var d = new Date(); d.setDate(d.getDate() - i);
       var n = Object.keys(dayScores(dateKey(d))).length;
       var dot = el('i', 'rdot' + (n === 0 ? '' : n >= 3 ? ' r3' : ' r1'));
-      dot.title = dateKey(d) + ' — ' + n + (n === 1 ? ' round' : ' rounds');
+      /* "rounds" is the one thing this number is NOT — a day keeps only the
+         highest score per drill, so five goes at Value Trap leave one key
+         behind. The headline stat was renamed to "drills done" for exactly
+         that reason (see drillsLogged); the dot titles were left behind
+         still promising a round count the store cannot answer. */
+      dot.title = dateKey(d) + ' — ' + n + (n === 1 ? ' drill' : ' drills');
       strip.appendChild(dot);
     }
     box.appendChild(strip);

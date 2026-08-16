@@ -60,11 +60,16 @@ Almost every drill that loses a player loses them here, and almost never
 to a bug. Open your own drill cold, the way someone who has never drawn
 before opens it, and answer four questions honestly:
 
-1. **Does the first screen teach the verb?** The hint line plus what is
-   visibly drawn, before anyone opens the how-to. Name the thing on the
-   canvas in the words for the thing on the canvas: if what you drew is a
-   dot in the middle of a ring, the hint says *tap the centre dot*, not
-   *tap the bullseye*.
+1. **Does the first screen teach the verb — and say how it marks you?**
+   The hint line plus what is visibly drawn, before anyone opens the
+   how-to. Name the thing on the canvas in the words for the thing on the
+   canvas: if what you drew is a dot in the middle of a ring, the hint says
+   *tap the centre dot*, not *tap the bullseye*. Then add the one rule a
+   beginner needs *before* the first attempt rather than after it: nothing
+   on a bare ring says whether a near miss is worth 90 or nothing at all.
+   One clause, on the opening screen only — *"The closer you land, the
+   more it scores."* From item two on the reveals have been teaching it in
+   numbers, and repeating it is noise in the drill's one live region.
 2. **Is the first item genuinely easy?** Not scored more kindly — an
    easier ITEM. Uniform-random placement will sooner or later open a
    round with the target jammed in a corner, and a beginner reads that as
@@ -74,7 +79,14 @@ before opens it, and answer four questions honestly:
 3. **Is any word jargon the drill does not teach on the spot?** Value,
    hue, ellipse degree, station point, ΔE, foreshortening — every one is
    fine to *use* and none is fine to *assume*. Either show it on the
-   canvas in the same breath or use the ordinary word.
+   canvas in the same breath or use the ordinary word. **A mark can be
+   jargon too**, and this is the one that gets missed: the first reveal
+   paints a dotted ring the player has never seen and the score is
+   measured on it, so unexplained it is an unfamiliar term that happens to
+   be drawn instead of typed. Name it once, on the spot, in the sentence
+   beside it — the template's first reveal ends *"The dotted ring is where
+   a tap stops scoring."* and never mentions it again. Anything you can
+   only learn by opening the how-to is not taught on the spot.
 4. **Is the first reveal a lesson, or just a number?** A score with no
    correction attached teaches nothing: nobody can tell 58 from 72 by
    feel, and a bare number says nothing about which way to move. Draw the
@@ -83,7 +95,10 @@ before opens it, and answer four questions honestly:
    draw the *scale* it is measured against, or the picture still cannot be
    read (see the UX bar). Grade those words against the same tolerance the
    score uses, or the sentence and the number will contradict each other
-   and the drill will read as broken.
+   and the drill will read as broken. Then **time it**: a lesson that is
+   wiped before it can be read is not a lesson, and 620ms — which this
+   guide used to recommend — is a quarter of what the sentence needs. See
+   the beat rule in the UX bar.
 
 The very first round of all needs its own copy. With no previous best,
 `isNewBest` is trivially true, so an unguarded drill greets every new
@@ -92,8 +107,16 @@ round where they most needed to be told what the number is *for*. Branch
 on `report()`'s `isFirst`, say what the score is a bar for, and start
 celebrating from round two.
 
-The template's `js/game.js` implements all five; it is a five-tap demo
-precisely so the pattern is readable.
+The template's `js/game.js` implements every one of these; it is a
+five-tap demo precisely so the pattern is readable. Read its first screen
+and its first reveal out loud before you replace them — that is the whole
+script a beginner gets:
+
+```
+Target 1 of 5 — tap the centre dot. The closer you land, the more it scores.
+A hair low and right — 84 out of 100 for that tap. The dotted ring is where
+a tap stops scoring.
+```
 
 ## The UX bar (learned the hard way, from a full-catalogue audit)
 
@@ -159,10 +182,27 @@ Non-negotiable for every drill:
   backwards.
 - **If a reveal holds the screen, the drill must not score what lands on
   it.** A tap during the beat has nothing honest to be judged against —
-  the next item is not drawn yet. Ignore it, never count it, and make the
-  beat short enough (~0.6s) that nobody is waiting on it. Finish the last
-  item *synchronously* instead of behind the beat, so `report()` can never
-  be raced by "new round" landing during the reveal.
+  the next item is not drawn yet. Ignore it, never count it. Finish the
+  last item *synchronously* instead of behind the beat, so `report()` can
+  never be raced by "new round" landing during the reveal.
+- **Budget the beat against the reading, not against your patience.** A
+  reveal that is gone before it can be read is decoration: the drill does
+  the entire job of teaching and then wipes the lesson half a second
+  later. Measure the text that is *new* on that screen at ~200 words per
+  minute — a beginner reading unfamiliar copy while also looking at a
+  picture — and make the beat outlast it. On a repeat reveal only the
+  clause changes (*"Way out, low and right — 0"*, ~1.6s); the rest of the
+  sentence is furniture the eye already knows. On the **first** reveal of
+  the sitting nothing is furniture yet, so budget the whole sentence. This
+  guide used to say ~0.6s and the template obeyed it: 620ms for a clause
+  needing 1.6s, which is the same as never having written it. The beat is
+  now **1800ms, and 4000ms for the first reveal of the sitting** — four of
+  them add ~7s to a five-item round, a beat rather than a slideshow. It is
+  worse than a reading problem for a screen-reader player: `#hint` is the
+  drill's one live region, so a short beat overwrites the reveal
+  mid-announcement with the next prompt, and the correction is never heard
+  at all. Keep the beat a pure function of "which item is this" so it can
+  be reasoned about without a canvas (`revealBeat` in the template).
 - **Touch is the default input**: 44px targets, pointerId-guarded
   strokes, `touch-action: none` on the canvas.
 - **Anything meaning-bearing painted on canvas must clear 3:1 in both
@@ -173,8 +213,11 @@ Non-negotiable for every drill:
   (coral), 3.18 (sky), 3.48 (lilac)** — so on paper the palette is mostly
   *below* the bar for a shape that carries information, and the two that
   scrape over it have no margin. `color-mix(in srgb, var(--game-accent)
-  45%, var(--ink))` clears it for every accent, worst case 5.29. Full
-  detail in the accessibility section.
+  45%, var(--ink))` clears it for every accent — **worst case 4.54**
+  (sunny), measured where the mark actually sits, over the canvas's dot
+  grid. Measured against bare `--card` the same worst case flatters itself
+  to 5.27, which is the trap named two paragraphs into the accessibility
+  section. Full detail there.
 - **Train the hand where a stroke beats a tap.** Prefer drawing as the
   input unless the lesson is genuinely a decomposition (three sliders
   for hue/saturation/lightness) or a judgement (spot the wrong figure).
