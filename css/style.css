@@ -471,6 +471,12 @@ a { color: inherit; }
 :root:not([data-theme="dark"]) .rdot.r1 { background: color-mix(in srgb, #3A7A5E 80%, transparent); border-color: #3A7A5E; }
 :root:not([data-theme="dark"]) .rdot.r3 { background: #3A7A5E; border-color: #3A7A5E; }
 .record-note { margin: 6px 0 0; font-size: 0.72rem; color: var(--muted); }
+/* The record's only "are you getting better?" line, so it does not sit at
+   the same weight as the strip caption below it. It follows the stats line
+   directly (which has 8px under it already), reads at the stats' own size,
+   and keeps --muted — 5.2:1 on paper, 5.8:1 at night — rather than reaching
+   for an accent, because it is a fact about the player, not a reward. */
+.record-improve { margin: -4px 0 10px; font-size: 0.78rem; font-weight: 600; max-width: 62ch; }
 
 /* ===== Milestone toast ===== */
 

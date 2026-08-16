@@ -189,7 +189,10 @@ Non-negotiable for every drill:
   centre — after a landscape→portrait rotation, and as 32px going back the
   other way. The picture then argues with the number printed under it. Keep
   the target in fractions and the mark at `target + (dx, dy)`, clamped onto
-  the sheet.
+  the sheet. Freeze the reveal's **sizes** the same way — the aim shape's
+  radius and the zero-point — or a resize and a mid-reveal hardware change
+  each redraw them under a printed number that cannot move. Measured swings
+  and the fix are in the performance section.
 - **Reveal after every attempt**, not just at round end: the truth drawn
   over their attempt, in the accent, with the delta named in words. The
   *last* attempt of a round is an attempt like any other — do not let the
@@ -211,9 +214,9 @@ Non-negotiable for every drill:
   outlives the round — per-item words fix the next attempt, a bias line
   fixes the next round. Hold it to the same bar as the scoring (pure,
   total, at the top of the file) and keep it **silent unless the lean is
-  both consistent and worth acting on** — the template requires most
-  attempts on the same side *and* a mean offset over ~10% of the tolerance,
-  or it would invent a pattern out of noise. Say what to do, not just what
+  both consistent and worth acting on** — the template requires a mean offset
+  over ~10% of the tolerance *and* **not one attempt on the other side**.
+  Say what to do, not just what
   happened, and **say how far**: *"most taps landed low and right — aim a
   little high and left next round"*. A direction with no size is not
   something a hand can execute, so the player invents one, and an invented
@@ -223,8 +226,34 @@ Non-negotiable for every drill:
   sized by a vertical wobble names a number about nothing. One vocabulary
   for "how far off", taught five times a round by the reveals and then
   spent once by the correction; two ladders and the player has to learn
-  both. Tie the count to the same side as the mean, or two wild misses one
-  way outvote three small ones the other and the sentence points backwards.
+  both.
+
+  **A bare majority is not a gate, and a centroid is not a habit detector.**
+  This is the rule the template got wrong for longest, and it got it wrong in
+  the cruellest direction. The mean of five scattered attempts grows with the
+  *scatter* (as `sd/√n`), so a gate that weighs it only against a fixed
+  fraction of the tolerance gets **easier** to clear the wilder the round is:
+  measured over 200k simulated rounds of pure isotropic noise — attempts with
+  no habit whatsoever — "most on the same side + a tenth of the tolerance"
+  fired on **53%** of rounds at a 25px average miss and **82–92%** from 50px
+  out. The beginner spraying the sheet was the one most reliably told they had
+  a lean. And the sentence was not even a description of the round in front of
+  it: five taps flung to four different corners have a small centroid and a
+  3-2 split on both axes, so the drill printed *"most taps landed low and
+  right"* about a round where two of the five were. Across those noise rounds
+  it always named both axes, and only **4–7%** of them had all five attempts
+  in the named quadrant.
+
+  Gate on **contradiction, not on majority**: fire only when *no* attempt went
+  the other way. That turns the line into a description of what happened
+  rather than an inference about the player, and a description cannot become a
+  superstition. Noise then fires on 4–12% of rounds instead of 10–92%, and
+  every one of those really did lean that way; genuine drifts still fire on
+  64–100% against the old gate's 78–100%, which is the entire price. Count
+  contradictions rather than testing the sign of the mean, so an attempt
+  landing exactly on the centre line contradicts nothing — and note the
+  printed word can stay *"most"*: a gate stronger than its sentence promises
+  is the safe direction for the one line a player is asked to act on.
 - **If a reveal holds the screen, the drill must not score what lands on
   it.** A tap during the beat has nothing honest to be judged against —
   the next item is not drawn yet. Ignore it, never count it. Finish the
@@ -327,10 +356,10 @@ every drill at once. The standalone hand-off bar is written from inside
 `report()` — the same tick your `finishRound` writes the hint — so a
 standalone screen-reader player heard the whole round-end sentence and
 then, queued behind it, *"scored 84 — add it to my Art Daily record"*,
-every round, in all 40 drills. The score there is not news; the drill just
-said it in a fuller sentence. What is news is that a route home exists, and
-that is news **once**. The bar now carries `role="status"` for its first
-paint of the sitting and drops the role after it: it keeps updating on
+every round, in every drill in the arcade. The score there is not news; the
+drill just said it in a fuller sentence. What is news is that a route home
+exists, and that is news **once**. The bar now carries `role="status"` for
+its first paint of the sitting and drops the role after it: it keeps updating on
 screen, stays reachable by tab and in browse mode, and stops interrupting
 to repeat a number. Anything you inject into every drill inherits this
 rule — count the live regions on the finished page, do not assume.
@@ -725,6 +754,31 @@ the whole `2.0 / 1.0` of the profile table, **half the radius**; the
 template's acquisition floor narrows its own case to 88px → 75px, which is
 smaller and still wrong. The number is history and so is the scale it was
 measured against.
+
+**So is the shape you were told to hit** — the one the template kept drawing
+live after it had already frozen the other two. The ring the player aimed
+at comes from `startRadius`, which the profile table ranks *opposite* to
+`ease`, so the same pen being plugged in that shrinks the scale **grows** the
+aim ring: mouse `×1.0` → pen `×1.7`, 22px → 37px on `BASE = 22`. Measured on
+the template, a trackpad tap 30px out drew its mark clearly **outside** a
+22px ring under *"A little right — 66 out of 100"*, and one `onInput`
+redrew that same frozen mark **inside** a 37px ring. Inside-or-outside is
+the first thing a reveal says and the only part of it a player can read at a
+glance, so the picture flipped its verdict while the sentence under it did
+not move. A resize does it from the other side, because an aim ring is
+usually clamped to the canvas as well (`min(W, H) / 4` in the template: 37px
+→ 31px on a 200px sheet). Freeze the radius into the reveal beside the
+offset and the zero-point, and draw all three from there:
+
+```js
+reveal = { tf: target, dx: dx, dy: dy, r: t.r, zero: zero, /* … */ };
+// drawReveal: targetAt(rv.tf, rv.r) — never targetRadius() again
+```
+
+The test for all three is the same one sentence: **once a number is printed,
+nothing the player has not done may change the picture it describes.** Play
+one attempt, then change the hardware and rotate the phone without touching
+the canvas — every pixel of that reveal should be where you left it.
 
 **One owner per timer.** A reveal beat, a countdown and a toast all
 outlive the frame that started them, so every path that ends a round must

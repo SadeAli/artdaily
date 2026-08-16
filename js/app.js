@@ -303,11 +303,24 @@
              it. (Only reachable when the round beat today's earlier go —
              a lower or equal score cannot also equal a HIGHER best.) */
           chase = ' · matched your best of ' + r(prevBest);
+        } else {
+          /* BEATING an older record on a repeat go the same day, and the
+             record itself was the one fact dropped. Grinding a drill you
+             once scored 80 on: first go today 50, second go 90, and the
+             sentence read "new best · +40 on your last go" — the +40 is
+             against the warm-up attempt, so the number the player actually
+             broke never appeared, while the SAME round on a fresh day says
+             "new best · +10 on your old 80". Two sentences for one event,
+             and the informative one was reserved for the easier case.
+             Only reachable when r(score) > r(prevBest) > r(todayPrev), i.e.
+             d > 0 and a genuine new best — a score at or below today's
+             earlier go cannot also sit above a HIGHER old best. */
+          chase = ' · your old best was ' + r(prevBest);
         }
       }
       if (d > 0) {
         return (num(prevBest) && r(score) > r(prevBest))
-          ? 'new best · +' + d + ' on your last go'
+          ? 'new best · +' + d + ' on your last go' + chase
           : '+' + d + ' on your last go today' + chase;
       }
       if (d === 0) return 'same as your last go today' + chase;
@@ -517,6 +530,70 @@
     var n = 0;
     Object.keys(store.days).forEach(function (k) { n += Object.keys(dayScores(k)).length; });
     return n;
+  }
+
+  /* ---- am I actually getting better? ----
+     The practice record answered "how much have you practised" four
+     different ways and never once answered the question a beginner is
+     really asking. Every score on this page is compared against the
+     player's own past — that is the promise on the legend line — but the
+     comparison was only ever made for ONE round at a time, in a sentence
+     that disappears when the dialog closes. Over a month of drills there
+     was no line anywhere that said whether the numbers were climbing.
+
+     Deliberately NOT an average score across drills: Cylinder Ends and Box
+     Check are not the same test, so a day of easy drills would read as
+     progress. Each drill is measured against ITSELF — best-ever versus
+     first-ever — and only drills the player has actually come back to on a
+     second day are counted, because a drill played once had no chance to
+     improve and counting it reads as failure.
+
+     PURE: (days) -> { seen, repeated, up, gain }. `days` is a store.days
+     shaped object; day keys are YYYY-MM-DD, so a plain lexicographic sort
+     is chronological. best >= first always holds (best is the max over
+     every day INCLUDING the first), so gain can never be negative. */
+  function improvementStats(days) {
+    var keys = Object.keys(days || {}).sort();
+    var first = Object.create(null), best = Object.create(null), nDays = Object.create(null);
+    keys.forEach(function (k) {
+      var d = days[k];
+      if (!isPlainish(d)) return;
+      Object.keys(d).forEach(function (s) {
+        var v = d[s];
+        if (typeof v !== 'number' || !isFinite(v)) return;
+        if (first[s] === undefined) first[s] = v;
+        if (best[s] === undefined || v > best[s]) best[s] = v;
+        nDays[s] = (nDays[s] || 0) + 1;
+      });
+    });
+    var seen = Object.keys(first);
+    var repeated = 0, up = 0, gain = 0;
+    seen.forEach(function (s) {
+      if (nDays[s] < 2) return;          /* never had a second day to improve on */
+      repeated++;
+      var g = Math.round(best[s]) - Math.round(first[s]);
+      if (g > 0) { up++; gain += g; }
+    });
+    return { seen: seen.length, repeated: repeated, up: up,
+      gain: up ? Math.round(gain / up) : 0 };
+  }
+
+  /* PURE: the stats above -> the sentence, or '' when there is nothing
+     honest to say yet. */
+  function improvementNote(st) {
+    if (!st || !st.seen) return '';
+    function n(c, one, many) { return c + ' ' + (c === 1 ? one : many); }
+    if (!st.repeated) {
+      return 'come back to a drill on another day and this line starts tracking your best against your first go';
+    }
+    if (!st.up) {
+      return 'you have come back to ' + n(st.repeated, 'drill', 'drills') +
+        ' · no first score beaten yet — reps are how that number moves';
+    }
+    return 'you have come back to ' + n(st.repeated, 'drill', 'drills') +
+      ' · your best beats your first go on ' + st.up +
+      ' of ' + (st.repeated === 1 ? 'it' : 'them') +
+      ', by ' + st.gain + ' on average';
   }
 
   function distinctSlugs() {
@@ -779,8 +856,16 @@
       if (isDone) {
         var sc = scores[g.slug];
         var bst = bestFor(g.slug);
+        /* Naming the best is not naming the delta: "done · 70/100 · your
+           best 88" left the one number the player cares about — how far off
+           they were — as arithmetic homework, on the line that stays on the
+           page all day (the player foot, which DOES say it in words, dies
+           with the dialog). Say the gap the same way deltaNote does, so the
+           two surfaces read as one voice. */
         what = 'done · ' + sc + '/100 · ' +
-          (typeof bst === 'number' && bst > sc ? 'your best ' + bst : 'your best yet');
+          (typeof bst === 'number' && bst > sc
+            ? (bst - sc) + ' under your best of ' + bst
+            : 'your best yet');
       } else {
         what = g.tagline || '';
       }
@@ -925,6 +1010,12 @@
       stats.appendChild(document.createTextNode(' ' + p[1]));
     });
     box.appendChild(stats);
+
+    /* The one line in this box that is about getting better rather than
+       about turning up. Sits directly under the volume counts because it is
+       the answer to the question they provoke. */
+    var imp = improvementNote(improvementStats(store.days));
+    if (imp) box.appendChild(say(el('p', 'record-note record-improve'), imp));
 
     /* last 30 days as a dot strip — the shape of a habit, at a glance */
     var strip = el('div', 'record-strip');
@@ -1467,6 +1558,27 @@
   var playerReady = false;
   var gotResult = false;
 
+  /* The line the player reads for the whole round, and it used to promise a
+     score with nothing to measure it against. Every delta this page prints
+     afterwards ("19 under your best of 81") compares against a number the
+     player was never shown BEFORE they drew — so the target arrived only in
+     the post-mortem, when it is too late to aim at. Name the mark to beat
+     while there is still a round left to spend on it, in the same words and
+     the same units the result will use.
+     PURE apart from the store read: (game) -> the waiting sentence. */
+  function waitingLine(g) {
+    var base = 'finish a round and your score lands here';
+    if (!g) return base;
+    var b = bestFor(g.slug);
+    if (typeof b !== 'number') return base + ' · nothing on record for this one yet';
+    var t = todayScore(g.slug);
+    /* Today's kept score, when it is not the record, is the OTHER number the
+       result sentence will name ("today keeps the 70") — so show both, in
+       the same order the card's own meta line prints them. */
+    return base + ' · your best is ' + b + '/100' +
+      (typeof t === 'number' && t < b ? ' · today ' + t : '');
+  }
+
   /* A drill on a phone can take a second or two to arrive, and until it
      does the player is looking at an empty rectangle under the words
      "finish a round and your score lands here" — which reads as a page
@@ -1474,7 +1586,7 @@
   function markPlayerReady() {
     if (playerReady || gotResult || !openGame) return;
     playerReady = true;
-    if (statusEl) statusEl.textContent = 'finish a round and your score lands here';
+    if (statusEl) statusEl.textContent = waitingLine(openGame);
   }
 
   /* Fallback for a drill whose SDK never posts artdaily:ready — the iframe
@@ -1604,8 +1716,13 @@
     var s = Math.max(0, Math.min(100, Math.round(Number(d.score) || 0)));
     /* The status line lives in the player foot, which is not on screen for
        a drill played in its own tab — so the delta has to ride the toast. */
+    /* "/100" is not decoration here: this toast is the ONLY place a round
+       played in another tab is ever named, and "Steady Lines 78 · new best"
+       reads as a rank or a count next to a page whose every other score
+       carries its denominator. Same units everywhere, or the delta behind
+       it has no scale. */
     recordResult(g, s, function (sc, note) {
-      return g.icon + ' ' + g.name + ' ' + sc + (note ? ' · ' + note : '') +
+      return g.icon + ' ' + g.name + ' ' + sc + '/100' + (note ? ' · ' + note : '') +
         ' — from your other tab';
     });
     /* Acknowledge. A postMessage whose targetOrigin no longer matches is
@@ -1648,7 +1765,7 @@
        earned. Nothing valid is ever refused by this line. */
     if (!g || !(s >= 0 && s <= 100)) return;
     recordResult(g, s, function (sc, note) {
-      return g.icon + ' ' + g.name + ' ' + sc + (note ? ' · ' + note : '') +
+      return g.icon + ' ' + g.name + ' ' + sc + '/100' + (note ? ' · ' + note : '') +
         ' — added to your record';
     });
   }
@@ -1798,7 +1915,7 @@
        arrived, which is why gotResult counts here too.) */
     updateNextBtn();
     if (statusEl && player && player.open && (playerReady || gotResult)) {
-      statusEl.textContent = 'finish a round and your score lands here';
+      statusEl.textContent = waitingLine(openGame);
       statusEl.classList.remove('is-best');
     }
   }
@@ -1813,5 +1930,14 @@
     renderAll();
     syncClosing();
     updateNextBtn();
+    /* The foot now carries a NUMBER before the round ("your best is 62/100"),
+       so it can go stale the same way the "next warmup →" label could: log a
+       round for this very drill in another tab and the target this player is
+       aiming at is quietly out of date. Only the WAITING line is refreshed —
+       a result sentence describes a round that really happened and stays
+       true, and gotResult is what tells the two apart. */
+    if (statusEl && player && player.open && playerReady && !gotResult) {
+      statusEl.textContent = waitingLine(openGame);
+    }
   });
 })();
