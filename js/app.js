@@ -585,7 +585,7 @@
     { id: 'streak30',  icon: '🏔️', name: '30 days running',  hint: 'this is who you are now' },
     { id: 'hundred',   icon: '💯', name: 'a clean 100',      hint: 'nailed one exactly' },
     /* "you have tried the whole studio" was true when the studio was ten
-       drills. The registry is 40 live today, so the badge congratulated a
+       drills. The registry is 42 live today, so the badge congratulated a
        player for a quarter of the catalogue by telling them there was
        nothing left to see — on the one screen whose whole job is to make
        them want the other thirty. Say breadth, which is what ten different
@@ -665,10 +665,21 @@
       return 'you have come back to ' + n(st.repeated, 'drill', 'drills') +
         ' · no first score beaten yet — reps are how that number moves';
     }
+    /* "you have come back to 1 drill · your best beats your first go on 1 of
+       it, by 20 on average" — that was the sentence, and it is the FIRST one
+       anybody can ever see here: this line only starts speaking on the day a
+       player returns to a drill for the second time, and on that day repeated
+       is 1 and up is 1 (up 0 is caught by the branch above), so "on 1 of it"
+       was not an edge case, it was the opening. A count out of one is not a
+       count and an average over one drill is not an average — the reward for
+       coming back read like a broken mail merge. Name what happened instead;
+       the plural branch is unchanged, and "them" is now always right there. */
+    if (st.repeated === 1) {
+      return 'you have come back to 1 drill · your best beats your first go by ' + st.gain;
+    }
     return 'you have come back to ' + n(st.repeated, 'drill', 'drills') +
       ' · your best beats your first go on ' + st.up +
-      ' of ' + (st.repeated === 1 ? 'it' : 'them') +
-      ', by ' + st.gain + ' on average';
+      ' of them, by ' + st.gain + ' on average';
   }
 
   function distinctSlugs() {
@@ -870,7 +881,7 @@
       /* .grid is list-style: none, and Safari/VoiceOver drops list semantics
          from any list styled that way — so the catalogue's six spreads
          announced their cards as loose links with no "list, 9 items" and no
-         "3 of 9" as you walk them. On a 41-card catalogue that count is the
+         "3 of 9" as you walk them. On a 42-card catalogue that count is the
          only thing telling a screen reader user how far through a chapter
          they are. role="list" restores it and paints nothing. */
       grid.setAttribute('role', 'list');
@@ -1063,7 +1074,7 @@
     var logged = drillsLogged();
     var drills = distinctSlugs().length;
     /* Counting a day's keys is free; working out WHICH three drills it asked
-       for is 40 hashes plus a sort of the whole catalogue — per logged day,
+       for is 42 hashes plus a sort of the whole catalogue — per logged day,
        every time this renders, and it renders on every recorded score. A day
        holding fewer drills than the warmup asks for cannot be a full warmup,
        whatever it asked for, so that day never needs the ranking at all.
@@ -1878,7 +1889,18 @@
        where that drill is actually published. */
     if (d.type !== 'artdaily:result') return;
     var g = gameBySlug(d.slug);
-    if (!g || originOf(g.url) !== ev.origin) return;
+    /* gameUrl(g), not g.url: this asks "where does this drill legitimately
+       live", and the answer is wherever the "open full page ↗" link actually
+       sent the player — which on file:// or localhost is the registry's dev
+       path on THIS origin, not the published one (see gameUrl/isLocal). Checked
+       against g.url, every round finished in its own tab on a dev machine was
+       measured against sadeali.github.io, failed, and was dropped with nothing
+       on screen to say so: the last route a standalone score has home, dead on
+       exactly the setup the arcade is built and tested on. On the deployed site
+       isLocal() is false and gameUrl(g) IS g.url, so production is untouched —
+       and the check still only ever trusts the origin the drill is served
+       from. */
+    if (!g || originOf(gameUrl(g)) !== ev.origin) return;
     var s = Math.max(0, Math.min(100, Math.round(Number(d.score) || 0)));
     /* The status line lives in the player foot, which is not on screen for
        a drill played in its own tab — so the delta has to ride the toast. */
@@ -1972,7 +1994,15 @@
   function copyShare(btn) {
     var text = shareText();
     function confirmCopy() {
-      btn.textContent = 'copied ✓';
+      /* say(), not textContent. This string is not printed into a paragraph —
+         it REPLACES A BUTTON'S ACCESSIBLE NAME, on the control the player is
+         standing on at the moment they press it, so the confirmation that the
+         card was copied arrived as "copied heavy check mark". Same glyph-read-
+         as-a-noun bug say() was written for, in the one place on this page
+         where a runtime string lands directly on a focused control. The reset
+         below sets textContent back to SHARE_LABEL, which clears say()'s spans
+         with it. */
+      say(btn, 'copied ✓');
       btn.classList.add('copied');
       if (btn._copyTimer) clearTimeout(btn._copyTimer);
       btn._copyTimer = setTimeout(function () {
@@ -2069,8 +2099,22 @@
     if (todayKey() === renderedDay) return;
     renderedDay = todayKey();
     adoptStore();
-    hideClosing(); /* yesterday's closing card is not today's */
     renderAll();
+    /* Yesterday's closing card is not today's — but "not yesterday's" is not
+       the same as "gone", and this used to be a bare hideClosing(). That is
+       right on the ordinary rollover (a day that has only just started cannot
+       be complete) and wrong the moment it is not: leave a tab open overnight
+       while a SECOND tab finishes the new day's warmup and the storage listener
+       gets here first and renders the card correctly — then the first focus or
+       tab-switch fired this and deleted it. The checklist directly above it
+       still read "3/3 done · ★ perfect day" while the day's three scores,
+       tomorrow's pick and the share button were gone, and nothing short of
+       another cross-tab write or a reload ever brought them back.
+       syncClosing() asks the day itself instead of assuming: it hides the card
+       on every normal rollover, exactly as before, and keeps it on the one
+       rollover where it is still true. Same order the cross-tab handler
+       already uses (adopt → render → sync → button). */
+    syncClosing();
     /* The player foot is yesterday's too, and it does not merely look
        stale — it lies. "next warmup →" keeps whatever label it was given
        last night while its click handler recomputes the pick at press time,

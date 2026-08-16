@@ -142,8 +142,14 @@ Non-negotiable for every drill:
   the cursor sat, while the context menu opens over the reveal explaining
   it. Same for a middle-click and for a pen's barrel button. `button` is
   `0` for a finger and for a pen's tip, so the guard costs touch and pen
-  nothing; put it right after the `isPrimary` check, before
-  `preventDefault()`.
+  nothing. **It is the FIRST line of the handler** — above
+  `preventDefault()` and above every state guard, `isPrimary` included.
+  This is the one press whose browser default is still wanted, so it has
+  to leave before anything cancels it; put it below `preventDefault()` and
+  the guard still skips the scoring but the context menu never opens. The
+  full order is `button > 0` out · `preventDefault()` · `isPalm` · the
+  state guards (`isPrimary` among them) — see the palm snippet in the
+  hardware section, which shows the same three lines.
 - **Score where you painted, not where the rect says.** The shared sheet is
   `* { box-sizing: border-box }` and `.game-canvas` has a 1px border, so
   `getBoundingClientRect()` measures the **border** box while the bitmap is
@@ -646,11 +652,28 @@ console.log(m.padEnd(6),'ring',r,'zero',z,'| ring edge scores',
   Math.round(Math.max(0,1-r/z)*100));}"
 ```
 
-A profile switch never lands mid-press: the SDK detects the hardware on
-`pointerdown` but queues the change until the release, so `onInput` can
+A profile switch **lands at a release and nowhere else**: the SDK detects
+the hardware on `pointerdown` but queues the change, so `onInput` can
 rebuild geometry freely without the target moving under a live stroke,
 and a stroke is always scored under the same `ease` it was drawn under.
-That holds even for a stroke that *pauses* — a held-still nib emits no
+
+*Nowhere else* includes the start of a press, and that is the case a tap
+drill cares about. The SDK sniffs on `window` in the **capture** phase, so
+its `pointerdown` handler runs *before* your canvas handler for the same
+event: anything it applies there moves your geometry in the gap between the
+last frame the player could see and the moment that very press is scored.
+A queued switch used to be flushed right there, whenever the counter said no
+gesture was live. Measured on the template, a `mouse`→`pen` switch grows the
+aim ring 22px → 37px, and since the ring's radius pads the target inside the
+sheet the target itself slides up to **15px on a 900px sheet — 17 points of
+score** against the mouse zero-point. The player aimed at the old spot and
+was graded against the new one, having never seen it move. The flush is gone
+from that path; the release schedules its own, one task later, and a switch
+queued by a gesture whose `pointerup` never arrived is picked up by the next
+gesture's release instead (the idle repair hands the counter back). One
+gesture later, and never inside one.
+
+The queue holds for a stroke that *pauses*, too — a held-still nib emits no
 move events at all, so the gesture goes idle without ending, and the palm
 landing next used to force the queued switch through under the live hand
 (a `mouse`→`pen` switch jumped the start dot 28px → 48px and halved the
