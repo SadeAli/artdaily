@@ -514,6 +514,7 @@ ArtDaily.inputLabel()     // 'mouse or trackpad' — what the HUD chip says
 ArtDaily.ease(0.055)      // widen the zero-point: pen 1.0, mouse 2.0, touch 1.5
 ArtDaily.startRadius(28)  // widen a start zone: pen 1.7, touch 1.6, mouse 1.0
 ArtDaily.samples(ev)      // every position a pointermove carried, oldest first
+ArtDaily.isPalm(ev)       // that contact is a resting wrist, not an attempt
 ArtDaily.onInput(fn)      // hardware changed mid-session
 ```
 
@@ -672,6 +673,46 @@ Rules that follow from this:
   done.** An honest attempt on the worst-supported device has to land
   mid-range; 18 out of 100 is not a hard drill, it is a player who closes
   the tab and concludes they cannot draw.
+- **A palm is not an attempt — `ArtDaily.isPalm(ev)` on every press.** An
+  artist rests the heel of the hand on the glass and the nib lands a moment
+  *after* it, so first-contact-wins gives the round to the wrist: a stroke
+  drill records palm drift as the player's line, a tap drill burns an item
+  on a contact nobody made, and either way the hand that was actually
+  drawing is the one the drill ignored. Thirty-three drills hand-rolled
+  this guard against their own canvas events, under two spellings of the
+  constant and two different clocks. It is one call now:
+
+  ```js
+  canvas.addEventListener('pointerdown', function (ev) {
+    if (ev.button > 0) return;          // right/middle click, barrel button
+    ev.preventDefault();                // see the rule below
+    if (ArtDaily.isPalm(ev)) return;    // ignored, never counted against them
+    …
+  });
+  ```
+
+  The SDK owns it because the SDK is the only thing that sees a nib
+  **hovering**: it listens on `window` in the capture phase, so a pen that
+  has lifted off the sheet — or is hovering over the chrome beside it —
+  still holds the lockout open. A guard fed by your own canvas events goes
+  blind at exactly the moment the palm is still down. True only for a
+  `touch` press within 700ms of the pen's last event; a finger-only player
+  is never once tested against a pen, and a missing or unusable
+  `timeStamp` answers `false`, because a *false* palm silently eats a tap
+  the player really made.
+- **Cancel the default on every press the sheet sees — the ones you ignore
+  too.** `preventDefault()` tucked below the state guards only ever runs
+  for the presses that count, and the presses a drill ignores are the ones
+  a beginner makes most: a reveal owns the sheet for 1.8s (6.3s for the
+  first one in a sitting), which is exactly long enough for an impatient
+  hand to press and drift a few pixels. Left to the browser that gesture
+  drags a text selection across the hint line and the HUD, and on a touch
+  screen it is a long-press callout sitting over the very picture the beat
+  exists to let them read. The press still is not counted; it simply stops
+  fighting the hand. The one press to leave alone is `button > 0` — the
+  context menu is wanted — so test that first. `touch-action: none` on the
+  canvas covers scrolling and pinch, not selection, and the two rules are
+  not interchangeable.
 - **Snap, don't refuse.** If a press lands near a start dot, move the
   stroke onto the dot. Refusing a near-miss reads as a broken site to
   someone who cannot see their own hand.

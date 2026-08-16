@@ -47,6 +47,12 @@
      `picked` from distinct chapters and then tops up, so it is always
      min(3, catalogue). Used as a free lower bound in renderRecord. */
   var PICK_SIZE = Math.min(3, liveGames.length);
+  /* How many live drills each chapter holds. A constant of the registry —
+     pickForKey used to rebuild it on every call, i.e. one full walk of the
+     catalogue per day ranked, and the practice record ranks one day per day
+     the player has ever logged. */
+  var CAT_SIZE = {};
+  liveGames.forEach(function (g) { CAT_SIZE[g.cat] = (CAT_SIZE[g.cat] || 0) + 1; });
 
   /* ---- registry helpers ---- */
 
@@ -109,9 +115,24 @@
     return !!p && dateKey(new Date(+p[1], +p[2] - 1, +p[3])) === k;
   }
 
+  /* The exact text `store` was parsed from (or written as). loadStore is a
+     pure function of this string — same bytes in, same sanitised store out —
+     which is what lets adoptStore() below keep the derived caches when a
+     re-read finds the store byte-for-byte unchanged, instead of throwing away
+     work it is about to redo. Only ever written here, in saveStore, and by the
+     reset button. */
+  var storeRaw = null;
+  /* A value localStorage.getItem can never return (it returns a string or
+     null), so `storeRaw === was` is guaranteed false once this is in there.
+     Used by saveStore to disarm the shortcut after a write that failed. */
+  var NEVER_SEEN = {};
+
   function loadStore() {
+    var raw = null;
+    try { raw = localStorage.getItem(STORE_KEY); } catch (e) { raw = null; }
+    storeRaw = raw;
     var s = null;
-    try { s = JSON.parse(localStorage.getItem(STORE_KEY)); } catch (e) { s = null; }
+    try { s = JSON.parse(raw); } catch (e) { s = null; }
     if (!isPlainish(s)) s = {};
     if (!isPlainish(s.days)) s.days = {};
     /* A day holds finished rounds, and a finished round is a whole number
@@ -186,21 +207,71 @@
      hash per comparison. Measured on a one-year store that is ~1.25 MILLION
      hash rounds for a single recorded score — tens of milliseconds of blocked
      main thread at the exact moment the player is waiting to see their number,
-     and it grows with every day they practise. Both caches are dropped whole
-     the moment anything writes to the store, so a stale one cannot outlive a
-     round. */
+     and it grows with every day they practise.
+     The two are dropped on DIFFERENT events, because they depend on different
+     parts of the store — see invalidateBest and invalidatePicks below. Dropping
+     both on every write is what left the pick cache empty for the one caller
+     that needed it most. */
   var bestCache = null;
   var pickCache = Object.create(null);
 
-  function invalidateDerived() { bestCache = null; pickCache = Object.create(null); }
+  /* bestFor reads EVERY logged day INCLUDING today, so one recorded round
+     moves it. Dropped on every write. */
+  function invalidateBest() { bestCache = null; }
+
+  /* A day's pick is a function of the SIX DAYS BEFORE IT and nothing else —
+     pickForKey never reads its own day (the recency loop starts at i = 1), and
+     the only day anything here ever writes is today. So a round played today
+     cannot change the pick for today or for any earlier day, and the cache
+     that the practice record leans on must NOT be thrown away by it. Only a
+     store whose PAST changed can invalidate a pick: a reset, boot, or adopting
+     a genuinely different store from disk — all of which go through setStore.
+     (Tomorrow's preview DOES move when you play today, which is why
+     pickForKey refuses to cache a future key at all.) */
+  function invalidatePicks() { pickCache = Object.create(null); }
 
   /* Every path that swaps the whole store in goes through here, so no caller
      has to remember that the caches exist. In-place writes call
-     invalidateDerived() directly. */
-  function setStore(s) { store = s; invalidateDerived(); return store; }
+     invalidateBest() directly. */
+  function setStore(s) { store = s; invalidateBest(); invalidatePicks(); return store; }
+
+  /* Re-read the store from disk, because a second tab may have logged rounds
+     since we last looked. This runs at the top of EVERY recorded round, and it
+     used to drop both caches unconditionally — which meant the pick cache was
+     empty again by the time renderRecord asked it for one pick per logged day,
+     every single round, for the whole life of the store. Measured with the
+     real app.js over a two-year daily store: 733 pick computations and 56.5ms
+     of a 63ms round, all of it between the player finishing a stroke and the
+     score appearing, and all of it growing by another day's worth every day
+     they practise.
+     Identical bytes on disk cannot parse into a different store, so when the
+     text has not moved neither has anything derived from it. (The scores the
+     caches are built from are already whole 0-100 numbers when they are
+     written, so a save/load round trip is a no-op on exactly the values that
+     are cached.) */
+  function adoptStore() {
+    var was = storeRaw;
+    var s = loadStore();                 /* rewrites storeRaw */
+    if (storeRaw === was) { store = s; return store; }
+    return setStore(s);
+  }
 
   function saveStore() {
-    try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch (e) {}
+    var txt = JSON.stringify(store);
+    /* On success the text on disk IS what we just wrote, which is what lets
+       the next adoptStore() see that nothing moved.
+       On failure it is not. setItem throwing is an anticipated state here —
+       a full quota, or a private window that refuses storage — and the round
+       that was just played is then only in memory, exactly as it always was.
+       But the caches were rebuilt from that in-memory round, and the next
+       adoptStore() re-reads the disk and rolls `store` back to the version
+       WITHOUT it. Leave storeRaw pointing at the disk text and that rollback
+       keeps the caches: the very next round announced "44 under your best of
+       99" against a 99 that exists nowhere, on the one device where the page
+       cannot remember anything. NEVER_SEEN is a value getItem cannot return,
+       so the next adopt is forced through the full re-read that drops them. */
+    try { localStorage.setItem(STORE_KEY, txt); storeRaw = txt; }
+    catch (e) { storeRaw = NEVER_SEEN; }
   }
 
   /* Local-timezone day keys — toISOString flips the day at UTC
@@ -435,16 +506,13 @@
       var k = dateKey(new Date(+p[1], +p[2] - 1, +p[3] - i));
       Object.keys(dayScores(k)).forEach(function (s) { recent[s] = Math.max(recent[s] || 0, 7 - i); });
     }
-    var perCat = {};
-    liveGames.forEach(function (g) { perCat[g.cat] = (perCat[g.cat] || 0) + 1; });
-
     /* Weigh each drill ONCE. The comparator used to hash both sides on every
        comparison, so ranking the whole catalogue cost ~n·log n hashes instead of n —
        about ten times the work, repeated for every day in the record. Sort is
        stable and the weights are identical, so the order is unchanged. */
     var weighed = liveGames.map(function (g) {
       return { g: g, w: slugHash(seed, g.slug) / 4294967295 +
-        (perCat[g.cat] || 1) * 0.06 - (recent[g.slug] || 0) * 0.25 };
+        (CAT_SIZE[g.cat] || 1) * 0.06 - (recent[g.slug] || 0) * 0.25 };
     });
     weighed.sort(function (a, b) { return b.w - a.w; });
     var ranked = weighed.map(function (x) { return x.g; });
@@ -457,7 +525,14 @@
     ranked.forEach(function (g) {
       if (picked.length < 3 && picked.indexOf(g) === -1) picked.push(g);
     });
-    pickCache[key] = picked;
+    /* Cache today and the past; never a FUTURE day. Tomorrow's preview on the
+       closing card is the one pick a round played TODAY really does change —
+       today becomes tomorrow's "yesterday" in the recency bias above — and it
+       is asked for once per finished warmup, so it costs nothing to work out
+       fresh. Everything else is frozen the moment its own six preceding days
+       are in the past, which is what invalidatePicks relies on. Day keys are
+       YYYY-MM-DD, so a plain string compare is chronological. */
+    if (key <= todayKey()) pickCache[key] = picked;
     return picked;
   }
 
@@ -1056,18 +1131,28 @@
     box.hidden = false;
   }
 
-  function renderMeters() {
-    if (!meters) return;
-    var ids = taggedSkillIds();
-    var any = ids.some(function (id) { return (Number(store.skills[id]) || 0) > 0; });
-    var empty = $('metersEmpty');
-    if (empty) empty.hidden = any;
+  /* skill id -> the three nodes whose CONTENT moves. Built once, on the first
+     render where there is anything in a tube at all.
+     The whole <ul> used to be torn down and rebuilt on every render — on every
+     recorded round, and again on every cross-tab adopt — which quietly cost
+     the section the one animation the stylesheet gives it. .meter-fill carries
+     `transition: width 0.3s ease`, and a transition needs the SAME element to
+     hold two different widths: a brand-new node renders at its final width and
+     transitions from nothing. So the paint tube — the page's only long-run
+     progress signal, the reason recordResult bothers to announce "tube filled
+     to level 3" — never once visibly filled. It jumped, on a page nobody was
+     looking at, and only if the player happened to scroll to the bottom.
+     It cost the announcement too: a role="progressbar" that is destroyed and
+     recreated is a new object with a new value, not a value that changed, and
+     a screen-reader cursor resting in the tubes was thrown out of them by
+     every round. */
+  var meterEls = null;
+
+  function buildMeters(ids) {
+    var map = Object.create(null);
     meters.textContent = '';
-    if (!any) { meters.hidden = true; return; }
-    meters.hidden = false;
     ids.forEach(function (id, i) {
       var s = SKILLS[id] || { label: id, icon: '' };
-      var info = levelInfo(store.skills[id]);
       var li = el('li', 'meter accent-' + ACCENTS[i % ACCENTS.length]);
       var ic = el('span', 'meter-icon', s.icon);
       ic.setAttribute('aria-hidden', 'true');
@@ -1084,20 +1169,45 @@
       track.setAttribute('role', 'progressbar');
       track.setAttribute('aria-valuemin', '0');
       track.setAttribute('aria-valuemax', '100');
-      track.setAttribute('aria-valuenow', String(info.pct));
-      track.setAttribute('aria-label',
-        'level ' + info.lv + ' — ' + info.pct + '% of the way to level ' + (info.lv + 1));
       var fill = el('span', 'meter-fill');
-      fill.style.setProperty('--w', info.pct + '%');
       track.appendChild(fill);
       li.appendChild(track);
       /* "lv 3" is the same fact the progressbar just gave its name; keep it
          on screen, keep it out of the announcement. */
-      var lv = el('span', 'meter-lv', 'lv ' + info.lv);
+      var lv = el('span', 'meter-lv');
       lv.setAttribute('aria-hidden', 'true');
       li.appendChild(lv);
       meters.appendChild(li);
+      map[id] = { track: track, fill: fill, lv: lv };
     });
+    return map;
+  }
+
+  function renderMeters() {
+    if (!meters) return;
+    var ids = taggedSkillIds();
+    var any = ids.some(function (id) { return (Number(store.skills[id]) || 0) > 0; });
+    var empty = $('metersEmpty');
+    if (empty) empty.hidden = any;
+    /* First build happens on the render that first has something to show, so
+       the tubes appear already at their level rather than animating up from
+       empty on a page load — a transition only runs on a value that MOVES. */
+    if (!meterEls && any) meterEls = buildMeters(ids);
+    if (meterEls) {
+      ids.forEach(function (id) {
+        var m = meterEls[id];
+        if (!m) return;
+        var info = levelInfo(store.skills[id]);
+        m.fill.style.setProperty('--w', info.pct + '%');
+        m.track.setAttribute('aria-valuenow', String(info.pct));
+        m.track.setAttribute('aria-label',
+          'level ' + info.lv + ' — ' + info.pct + '% of the way to level ' + (info.lv + 1));
+        m.lv.textContent = 'lv ' + info.lv;
+      });
+    }
+    /* Written every render, hidden or not, so a reset cannot leave a stale
+       width behind a display:none to animate away from later. */
+    meters.hidden = !any;
   }
 
   /* ---- result recording ---- */
@@ -1112,7 +1222,7 @@
        an overnight sleep) may have logged rounds since `store` was last
        loaded, and writing our own snapshot back would erase them. Every
        mutation in this file is read-modify-write for the same reason. */
-    setStore(loadStore());
+    adoptStore();
     var tk = todayKey();
     var firstEver = drillsLogged() === 0;  /* asked BEFORE this round lands */
     /* Both read BEFORE the write, or the comparison is against this very
@@ -1126,8 +1236,11 @@
     if (!isPlainish(store.days[tk])) store.days[tk] = {};
     var day = store.days[tk];
     if (typeof day[g.slug] !== 'number' || score > day[g.slug]) day[g.slug] = score;
-    /* the day just changed under the caches — every read below must be new */
-    invalidateDerived();
+    /* Today's scores just changed, so every "best" below must be recomputed.
+       The PICKS did not change — see invalidatePicks — and dropping them here
+       is what used to cost the practice record a full re-rank per logged day
+       on every single round. */
+    invalidateBest();
 
     /* A paint tube crossing a level line is the page's only long-run
        progress signal, and it was completely silent: the meter simply had a
@@ -1308,7 +1421,7 @@
      3-day streak (real, repeated value), at most once, dismissible. */
   /* read-modify-write, like every other mutation here */
   function markAskSeen() {
-    setStore(loadStore());
+    adoptStore();
     store.seen.ask = true;
     saveStore();
   }
@@ -1833,6 +1946,10 @@
     resetBtn.addEventListener('click', function () {
       if (!window.confirm('reset all local progress? streak, ticks and skill levels will be wiped.')) return;
       try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+      /* The text on disk is gone, so the text `store` was parsed from is too.
+         Leaving the old one behind would let the next adoptStore() compare a
+         wiped store against a live one and decide nothing had changed. */
+      storeRaw = null;
       setStore(freshStore());
       clearToasts();  /* milestones already scheduled are no longer true */
       hideClosing();  /* else it keeps showing the scores just wiped */
@@ -1898,7 +2015,7 @@
   function maybeRollover() {
     if (todayKey() === renderedDay) return;
     renderedDay = todayKey();
-    setStore(loadStore());
+    adoptStore();
     hideClosing(); /* yesterday's closing card is not today's */
     renderAll();
     /* The player foot is yesterday's too, and it does not merely look
@@ -1926,7 +2043,7 @@
      that our next save would write back over theirs. */
   window.addEventListener('storage', function (ev) {
     if (ev && ev.key && ev.key !== STORE_KEY) return;
-    setStore(loadStore());
+    adoptStore();
     renderAll();
     syncClosing();
     updateNextBtn();
