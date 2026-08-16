@@ -356,13 +356,21 @@ a { color: inherit; }
 .closing-scores { margin: 2px 0 0; font-size: 0.9rem; font-weight: 700; line-height: 1.6; }
 /* the drill name and its number must never be split across a line break —
    a wrapped "Vanishing Point / Hunt 71" is the emoji cipher all over
-   again. The "best ★" tag is allowed to drop instead (its leading space
-   is inside .closing-pb, so normal white-space there restores exactly one
-   break opportunity), which keeps the longest name in the registry inside
-   a 320px hero sheet. */
+   again. The trailing tag — "best ★" or "first go" — is allowed to drop
+   instead (its leading space is inside the tag span, so normal white-space
+   there restores exactly one break opportunity), which keeps the longest
+   name in the registry inside a 320px hero sheet. "first go" is one
+   character wider than "best ★" and wraps the same way. */
 .closing-score { white-space: nowrap; }
-.closing-pb { white-space: normal; font-size: 0.76rem; font-weight: 700; color: var(--mint); }
+.closing-pb, .closing-first { white-space: normal; font-size: 0.76rem; font-weight: 700; }
+/* Two different facts, two different inks. "best ★" is the reward and keeps
+   the accent green; "first go" is a baseline note, not an achievement, so it
+   sits in the same --muted the rest of the card's annotations use — the star
+   stops being wallpaper on the days when every score is a first. --muted is
+   5.2:1 on paper and 5.8:1 at night against --card. */
+.closing-pb { color: var(--mint); }
 :root:not([data-theme="dark"]) .closing-pb { color: #3A7A5E; }
+.closing-first { color: var(--muted); }
 /* the summary gets focus when "see today's card →" is pressed */
 .closing:focus { outline: 2px dashed var(--focus); outline-offset: 4px; }
 .closing-streak { margin: 6px 0 0; font-size: 0.82rem; font-weight: 700; color: var(--muted); }

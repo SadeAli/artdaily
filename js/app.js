@@ -29,6 +29,7 @@
   var catalogue = $('catalogue');
   var jumpNav = $('jumpNav');
   var todayList = $('todayList');
+  var todayHead = $('todayHead');
   var todayDone = $('todayDone');
   var shareBtn = $('shareBtn');
   var streakChip = $('streakChip');
@@ -245,6 +246,17 @@
     return v === undefined ? null : v;
   }
 
+  /* Has this drill ever been finished on an EARLIER day — i.e. was there a
+     mark to beat before today? "best" is only a fact about a score if the
+     answer is yes; on a first-ever go the score IS the best by definition
+     and the word says nothing. See renderClosing. */
+  function playedBeforeToday(slug) {
+    var tk = todayKey();
+    return Object.keys(store.days).some(function (k) {
+      return k !== tk && typeof dayScores(k)[slug] === 'number';
+    });
+  }
+
   /* The page's whole promise about scoring is on the legend line: "you are
      only ever compared with your own past rounds". It was never kept — a
      finished round said "recorded ✓ 62/100" and stopped, so a number that
@@ -288,7 +300,15 @@
          dialog looks like it is lying. */
       return (-d) + ' under your last go · today keeps the ' + r(todayPrev) + chase;
     }
-    if (!num(prevBest)) return 'first go at this drill — this is the mark to beat';
+    /* "·", not an em dash. The status line assembles "recorded ✓ 55/100 — "
+       + this string, so an em dash INSIDE it produced "recorded ✓ 55/100 —
+       first go at this drill — this is the mark to beat": two dashes in one
+       sentence, on the reveal a beginner reads more often than any other
+       (every drill's first go is their first go, and the first week is
+       nothing but first goes — simulated over 60 players, days 1-7 are
+       100% first-evers). The sibling first-round line right below already
+       separates its two clauses with "·". */
+    if (!num(prevBest)) return 'first go at this drill · this is the mark to beat';
     if (r(score) > r(prevBest)) return 'new best · +' + (r(score) - r(prevBest)) + ' on your old ' + r(prevBest);
     if (r(score) === r(prevBest)) return 'matched your best of ' + r(prevBest);
     return (r(prevBest) - r(score)) + ' under your best of ' + r(prevBest);
@@ -769,12 +789,33 @@
       }
     }
     var all = picks.length > 0 && done === picks.length;
+    var cold = isNewcomer() && picks.length > 0;
+    /* The heading is the loudest line on the first screen after the title,
+       and on a cold visit it said "today's warmup" over a list that is NOT
+       today's rotation — it is the curated starter session — while the line
+       underneath it said "your first three". Two contradictory names for the
+       same three rows, in the first two seconds. Say the verb instead; the
+       ritual wording is earned the moment there is a day on record. */
+    if (todayHead) todayHead.textContent = cold ? 'start here' : "today's warmup";
+    /* The list's own name was hard-coded to "Today's three warmups" in the
+       markup: same wrong noun for a newcomer, and a hard-coded "three" that
+       the page does not actually guarantee (PICK_SIZE is min(3, catalogue)).
+       Both come from the picks that were just rendered. */
+    if (todayList) {
+      todayList.setAttribute('aria-label', cold
+        ? 'Your first ' + picks.length + ' drills'
+        : "Today's warmup, " + picks.length + (picks.length === 1 ? ' drill' : ' drills'));
+    }
     if (todayDone) {
       /* "0/3 done · perfect day ★ when all three" is a scoreboard, and a
          scoreboard means nothing to someone who has not played yet. On a
-         cold first visit say the price and the verb instead. */
-      say(todayDone, (isNewcomer() && picks.length)
-        ? 'your first three · about ' + minutes + ' min in total · pick one to start'
+         cold first visit say the price and the verb instead. ("pick one to
+         start" lost its "to start" when the heading above became "start
+         here" — the same word twice, six lines apart, was doing the job
+         once.) */
+      say(todayDone, cold
+        ? (picks.length === 3 ? 'your first three' : 'your first ' + picks.length) +
+          ' · about ' + minutes + ' min in total · pick one'
         : all
           ? done + '/' + picks.length + ' done · ★ perfect day'
           : done + '/' + picks.length + ' done · perfect day ★ when all three');
@@ -1091,10 +1132,25 @@
       part.appendChild(sIcon);
       part.appendChild(document.createTextNode(
         ' ' + g.name + ' ' + (typeof s === 'number' ? s : '–')));
-      if (typeof s === 'number' && s === bestFor(g.slug)) {
-        /* the leading space stays the first text node here, so .closing-pb's
-           white-space: normal still restores exactly one break opportunity */
-        part.appendChild(say(el('span', 'closing-pb'), ' best ★'));
+      /* "best ★" used to be stamped on every score that equalled the drill's
+         all-time best — which on a first-ever go is EVERY score, because the
+         first number is trivially the best number. Replaying the real
+         rotation for 60 simulated players: days 1-7 are 100% first-evers and
+         39% of the whole first month is, so the newcomer's closing card —
+         the first review of a finished session they ever see — decorated all
+         three scores identically and taught the star to mean "you played it".
+         Then it vanished on day 8 for a round that was perfectly good, which
+         reads as failure rather than "you did not beat your record".
+         Name the two states apart: a first go is a baseline (say so, in the
+         quiet ink), and the star is kept for actually beating an older mark.
+         (The leading space stays the first text node in both, so the tag's
+         white-space: normal still restores exactly one break opportunity.) */
+      if (typeof s === 'number') {
+        if (!playedBeforeToday(g.slug)) {
+          part.appendChild(say(el('span', 'closing-first'), ' first go'));
+        } else if (s === bestFor(g.slug)) {
+          part.appendChild(say(el('span', 'closing-pb'), ' best ★'));
+        }
       }
       row.appendChild(part);
     });

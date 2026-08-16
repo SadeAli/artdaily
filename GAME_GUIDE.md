@@ -102,10 +102,12 @@ before opens it, and answer four questions honestly:
    draw the *scale* it is measured against, or the picture still cannot be
    read (see the UX bar). Grade those words against the same tolerance the
    score uses, or the sentence and the number will contradict each other
-   and the drill will read as broken. Then **time it**: a lesson that is
-   wiped before it can be read is not a lesson, and 620ms — which this
-   guide used to recommend — is a quarter of what the sentence needs. See
-   the beat rule in the UX bar.
+   and the drill will read as broken. Then **time it, by counting the
+   words**: a lesson wiped before it can be read is not a lesson, and both
+   of this guide's earlier guesses were short — 620ms for a clause needing
+   1800ms, then 4000ms for a first reveal needing 6300ms. Measure the line
+   you are about to print rather than estimating it. See the beat rule in
+   the UX bar.
 
 The very first round of all needs its own copy. With no previous best,
 `isNewBest` is trivially true, so an unguarded drill greets every new
@@ -232,27 +234,43 @@ Non-negotiable for every drill:
   later. Measure the text that is *new* on that screen at ~200 words per
   minute — a beginner reading unfamiliar copy while also looking at a
   picture — and make the beat outlast it. On a repeat reveal only the
-  clause changes (*"Way out, low and right — 0"*, ~1.6s); the rest of the
-  sentence is furniture the eye already knows. On the **first** reveal of
-  the sitting nothing is furniture yet, so budget the whole sentence. This
-  guide used to say ~0.6s and the template obeyed it: 620ms for a clause
-  needing 1.6s, which is the same as never having written it. The beat is
-  now **1800ms, and 4000ms for the first reveal of the sitting** — four of
-  them add ~7s to a five-item round, a beat rather than a slideshow. It is
-  worse than a reading problem for a screen-reader player: `#hint` is the
-  drill's one live region, so a short beat overwrites the reveal
-  mid-announcement with the next prompt, and the correction is never heard
-  at all. Keep the beat a pure function of **how many reveals this sitting
-  has already shown** — `revealBeat(seen)` in the template — so it can be
-  reasoned about without a canvas.
+  clause changes (*"A little low and right — 100"*, six words, 1800ms);
+  the rest of the sentence is furniture the eye already knows. On the
+  **first** reveal of the sitting nothing is furniture yet, so budget the
+  whole sentence. This guide used to say ~0.6s and the template obeyed it:
+  620ms for a clause needing 1800ms, which is the same as never having
+  written it.
+
+  **Then count the words instead of estimating them.** A hand-tuned
+  constant for "long enough to read" goes stale the first time anyone
+  edits the copy, and it had: the template's first-reveal beat was set to
+  **4000ms** for "the score sentence (~3.1s) with room for the ring note",
+  when the score sentence alone is twelve words — 3600ms — and the ring
+  note is another nine, 2700ms. The real bill is **6300ms**, so a third of
+  the first lesson in the drill was wiped before it could be read, on the
+  one screen this entire section was written for. The template now
+  *measures* it (`readingMs(text)`, a pure word count × 300ms, with an em
+  dash counted as the pause it is and not as a word), keeps 4000ms as a
+  **floor** for a terser first reveal, and passes the line it is about to
+  print: `revealBeat(seen, text)`. Round one's beats then come to ~11.7s
+  and every round after it to ~7.2s — still a beat rather than a
+  slideshow, and the number cannot drift away from the copy again.
+
+  Short beats are worse than a reading problem for a screen-reader player:
+  `#hint` is the drill's one live region, so a short beat overwrites the
+  reveal mid-announcement with the next prompt, and the correction is
+  never heard at all. Keep the beat **pure** — a function of how many
+  reveals this sitting has already shown, plus the text — so the pacing
+  can be reasoned about, and tested, without a canvas.
 - **"First of the sitting" is not "round 1, item 1".** They are the same
   screen only until the player touches the primary button, and pressing a
   big button they do not understand yet is the likeliest thing a beginner
   does first. Keyed on the round counter, a single press of *new round*
   before the first tap silently downgraded the exact screen all of the
-  above was written for: the beat fell 4000ms → 1800ms, the opening line
-  stopped saying how the drill marks you, and the dotted ring — the scale
-  the printed number is measured on — was never named at all. **Anything
+  above was written for: the beat collapsed to the repeat reveal's 1800ms,
+  the opening line stopped saying how the drill marks you, and the dotted
+  ring — the scale the printed number is measured on — was never named at
+  all. **Anything
   taught once** — a beat, a scale, a rule — hangs off a counter that
   `newRound` does not reset (`revealsSeen` in the template), never off
   `round === 1`.
@@ -745,6 +763,17 @@ to learn. Two things follow from having only one:
   `sizeWord` rejects a negative magnitude for exactly this reason (a caller
   handing over a signed delta instead of a distance), and every non-finite
   input lands on "well".
+  **Take the magnitude as a number and do not coerce it.** `Number(null)`,
+  `Number('')`, `Number(false)` and `Number([])` are every one of them `0`,
+  so the reflex `var m = Number(d)` lands a measurement that never happened
+  on the *top* rung of the ladder — the most flattering word in the drill,
+  handed out for the absence of a reading. `undefined` is caught only
+  because it happens to become `NaN`; `null` is what a degenerate round
+  actually produces, and it sailed through. `if (typeof d !== 'number')
+  return 'well';` first, then the finite/sign guards. Normalise the
+  *tolerance* at the call sites instead (`isFinite('88')` is true, so a
+  numeric string reaches the ladder as a string), which is what `missPhrase`
+  and `roundBias` now do.
 - **Read the sentence out loud before you ship the band.** The words are
   glued to a direction, and an adjective that parses alone can still be
   broken English in place: the template's fourth band printed *"Well low and

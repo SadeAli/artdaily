@@ -32,7 +32,7 @@
 <!-- ?v= busts the CDN/browser cache on deploy: registry.js is served
      with a 4h max-age, so without this a returning visitor keeps an old
      catalogue. Bump V in every asset URL below when css/js changes. -->
-<link rel="stylesheet" href="css/style.css?v=18">
+<link rel="stylesheet" href="css/style.css?v=19">
 <script>
 (function(){var t=null;try{t=localStorage.getItem('sadeali-theme');}catch(e){}document.documentElement.dataset.theme=(t==='dark')?'dark':'light';})();
 </script>
@@ -70,7 +70,17 @@
     <h1 class="hero-title"><span class="tilt">art</span> daily</h1>
     <p class="hero-sub">a sketchbook of tiny scored drills — reps for the hand and the eye, with instant feedback</p>
     <div class="today">
-      <p class="today-head">today's warmup</p>
+      <!-- "today's warmup" is the JS-off / returning-player wording and it
+           stays here as the default. On a cold first visit it is not true:
+           renderToday is showing the CURATED starter session (ARTDAILY_STARTER),
+           not the day's rotation, and the line under the list says so out
+           loud ("your first three"). So the loudest line on the first screen
+           was arguing with the line directly beneath it, and it named a daily
+           ritual at someone who has not done a single round yet. renderToday
+           swaps both of these for the newcomer. "three" is hard-coded here
+           for the same no-JS reason; the live label counts the picks that
+           were actually rendered. -->
+      <p class="today-head" id="todayHead">today's warmup</p>
       <ol class="today-list" id="todayList" aria-label="Today's three warmups"></ol>
       <p class="today-done" id="todayDone">the daily plan needs JavaScript — the drill links below work without it</p>
       <button class="sharebtn" id="shareBtn" type="button" hidden>copy today's card</button>
@@ -220,9 +230,9 @@
   <p class="fineprint">© SadeAli · free · no ads · no tracking</p>
 </footer>
 
-<script src="js/support-config.js?v=18"></script>
-<script src="js/registry.js?v=18"></script>
-<script src="js/main.js?v=18"></script>
-<script src="js/app.js?v=18"></script>
+<script src="js/support-config.js?v=19"></script>
+<script src="js/registry.js?v=19"></script>
+<script src="js/main.js?v=19"></script>
+<script src="js/app.js?v=19"></script>
 </body>
 </html>
