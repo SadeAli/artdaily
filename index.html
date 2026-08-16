@@ -32,7 +32,7 @@
 <!-- ?v= busts the CDN/browser cache on deploy: registry.js is served
      with a 4h max-age, so without this a returning visitor keeps an old
      catalogue. Bump V in every asset URL below when css/js changes. -->
-<link rel="stylesheet" href="css/style.css?v=23">
+<link rel="stylesheet" href="css/style.css?v=24">
 <script>
 (function(){var t=null;try{t=localStorage.getItem('sadeali-theme');}catch(e){}document.documentElement.dataset.theme=(t==='dark')?'dark':'light';})();
 </script>
@@ -42,7 +42,18 @@
 </head>
 <body>
 <div class="topbar">
-  <a class="backlink" href="https://sadeali.com/">← sadeali.com</a>
+  <!-- The arrow is decoration and it sat in the TEXT NODE, so it was part of
+       the link's accessible name: the FIRST control in the document announced
+       itself as "leftwards arrow sadeali.com". Same bug the "↗" on "open full
+       page" and the "♥" and "·" in the footer were each fixed for, one at a
+       time; the first link on the page was the one left holding a glyph
+       nobody wrote as a word.
+       aria-label, not a wrapper <span> — .backlink is display: inline-flex
+       with gap: 6px, so splitting the arrow out would make it a second flex
+       item and swap the real space for the gap (the same trap .player-next
+       documents in app.js). The visible text stays the accessible name's
+       superset, so "click sadeali.com" still works by voice (WCAG 2.5.3). -->
+  <a class="backlink" href="https://sadeali.com/" aria-label="sadeali.com">← sadeali.com</a>
   <div class="topbar-spacer"></div>
   <!-- role="img" is load-bearing, not decoration: renderStreak writes a real
        sentence into aria-label ("5-day streak, 1 banked rest day"), and
@@ -80,8 +91,21 @@
            swaps both of these for the newcomer. "three" is hard-coded here
            for the same no-JS reason; the live label counts the picks that
            were actually rendered. -->
-      <p class="today-head" id="todayHead">today's warmup</p>
-      <ol class="today-list" id="todayList" aria-label="Today's three warmups"></ol>
+      <!-- A HEADING, not a <p>. Heading jumping is how a screen reader user
+           crosses a page this long — it is the same navigation method the
+           aboutline/legendline were moved inside <main> to stay reachable by —
+           and the daily warmup was the one major region of the page with no
+           heading at all: H went h1 "art daily" straight into the catalogue's
+           chapter h2s, skipping the checklist that is the whole point of the
+           first screen. It sits under the h1 and above the chapter h2s, so
+           the outline stays in order. Every box-model property .today-head
+           needs is already declared, so this renders identically. -->
+      <h2 class="today-head" id="todayHead">today's warmup</h2>
+      <!-- role="list" because .today-list carries list-style: none, and
+           Safari/VoiceOver strips list semantics from any list styled that
+           way — so "list, 3 items" went missing on the single most
+           finger-driven platform this page has. Zero visual effect. -->
+      <ol class="today-list" id="todayList" role="list" aria-label="Today's three warmups"></ol>
       <p class="today-done" id="todayDone">the daily plan needs JavaScript — the drill links below work without it</p>
       <button class="sharebtn" id="shareBtn" type="button" hidden>copy today's card</button>
       <div class="closing" id="closing" hidden></div>
@@ -172,6 +196,7 @@
         <li><a href="https://sadeali.github.io/artdaily-down-the-row/">Down the Row</a></li>
         <li><a href="https://sadeali.github.io/artdaily-crop-it/">Crop It</a></li>
         <li><a href="https://sadeali.github.io/artdaily-focal-place/">Focal Placement</a></li>
+        <li><a href="https://sadeali.github.io/artdaily-counterweight/">Counterweight</a></li>
         <li><a href="https://sadeali.github.io/artdaily-contour-memory/">Contour Memory</a></li>
         <li><a href="https://sadeali.github.io/artdaily-proportion-eye/">Proportion Eye</a></li>
         <li><a href="https://sadeali.github.io/artdaily-negative-space/">Negative Space</a></li>
@@ -186,7 +211,11 @@
   <div class="cat-head"><h2 class="accent-mint" style="text-decoration-color: var(--mint);">your paint tubes</h2></div>
   <div class="record" id="record" hidden></div>
   <p class="cat-note" id="metersEmpty">empty tubes so far — play any drill and they start filling</p>
-  <ul class="meters" id="skillMeters" hidden></ul>
+  <!-- role="list": same list-style: none / VoiceOver erasure as the checklist
+       above. The tubes need it twice over — .meter sets display: flex on the
+       <li> itself, which takes away the list-item box outright, so buildMeters
+       marks each row role="listitem" too. -->
+  <ul class="meters" id="skillMeters" role="list" hidden></ul>
   <p class="storenote">progress lives in this browser's localStorage — no accounts, nothing leaves your device · <button class="resetlink" id="resetBtn" type="button">reset it</button></p>
 </section>
 
@@ -231,9 +260,9 @@
   <p class="fineprint">© SadeAli · free · no ads · no tracking</p>
 </footer>
 
-<script src="js/support-config.js?v=23"></script>
-<script src="js/registry.js?v=23"></script>
-<script src="js/main.js?v=23"></script>
-<script src="js/app.js?v=23"></script>
+<script src="js/support-config.js?v=24"></script>
+<script src="js/registry.js?v=24"></script>
+<script src="js/main.js?v=24"></script>
+<script src="js/app.js?v=24"></script>
 </body>
 </html>

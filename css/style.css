@@ -702,6 +702,19 @@ a.card:hover, a.card:focus-visible {
 /* played-today: a little grader's stamp in the corner */
 .card.is-done::after {
   content: "✓";
+  /* Generated content is NOT invisible to a screen reader — Chromium, WebKit
+     and Gecko all fold ::before/::after text into the accessible name. So
+     every finished card's link ended "…best 88/100 · today 70, check mark":
+     a glyph read out as a noun, restating in the worst possible words the
+     "today 70" immediately before it. fillMeta moved the tick OUT of the text
+     for exactly this reason ("the ✓ moved out of the text because
+     .card.is-done::after already stamps one") — it moved into the one place
+     that is still spoken.
+     Declared twice on purpose. A browser that does not parse the `/ alt-text`
+     syntax drops the second line as invalid and keeps the plain glyph above,
+     so the stamp can never vanish; one that does parse it takes the empty alt
+     and the tick becomes what it always looked like — decoration. */
+  content: "✓" / "";
   position: absolute;
   top: 6px;
   left: 10px;

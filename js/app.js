@@ -867,6 +867,13 @@
       if (cat.note) section.appendChild(el('p', 'cat-note', cat.note));
 
       var grid = el('ul', 'grid');
+      /* .grid is list-style: none, and Safari/VoiceOver drops list semantics
+         from any list styled that way — so the catalogue's six spreads
+         announced their cards as loose links with no "list, 9 items" and no
+         "3 of 9" as you walk them. On a 41-card catalogue that count is the
+         only thing telling a screen reader user how far through a chapter
+         they are. role="list" restores it and paints nothing. */
+      grid.setAttribute('role', 'list');
       grid.setAttribute('aria-label', cat.label + ' drills');
       games.forEach(function (g) { grid.appendChild(buildCard(g)); });
       section.appendChild(grid);
@@ -1154,6 +1161,12 @@
     ids.forEach(function (id, i) {
       var s = SKILLS[id] || { label: id, icon: '' };
       var li = el('li', 'meter accent-' + ACCENTS[i % ACCENTS.length]);
+      /* .meter is display: flex ON THE <li>, which removes its list-item box
+         and with it the listitem role in the engines that key off display —
+         on top of the list-style: none erasure the <ul> is already marked
+         role="list" for. Say it outright; it is the difference between "nine
+         tubes" and nine unrelated progress bars. */
+      li.setAttribute('role', 'listitem');
       var ic = el('span', 'meter-icon', s.icon);
       ic.setAttribute('aria-hidden', 'true');
       li.appendChild(ic);
@@ -1178,7 +1191,13 @@
       lv.setAttribute('aria-hidden', 'true');
       li.appendChild(lv);
       meters.appendChild(li);
-      map[id] = { track: track, fill: fill, lv: lv };
+      /* The label is carried through so renderMeters can NAME the tube. The
+         visible "colour" sits in a sibling <span> that is not associated with
+         the progressbar in any way, so anyone reaching the bar by control —
+         a screen reader's form/progressbar rotor, which is how you skim nine
+         identical rows — heard "level 3, 40% of the way to level 4" nine
+         times over with nothing to say WHICH skill was which. */
+      map[id] = { track: track, fill: fill, lv: lv, label: s.label || id };
     });
     return map;
   }
@@ -1200,8 +1219,10 @@
         var info = levelInfo(store.skills[id]);
         m.fill.style.setProperty('--w', info.pct + '%');
         m.track.setAttribute('aria-valuenow', String(info.pct));
-        m.track.setAttribute('aria-label',
-          'level ' + info.lv + ' — ' + info.pct + '% of the way to level ' + (info.lv + 1));
+        /* Names the tube first, then the state — and the visible "colour"
+           text is a prefix of it, so the two channels read as one line. */
+        m.track.setAttribute('aria-label', m.label + ' — level ' + info.lv +
+          ', ' + info.pct + '% of the way to level ' + (info.lv + 1));
         m.lv.textContent = 'lv ' + info.lv;
       });
     }
@@ -1336,6 +1357,26 @@
     if (!box) return;
     var scores = dayScores(todayKey());
     var picks = todayPick();
+    /* The same tear-down-under-the-keyboard problem renderToday guards
+       against, left standing in its sibling. This empties the card and
+       rebuilds it, and it is NOT only reached from the click that created it:
+       a second tab logging a round arrives here via the storage listener →
+       syncClosing → renderClosing. Whatever the keyboard was resting on
+       inside — "copy today's card", or either button on the ask — is deleted
+       out from under it, focus falls back to <body>, i.e. silently to the top
+       of the document, and the next Tab restarts from the topbar. The one
+       place it can land is the card the player was already reading.
+       null = focus was not inside the card, so leave it exactly where it is;
+       that is the common path (recordResult renders this with focus still in
+       the open dialog) and it must stay untouched. '' = it was inside but on
+       nothing nameable, so fall back to the box, which survives a rebuild. */
+    var wasOn = document.activeElement;
+    var keepCls = null;
+    if (wasOn && wasOn !== box && box.contains && box.contains(wasOn)) {
+      keepCls = ['sharebtn', 'ask-btn', 'ask-no'].filter(function (c) {
+        return wasOn.classList && wasOn.classList.contains(c);
+      })[0] || '';
+    }
     box.textContent = '';
 
     box.appendChild(say(el('p', 'closing-head'), 'that’s today’s warmup done ★'));
@@ -1411,6 +1452,18 @@
     if (ask) box.appendChild(ask);
 
     box.hidden = false;
+    if (keepCls !== null) {
+      var again = (keepCls && box.querySelector('.' + keepCls)) || box;
+      /* showClosing sets this too, but it may never have run — the card can
+         be rebuilt by a cross-tab write without anyone pressing "see today's
+         card →". Without it the box is not focusable and focus still lands
+         on <body>. */
+      if (again === box) box.setAttribute('tabindex', '-1');
+      /* preventScroll: nothing moved on screen, so neither should the page */
+      if (typeof again.focus === 'function') {
+        try { again.focus({ preventScroll: true }); } catch (e) { again.focus(); }
+      }
+    }
   }
 
   /* THE ONE ASK. Deliberately the newsletter, not money: it needs no

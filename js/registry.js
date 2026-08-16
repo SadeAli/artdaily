@@ -359,6 +359,14 @@ window.ARTDAILY_GAMES = [
     url: 'https://sadeali.github.io/artdaily-focal-place/',
     dev: '../artdaily-games/focal-place/', status: 'live',
   },
+  {
+    slug: 'counterweight', name: 'Counterweight',
+    tagline: 'a small shape far out holds up a big one near the middle',
+    icon: '🪶', accent: 'sunny', skills: ['composition', 'values'],
+    cat: 'composition', tag: 'fit', minutes: 2,
+    url: 'https://sadeali.github.io/artdaily-counterweight/',
+    dev: '../artdaily-games/counterweight/', status: 'live',
+  },
 
   /* ---- observation & memory ---- */
   {

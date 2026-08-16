@@ -415,6 +415,26 @@ was rebuilt or not; from the second paint on the bar is deliberately silent
 (the one-spoken-channel rule above), so rebuilding would buy no
 announcement at all and still cost a keyboard player their place.
 
+**And when a control genuinely has to go, *hand the focus over* — do not
+just drop it.** The rule above was fixed on the repaint path and left
+broken on the other one, which is the path the player does not control:
+when the opener replies `artdaily:logged`, the bar swaps the link for
+*"sent to your Art Daily record ✓"*, because the score is home and there is
+nothing left to click. The link cannot be kept — but focus really can be
+sitting on it when the receipt lands, since a drill that cancels its canvas
+`pointerdown` (the template does) never blurs a control a keyboard player
+tabbed onto, so they can play a whole round still standing on that link.
+Tearing it out sent them to the top of the document, mid-round, on a
+message from another tab. The SDK now gives the bar `tabIndex = -1` and
+moves focus to **the bar itself** before clearing it — but *only* when
+focus was already inside it, because taking focus from anywhere else is its
+own bug. The player lands on the element whose text just changed, so what
+gets announced is the answer to "where did my link go", and the next Tab
+carries on from there instead of from the page top. Same shape whenever you
+retire a control: pick the nearest sensible container, make it focusable
+with `-1` (never `0` — that would add a tab stop nobody asked for), and
+move focus there yourself.
+
 **3:1 for every mark that carries information, on both sheets.** See the
 UX bar for the palette numbers. Three traps beyond the raw accent:
 
@@ -464,7 +484,12 @@ console.log('light',cr('#56A382','#FDFAF1'),' dark',cr('#5FBF97','#221D16'))"
 
 **Focus must stay visible, and land somewhere sensible.** The shared
 sheet gives every link, button and `[tabindex]` a 3px `--focus` outline
-at 3.92:1 on paper and 6.56:1 in the night studio — do not switch it off,
+at 3.92:1 on paper and 6.56:1 in the night studio *measured on the sheet*
+(`--card`) — the ring has `outline-offset: 3px`, so on the top bar it lands
+on `--bg` instead, which is 3.57:1 on paper and 7.12:1 in the night studio.
+Both clear the 3:1 a focus indicator owes, but paper has only half a rung
+of headroom: **measure the ring against both surfaces** if you ever move
+`--focus`, `--bg` or `--card`. Do not switch it off,
 do not wrap a control in `overflow: hidden` that clips it, and keep the
 DOM order the reading order (the SDK inserts the hand-off bar directly
 after `.game-controls` for exactly that reason). Anything you toggle
