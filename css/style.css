@@ -64,7 +64,17 @@
 /* Stage-0 surfaces rely on [hidden] beating component display rules. */
 [hidden] { display: none !important; }
 
-html { height: 100%; scrollbar-color: var(--muted) var(--bg); }
+/* scrollbar-gutter is the scroll lock's other half. openPlayer sets
+   overflow: hidden on <html> so the page cannot scroll behind the dialog —
+   and on every classic-scrollbar desktop (Windows/Linux Chrome & Firefox)
+   that takes the scrollbar away, widens the viewport by ~15px, and re-centres
+   every max-width block on the page: the hero sheet, all six catalogue
+   spreads, the toast. The backdrop is only 55% opaque, so the whole page
+   visibly jumps sideways the instant a drill opens and jumps back when it
+   closes. Reserving the gutter permanently costs nothing here — this page
+   always scrolls — and it is inert where there is nothing to fix (overlay
+   scrollbars on macOS, iOS and Android have no width to remove). */
+html { height: 100%; scrollbar-gutter: stable; scrollbar-color: var(--muted) var(--bg); }
 
 /* Selecting text runs a highlighter over it. */
 ::selection { background: #F3DF7E; color: #33291E; }

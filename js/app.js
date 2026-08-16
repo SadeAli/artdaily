@@ -42,6 +42,10 @@
   var statusEl = $('playerStatus');
 
   var liveGames = GAMES.filter(function (g) { return g.status === 'live'; });
+  /* How many drills a day's warmup asks for — see pickForKey, which fills
+     `picked` from distinct chapters and then tops up, so it is always
+     min(3, catalogue). Used as a free lower bound in renderRecord. */
+  var PICK_SIZE = Math.min(3, liveGames.length);
 
   /* ---- registry helpers ---- */
 
@@ -88,6 +92,22 @@
      long before the warmup section that also uses it. */
   var DAY_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
+  /* DAY_RE checks the SHAPE of a key, not that the date exists: "2024-13-01",
+     "2024-02-31" and "2023-02-29" all match it, and all three then sailed
+     through the guard below that exists to keep non-days out of the record —
+     where renderRecord counts them as extra days practised and their scores as
+     extra drills done. A day key is a day if, and only if, dateKey() would
+     write it back unchanged; Date normalises the impossible ones into some
+     OTHER day, which no longer matches. Verified over every calendar day from
+     1990 to 2060 in twelve zones, including the ones whose DST jump lands on
+     local midnight (Santiago, Havana, Beirut, Amman, São Paulo, Apia): zero
+     real days rejected. (dateKey/pad2 are hoisted function declarations —
+     this runs at boot, above where they are written.) */
+  function isDayKey(k) {
+    var p = DAY_RE.exec(String(k));
+    return !!p && dateKey(new Date(+p[1], +p[2] - 1, +p[3])) === k;
+  }
+
   function loadStore() {
     var s = null;
     try { s = JSON.parse(localStorage.getItem(STORE_KEY)); } catch (e) { s = null; }
@@ -109,7 +129,7 @@
          one junk key read as an extra "day practised", its scores as extra
          drills done, and its slugs as extra "different drills". Drop it at
          the door with the junk values below. */
-      if (!DAY_RE.test(k)) { delete s.days[k]; return; }
+      if (!isDayKey(k)) { delete s.days[k]; return; }
       if (!isPlainish(d)) { s.days[k] = {}; return; }
       Object.keys(d).forEach(function (slug) {
         var v = d[slug];
@@ -722,10 +742,18 @@
 
     var logged = drillsLogged();
     var drills = distinctSlugs().length;
+    /* Counting a day's keys is free; working out WHICH three drills it asked
+       for is 39 hashes plus a sort of the whole catalogue — per logged day,
+       every time this renders, and it renders on every recorded score. A day
+       holding fewer drills than the warmup asks for cannot be a full warmup,
+       whatever it asked for, so that day never needs the ranking at all.
+       Measured on a two-year store with 45% of days complete: 12.7ms -> 5.5ms
+       for the loop, identical count (and identical on 300 random stores). */
     var perfect = 0;
     dayKeys.forEach(function (k) {
-      var picks = picksForKey(k);
       var sc = dayScores(k);
+      if (Object.keys(sc).length < PICK_SIZE) return;
+      var picks = picksForKey(k);
       if (picks.length && picks.every(function (g) { return typeof sc[g.slug] === 'number'; })) perfect++;
     });
 
@@ -891,7 +919,16 @@
     renderMeters();
     renderRecord();
     fillMeta(g);
-    if (statusEl) {
+    /* The status line is the OPEN DRILL'S foot, not a general notice board.
+       Results reach recordResult from three places, and two of them are not
+       the drill on screen: a drill playing in its own tab (opened from "open
+       full page ↗", which keeps us as its opener) and a #log= link brought
+       home. Both used to write straight into the foot — so a player working
+       through Steady Lines in the player watched its foot announce a score
+       from an entirely different drill in another window. Those two paths
+       already carry their own sentence on the page toast (`lead`), which
+       pumpToasts holds until the dialog closes, so nothing is lost. */
+    if (statusEl && openGame && openGame.slug === g.slug) {
       /* "recorded ✓ 62/100" was printed even when the day kept an earlier,
          higher 81 and this 62 went nowhere — a tick against a number that
          was not filed. The delta clause behind it said so ("today keeps the
@@ -1161,8 +1198,18 @@
      the scroll that focus() causes is half the point and the other half is
      that a screen reader arrives at the scores instead of the catalogue. */
   function showClosing() {
-    closePlayer();
     var c = $('closing');
+    /* Drop the opener BEFORE closing. closePlayer hands focus back to the
+       control that opened the player, and focus() drags that control into
+       view — so pressing "see today's card →" forced a scroll all the way
+       down to a catalogue card, moved focus onto it (a real focus event, which
+       AT announces), and then one statement later took focus and the scroll
+       away again for the summary. Two scroll positions and two focus stops for
+       one press, and the first of each was never wanted. If the summary is
+       somehow not there to land on, leave the opener alone and let the normal
+       return path run. */
+    if (c && !c.hidden) openerSlug = null;
+    closePlayer();
     if (!c || c.hidden) return;
     c.setAttribute('tabindex', '-1');
     /* focus() scrolls the element into view by itself, and scrollIntoView

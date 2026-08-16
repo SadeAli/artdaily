@@ -208,8 +208,28 @@ Non-negotiable for every drill:
   worse than a reading problem for a screen-reader player: `#hint` is the
   drill's one live region, so a short beat overwrites the reveal
   mid-announcement with the next prompt, and the correction is never heard
-  at all. Keep the beat a pure function of "which item is this" so it can
-  be reasoned about without a canvas (`revealBeat` in the template).
+  at all. Keep the beat a pure function of **how many reveals this sitting
+  has already shown** — `revealBeat(seen)` in the template — so it can be
+  reasoned about without a canvas.
+- **"First of the sitting" is not "round 1, item 1".** They are the same
+  screen only until the player touches the primary button, and pressing a
+  big button they do not understand yet is the likeliest thing a beginner
+  does first. Keyed on the round counter, a single press of *new round*
+  before the first tap silently downgraded the exact screen all of the
+  above was written for: the beat fell 4000ms → 1800ms, the opening line
+  stopped saying how the drill marks you, and the dotted ring — the scale
+  the printed number is measured on — was never named at all. **Anything
+  taught once** — a beat, a scale, a rule — hangs off a counter that
+  `newRound` does not reset (`revealsSeen` in the template), never off
+  `round === 1`.
+- **A hidden tab is not a reading player.** Background timers keep running,
+  throttled but never cancelled, so a reveal that is alt-tabbed away from
+  is spent on a tab nobody is looking at: the player comes back to the next
+  item with the lesson already wiped — the same failure as too short a
+  beat, only total. Park the advance on `visibilitychange` and hand the
+  beat back **in full** on return. It is safe by construction as long as
+  the beat only ever advances an *item*: the last item finishes
+  synchronously, so nothing on this path can file a round twice.
 - **Touch is the default input**: 44px targets, pointerId-guarded
   strokes, `touch-action: none` on the canvas.
 - **Anything meaning-bearing painted on canvas must clear 3:1 in both
@@ -513,6 +533,17 @@ different rates and conflating them costs you one or the other:
   than slow timid ones, the exact opposite of what a drawing drill should
   be teaching. Use `ArtDaily.samples(ev)`: always an array, oldest first,
   `[ev]` where coalescing is unavailable, never a throw.
+- **Measure the canvas once per event, not once per sample.** The obvious
+  loop — `samples(ev).forEach(function (e) { pts.push(pos(e)); })` — hides
+  a `getBoundingClientRect()` inside `pos`, so a fast pen re-measures the
+  element dozens of times a frame to learn a number that cannot have moved
+  between two samples, and the first of those reads has to flush the layout
+  the last repaint dirtied. Hoist the rect above the loop; the whole run
+  then costs one measurement. And if all you need is where the hand is
+  *now* — a drag handle, a cursor — skip `samples` entirely: the dispatched
+  event already carries the newest sample, it **is** the last entry of the
+  run. `samples` buys you the *shape* of the stroke between two frames,
+  which is the part the dispatched event throws away.
 - Repaint **at most once per frame** — `if (rafId === null) rafId =
   requestAnimationFrame(…)`. A repaint per sample is several full-canvas
   washes inside one frame with all but the last thrown away, and every one
@@ -548,15 +579,43 @@ so is the scale it was measured against.
 **One owner per timer.** A reveal beat, a countdown and a toast all
 outlive the frame that started them, so every path that ends a round must
 clear the ones it is ending — `newRound` cancels the abandoned round's
-queued advance, `finishRound` cancels its own. Two timers racing to call
-`report()` is how a round gets filed twice.
+queued advance, `finishRound` cancels its own, and `visibilitychange`
+parks the beat rather than letting a hidden tab spend it (see the beat
+rules in the UX bar). Two timers racing to call `report()` is how a round
+gets filed twice, so keep every timer that can *pause* on the item path
+and never on the reporting one.
 
 **Reduced motion is not only a CSS problem.** The shared stylesheet
 flattens every animation and transition under `prefers-reduced-motion`,
-but it cannot reach a canvas tween or a `setInterval` you wrote. Check
-`matchMedia('(prefers-reduced-motion: reduce)')` yourself before animating
-from JS, and never put information *only* in motion — a pulse that a
-reduced-motion player never sees has to be a word or a mark as well.
+but it cannot reach a canvas tween or a `setInterval` you wrote. Ask
+before you animate from JS, and ask *totally* — `matchMedia` is missing on
+old engines and throws on a few, and the answer must never be the reason a
+round dies:
+
+```js
+function prefersReducedMotion() {
+  try { return !!(window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+  catch (e) { return false; }
+}
+```
+
+Two rules on top of asking:
+
+- **Skip to the end state, never drop the reveal.** If the tween *is* the
+  lesson — a plane tilting into its ellipse, a shadow swinging to the light
+  — a reduced-motion player still needs the finished picture and the words
+  under it. `ellipses` does this right: it paints the settled tilt straight
+  away instead of animating to it, and the reveal is identical apart from
+  the getting-there.
+- **Never put information only in motion.** A pulse, a sweep or a
+  shrinking countdown ring that a reduced-motion player never sees has to
+  be a word or a mark as well. A ring that is also the clock is a timer
+  they cannot read.
+
+Read the preference at the moment you animate rather than caching it at
+boot — the player can change it mid-session, and a drill holding a stale
+`true` from boot is a drill that quietly stopped teaching.
 
 ## Real 3D, not flat guesses
 
