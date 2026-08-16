@@ -167,7 +167,15 @@
     return isPlainish(d) ? d : {};
   }
 
-  function playedToday(slug) { return typeof dayScores(todayKey())[slug] === 'number'; }
+  /* What today's record actually holds for a drill (the day keeps the
+     HIGHEST score — see recordResult), or null if it has not been played
+     today. */
+  function todayScore(slug) {
+    var v = dayScores(todayKey())[slug];
+    return typeof v === 'number' ? v : null;
+  }
+
+  function playedToday(slug) { return todayScore(slug) !== null; }
 
   /* slug -> highest score ever recorded for it. One walk of the store
      answers every drill, instead of one walk per drill. */
@@ -213,15 +221,25 @@
     if (!num(score)) return '';
     if (num(todayPrev)) {
       var d = r(score) - r(todayPrev);
+      /* Once there is an earlier go TODAY, the sentence compares against it
+         and the all-time best drops out entirely — so a player grinding a
+         drill they used to score 88 on read "+15 on your last go today" and
+         was never told the real target was still 33 points away. Name the
+         gap, but only when the best is a HIGHER number than both figures
+         already in the sentence: otherwise it is either the go we just
+         compared against or a mark this round has already beaten. */
+      var chase = (num(prevBest) && r(prevBest) > r(todayPrev) && r(prevBest) > r(score))
+        ? ' · still ' + (r(prevBest) - r(score)) + ' under your best of ' + r(prevBest)
+        : '';
       if (d > 0) {
         return (num(prevBest) && r(score) > r(prevBest))
           ? 'new best · +' + d + ' on your last go'
-          : '+' + d + ' on your last go today';
+          : '+' + d + ' on your last go today' + chase;
       }
-      if (d === 0) return 'same as your last go today';
+      if (d === 0) return 'same as your last go today' + chase;
       /* Say what the record actually kept, or the checklist behind the
          dialog looks like it is lying. */
-      return (-d) + ' under your last go · today keeps the ' + r(todayPrev);
+      return (-d) + ' under your last go · today keeps the ' + r(todayPrev) + chase;
     }
     if (!num(prevBest)) return 'first go at this drill — this is the mark to beat';
     if (r(score) > r(prevBest)) return 'new best · +' + (r(score) - r(prevBest)) + ' on your old ' + r(prevBest);
@@ -479,10 +497,19 @@
     var best = bestFor(g.slug);
     if (best !== null) t += ' · best ' + best + '/100';
     m.appendChild(document.createTextNode(t));
-    var done = playedToday(g.slug);
+    var today = todayScore(g.slug);
+    var done = today !== null;
     if (done) {
+      /* The number, not a bare tick. Only the three warmup drills get a
+         checklist line that keeps today's score on the page; for the other
+         36 the player-foot status line was the ONLY place the round was
+         ever named, and that line dies with the dialog — so closing it left
+         "best 88/100 · today ✓" and no way at all to see what you just
+         scored. Printing it next to the best also puts the delta in front
+         of the one eye that matters. The ✓ moved out of the text because
+         .card.is-done::after already stamps one in the card's corner. */
       m.appendChild(document.createTextNode(' · '));
-      m.appendChild(el('span', 'meta-done', 'today ✓'));
+      m.appendChild(el('span', 'meta-done', 'today ' + today));
     }
     if (cardEls[g.slug]) cardEls[g.slug].classList.toggle('is-done', done);
   }
@@ -826,9 +853,22 @@
     /* the day just changed under the caches — every read below must be new */
     invalidateDerived();
 
+    /* A paint tube crossing a level line is the page's only long-run
+       progress signal, and it was completely silent: the meter simply had a
+       different number under it the next time the player happened to scroll
+       to the bottom of the page. Nothing tied it to the round that earned
+       it. Read the level either side of the bump and say it. */
+    var levelUps = [];
     function bump(id, pts) {
       if (!id) return;
+      var was = levelInfo(store.skills[id]).lv;
       store.skills[id] = Math.round(((Number(store.skills[id]) || 0) + pts) * 100) / 100;
+      var now = levelInfo(store.skills[id]).lv;
+      if (now > was) {
+        var sk = SKILLS[id] || {};
+        levelUps.push((sk.icon ? sk.icon + ' ' : '') + (sk.label || id) +
+          ' tube filled to level ' + now);
+      }
     }
     bump(g.skills && g.skills[0], score / 100);
     bump(g.skills && g.skills[1], score / 200);
@@ -852,7 +892,13 @@
     renderRecord();
     fillMeta(g);
     if (statusEl) {
-      statusEl.textContent = 'recorded ✓ ' + score + '/100' +
+      /* "recorded ✓ 62/100" was printed even when the day kept an earlier,
+         higher 81 and this 62 went nowhere — a tick against a number that
+         was not filed. The delta clause behind it said so ("today keeps the
+         81") and was left arguing with its own opening words. Only claim the
+         tick when this round is what the record now holds. */
+      var kept = (todayPrev === null) || score >= todayPrev;
+      statusEl.textContent = (kept ? 'recorded ✓ ' : 'this round ') + score + '/100' +
         (note ? ' — ' + note : '') +
         (perfect ? ' · ★ warmup complete' : '');
       statusEl.classList.toggle('is-best', note.indexOf('new best') === 0);
@@ -866,6 +912,7 @@
     if (typeof lead === 'function') toastPage(lead(score, note));
     if (STREAK_NOTES[streakNote]) toastPage(STREAK_NOTES[streakNote]);
     earned.forEach(function (b) { toastPage(b.icon + ' ' + b.name + ' — ' + b.hint); });
+    levelUps.forEach(toastPage);
     if (perfect) renderClosing();
   }
 
@@ -1061,7 +1108,14 @@
   function toastPage(msg) {
     if (!msg) return;
     toastQueue.push(msg);
-    if (toastQueue.length > TOAST_MAX) toastQueue.splice(0, toastQueue.length - TOAST_MAX);
+    /* Drop from the TAIL, not the head. recordResult queues a burst
+       most-important-first — the sentence naming the score, then the streak
+       note, then milestones — and trimming the front threw exactly that
+       first sentence away. For a round played in another tab or brought
+       home on a #log link there is no player foot to fall back on, so the
+       one message that says what the player just scored was the one an
+       overflowing burst deleted. */
+    if (toastQueue.length > TOAST_MAX) toastQueue.length = TOAST_MAX;
     pumpToasts();
   }
 

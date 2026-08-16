@@ -176,10 +176,17 @@ Non-negotiable for every drill:
   both consistent and worth acting on** — the template requires most
   attempts on the same side *and* a mean offset over ~10% of the tolerance,
   or it would invent a pattern out of noise. Say what to do, not just what
-  happened: *"most taps landed low and right — aim high and left next
-  round"*. Tie the count to the same side as the mean, or two wild misses
-  one way outvote three small ones the other and the sentence points
-  backwards.
+  happened, and **say how far**: *"most taps landed low and right — aim a
+  little high and left next round"*. A direction with no size is not
+  something a hand can execute, so the player invents one, and an invented
+  correction is how a lean becomes an overcorrection. Take the size from
+  the **same ladder as the per-attempt words** (`sizeWord` in the template),
+  measured **only along the axes that actually leaned** — a sideways habit
+  sized by a vertical wobble names a number about nothing. One vocabulary
+  for "how far off", taught five times a round by the reveals and then
+  spent once by the correction; two ladders and the player has to learn
+  both. Tie the count to the same side as the mean, or two wild misses one
+  way outvote three small ones the other and the sentence points backwards.
 - **If a reveal holds the screen, the drill must not score what lands on
   it.** A tap during the beat has nothing honest to be judged against —
   the next item is not drawn yet. Ignore it, never count it. Finish the
@@ -237,9 +244,22 @@ merge — they queue, so the player hears the round's correction and then,
 behind it, the same score again. The template's score toast used to be
 `role="status"` saying `score 84 / 100` half a beat after the hint had
 said *"Round done — 84 out of 100 (best 91). Most taps landed low and
-right — aim high and left next round."* The toast is now
+right — aim a little high and left next round."* The toast is now
 `aria-hidden="true"`: a sticker, not a second voice. If your drill wants
 to say something the hint does not, put it **in the hint**.
+
+The rule binds the **SDK** too, and that is where it was being broken for
+every drill at once. The standalone hand-off bar is written from inside
+`report()` — the same tick your `finishRound` writes the hint — so a
+standalone screen-reader player heard the whole round-end sentence and
+then, queued behind it, *"scored 84 — add it to my Art Daily record"*,
+every round, in all 39 drills. The score there is not news; the drill just
+said it in a fuller sentence. What is news is that a route home exists, and
+that is news **once**. The bar now carries `role="status"` for its first
+paint of the sitting and drops the role after it: it keeps updating on
+screen, stays reachable by tab and in browse mode, and stops interrupting
+to repeat a number. Anything you inject into every drill inherits this
+rule — count the live regions on the finished page, do not assume.
 
 **A focusable canvas must be an operable canvas.** `tabindex="0"` on a
 `role="img"` canvas with no `keydown` handler is a tab stop that focuses
@@ -276,8 +296,11 @@ focused element drops focus to `<body>`. The hand-off bar rebuilt its
 whole contents every round, so a keyboard player who had tabbed onto
 "add it to my record" lost their place the moment the next round ended.
 The bar now reuses the link node and replaces only the sentence in front
-of it — and nothing is lost by that, because `role="status"` implies
-`aria-atomic`, so the region is re-announced in full either way.
+of it — and nothing is lost by that. On the first paint `role="status"`
+implies `aria-atomic`, so the region is announced in full whether the node
+was rebuilt or not; from the second paint on the bar is deliberately silent
+(the one-spoken-channel rule above), so rebuilding would buy no
+announcement at all and still cost a keyboard player their place.
 
 **3:1 for every mark that carries information, on both sheets.** See the
 UX bar for the palette numbers. Two traps beyond the raw accent:
@@ -567,10 +590,28 @@ where the SCORE changes character**, not at tidy fractions of the tolerance.
 The words sit beside the number in the same sentence, so a ladder skewed
 toward the good end lies quietly: the template graded correctly and still
 printed *"A hair low — 71 out of 100"*, and a beginner told they were a hair
-off stops correcting. Its bands are now named in score terms — 92+ dead
-centre, 75+ a hair, 50+ a little, 20+ well, under 20 way out — and a test
-walks the whole error range asserting the two never disagree at the ends
-(no "dead centre" under 90, no score of 0 without "way out").
+off stops correcting. Its bands are now named in score terms — 92+ dead on,
+75+ a hair, 50+ a little, 20+ well, under 20 way — and a test walks the whole
+error range asserting the two never disagree at the ends (no "dead centre"
+under 90, no score of 0 without "way out").
+
+Keep that ladder in **one function** (`sizeWord`) and let every sentence in
+the drill spend it: the per-attempt words, the round's correction, anything
+else that has to say how far off something was. Two ladders means two scales
+to learn. Two things follow from having only one:
+
+- **Junk in, the WIDEST word out — never the flattering one.** A broken
+  measurement that comes back "dead on" prints *"Dead centre — 12 out of
+  100"*, which reads as the drill being broken because it is. The template's
+  `sizeWord` rejects a negative magnitude for exactly this reason (a caller
+  handing over a signed delta instead of a distance), and every non-finite
+  input lands on "well".
+- **Read the sentence out loud before you ship the band.** The words are
+  glued to a direction, and an adjective that parses alone can still be
+  broken English in place: the template's fourth band printed *"Well low and
+  right"* for a full wave. It is *"Well out, low and right"* now, parallel to
+  *"Way out, low and right"* — same grade, same number, a sentence instead of
+  a word salad, in the one line a beginner reads after every single attempt.
 
 `report()` is the last line of defence, not the first: it clamps to 0–100
 and turns anything non-finite into **0** — a divide-by-zero used to clamp
