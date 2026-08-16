@@ -404,6 +404,11 @@ a { color: inherit; }
 }
 .ask-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 0 var(--shadow); }
 .ask-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0; }
+/* Same 1.5:1 boundary problem as the paint tube, on a control where it is
+   worse: an email field on a card-coloured background with a --line border
+   is a 1.53:1 outline around a 1.06:1 box, so there is nothing on screen to
+   say a text field is there at all. (Dormant today — buildAsk returns null
+   until a Buttondown name is configured — but it renders the moment one is.) */
 .ask-form input {
   flex: 1 1 12rem;
   min-height: 44px;
@@ -412,7 +417,7 @@ a { color: inherit; }
   font-size: 0.85rem;
   color: var(--ink);
   background: var(--card);
-  border: 1px solid var(--line);
+  border: 1px solid color-mix(in srgb, var(--muted) 85%, transparent);
   border-radius: 4px 10px 5px 9px;
 }
 .ask-form .ask-btn { border: 1px solid color-mix(in srgb, var(--mint) 55%, var(--line)); background: color-mix(in srgb, var(--mint) 22%, var(--card)); cursor: pointer; font-family: var(--hand); font-size: 1.15rem; min-height: 44px; }
@@ -744,12 +749,22 @@ a.card:hover, a.card:focus-visible {
 .meter-icon { width: 1.4em; text-align: center; }
 .meter-name { width: 7rem; font-family: var(--hand); font-size: 1.15rem; font-weight: 600; }
 
+/* The tube's OUTLINE is the control, and it was drawn in --line on --card:
+   1.53:1 on paper, 1.50:1 at night, against a page background --card itself
+   only clears 1.06:1. So an empty tube — a skill sitting exactly on a level
+   line, and every tube on the day the meters first appear — rendered as
+   nothing at all, and a part-full one showed a fill floating in mid-air with
+   no vessel around it and no way to see how much was left to go. That is the
+   whole metaphor of the section, failing 1.4.11 in both themes.
+   --muted at 85% is the same ink .rdot already uses for exactly this job:
+   3.8:1 against the track and 3.4:1 against the page on paper, 4.6:1 / 4.4:1
+   at night. The fill is unchanged (its lightest end is 3.1:1 on paper). */
 .meter-track {
   flex: 1;
   min-width: 60px;
   height: 12px;
   border-radius: 999px 4px 999px 4px;
-  border: 1px solid var(--line);
+  border: 1px solid color-mix(in srgb, var(--muted) 85%, transparent);
   background: var(--card);
   overflow: hidden;
 }

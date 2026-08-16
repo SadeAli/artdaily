@@ -114,6 +114,17 @@ window.ARTDAILY_GAMES = [
     url: 'https://sadeali.github.io/artdaily-colour-constancy/',
     dev: '../artdaily-games/colour-constancy/', status: 'live',
   },
+  {
+    slug: 'sun-and-sky', name: 'Sun & Sky',
+    /* Filed under colour, not value & light, on purpose: every rung of
+       its rail carries the same Rec.709 luminance, so the answer cannot
+       be found by value at all — it is a mixing judgement. */
+    tagline: 'the sun warms the light, the sky cools the shade',
+    icon: '🌤️', accent: 'sky', skills: ['colors', 'values'],
+    cat: 'colour', tag: 'auto', minutes: 3,
+    url: 'https://sadeali.github.io/artdaily-sun-and-sky/',
+    dev: '../artdaily-games/sun-and-sky/', status: 'live',
+  },
 
   /* ---- value & light ---- */
   {

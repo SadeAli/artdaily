@@ -492,6 +492,45 @@
     return n;
   }
 
+  /* An emoji in a TEXT NODE is not decoration — it is a word. A screen
+     reader speaks each one's CLDR name, so the page's only announcement
+     channel opened every milestone with a noun nobody wrote: "snowflake a
+     banked rest day covered yesterday", "seedling first drill — you
+     started", "artist palette colour tube filled to level 3". A finished
+     round read "recorded heavy check mark 62 out of 100", the checklist
+     footer read "perfect day black star when all three", and the practice
+     record read "fire 5-day streak snowflake 2 rest days banked".
+     This exact bug was already fixed one element at a time — the streak chip
+     (role="img" + a real sentence), the card icons, the player title, the
+     closing scores, the "open full page ↗" link — but only where the glyph
+     was written by hand in a builder. Every string ASSEMBLED at runtime was
+     left out, and those are precisely the ones that get announced.
+     say() writes the string exactly as before and wraps each run of
+     pictographs in an aria-hidden <span>: identical pixels, and the sentence
+     that reaches a screen reader is the sentence someone wrote.
+     Ranges, not \p{...}: arrows (U+2190–21FF), dingbats and misc symbols
+     (U+2300–27BF, which covers ✓ ★ ❄ ✏ ⚗ ☄), U+2B00–2BFF, the variation
+     selector and ZWJ that glue a sequence together, and the U+1F000–1FFFF
+     emoji planes as surrogate pairs. Deliberately NOT matched: · — – ’ …
+     which are punctuation this page relies on. */
+  var GLYPH_RUN = /(?:[\u2190-\u21FF\u2300-\u27BF\u2B00-\u2BFF\uFE0F\u200D\u20E3]|[\uD83C-\uD83E][\uDC00-\uDFFF])+/g;
+
+  function say(node, str) {
+    node.textContent = '';
+    var s = String(str == null ? '' : str);
+    var last = 0, m;
+    GLYPH_RUN.lastIndex = 0;   /* a /g/ regex carries lastIndex between calls */
+    while ((m = GLYPH_RUN.exec(s)) !== null) {
+      if (m.index > last) node.appendChild(document.createTextNode(s.slice(last, m.index)));
+      var g = el('span', '', m[0]);
+      g.setAttribute('aria-hidden', 'true');
+      node.appendChild(g);
+      last = m.index + m[0].length;
+    }
+    if (last < s.length) node.appendChild(document.createTextNode(s.slice(last)));
+    return node;
+  }
+
   function skillChip(id) {
     var s = SKILLS[id] || { label: id, icon: '' };
     var chip = el('span', 'skillchip');
@@ -619,6 +658,12 @@
         a.appendChild(document.createTextNode(cat.label));
         var n = el('span', 'n', String(live));
         a.appendChild(n);
+        /* The count is a superscript badge, so the two text runs are
+           adjacent with no separator and the computed name came out
+           "colour7" — read as one token. Name the tab in words; the visible
+           label is still a prefix of it (WCAG 2.5.3), and the number is the
+           same live count printed in the spread's own heading. */
+        a.setAttribute('aria-label', cat.label + ', ' + live + (live === 1 ? ' drill' : ' drills'));
         jumpNav.appendChild(a);
       }
     });
@@ -633,6 +678,18 @@
     var scores = dayScores(todayKey());
     var done = 0;
     var minutes = 0;
+    /* This tears the whole checklist down and rebuilds it, and it is not
+       only reached from a click that is about to move focus anyway: a second
+       tab logging a round (the storage listener) and the overnight rollover
+       both land here. Whichever slot the keyboard was resting on is deleted
+       out from under it, focus falls back to <body> — i.e. silently to the
+       top of the document — and the next Tab restarts from the topbar.
+       Remember the slot and hand focus to its replacement.
+       Safe while the dialog is open: a modal <dialog> makes everything
+       outside it inert, so activeElement can never be a slot then. */
+    var wasOn = document.activeElement;
+    var keepSlug = (wasOn && wasOn.classList && wasOn.classList.contains('today-slot'))
+      ? wasOn.getAttribute('data-slug') : null;
     todayList.textContent = '';
     picks.forEach(function (g) {
       var isDone = typeof scores[g.slug] === 'number';
@@ -677,16 +734,23 @@
       li.appendChild(btn);
       todayList.appendChild(li);
     });
+    if (keepSlug) {
+      var again = todayList.querySelector('.today-slot[data-slug="' + keepSlug + '"]');
+      /* preventScroll: the player never moved, so neither should the page */
+      if (again && typeof again.focus === 'function') {
+        try { again.focus({ preventScroll: true }); } catch (e) { again.focus(); }
+      }
+    }
     var all = picks.length > 0 && done === picks.length;
     if (todayDone) {
       /* "0/3 done · perfect day ★ when all three" is a scoreboard, and a
          scoreboard means nothing to someone who has not played yet. On a
          cold first visit say the price and the verb instead. */
-      todayDone.textContent = (isNewcomer() && picks.length)
+      say(todayDone, (isNewcomer() && picks.length)
         ? 'your first three · about ' + minutes + ' min in total · pick one to start'
         : all
           ? done + '/' + picks.length + ' done · ★ perfect day'
-          : done + '/' + picks.length + ' done · perfect day ★ when all three';
+          : done + '/' + picks.length + ' done · perfect day ★ when all three');
     }
     if (shareBtn) shareBtn.hidden = done < 1;
   }
@@ -798,12 +862,16 @@
        where nothing ever explained the thing that saves their streak. */
     if (streakAlive()) {
       var st = store.streak;
-      box.appendChild(el('p', 'record-note',
+      /* "(❄️)" used to be a bare parenthetical, which say() would empty into
+         a spoken "open paren close paren". The glyph does the same teaching
+         job sitting next to the words it labels, and now reads clean in both
+         channels: "every 5th day banks a rest day, and one missed day…". */
+      box.appendChild(say(el('p', 'record-note'),
         '🔥 ' + st.count + '-day streak' +
         (st.freezes > 0
           ? ' · ❄️ ' + st.freezes + ' rest ' + (st.freezes === 1 ? 'day' : 'days') + ' banked'
           : '') +
-        ' — every 5th day banks a rest day (❄️), and one missed day spends a banked rest day instead of resetting the count'));
+        ' — every 5th day banks a ❄️ rest day, and one missed day spends a banked rest day instead of resetting the count'));
     }
     box.hidden = false;
   }
@@ -935,9 +1003,12 @@
          81") and was left arguing with its own opening words. Only claim the
          tick when this round is what the record now holds. */
       var kept = (todayPrev === null) || score >= todayPrev;
-      statusEl.textContent = (kept ? 'recorded ✓ ' : 'this round ') + score + '/100' +
+      /* say(), not textContent: this line is aria-live, and the ✓ and ★ in it
+         were announced as "heavy check mark" and "black star" — a tick that
+         only restates the word "recorded" next to it, read out as a noun. */
+      say(statusEl, (kept ? 'recorded ✓ ' : 'this round ') + score + '/100' +
         (note ? ' — ' + note : '') +
-        (perfect ? ' · ★ warmup complete' : '');
+        (perfect ? ' · ★ warmup complete' : ''));
       statusEl.classList.toggle('is-best', note.indexOf('new best') === 0);
     }
     updateNextBtn();
@@ -974,7 +1045,7 @@
     var picks = todayPick();
     box.textContent = '';
 
-    box.appendChild(el('p', 'closing-head', 'that’s today’s warmup done ★'));
+    box.appendChild(say(el('p', 'closing-head'), 'that’s today’s warmup done ★'));
 
     /* "🪤 82 · 🎨 91 · ✏️ 70" is a cipher: three numbers with no way to
        tell which drill earned which, and to a screen reader it is three
@@ -994,7 +1065,9 @@
       part.appendChild(document.createTextNode(
         ' ' + g.name + ' ' + (typeof s === 'number' ? s : '–')));
       if (typeof s === 'number' && s === bestFor(g.slug)) {
-        part.appendChild(el('span', 'closing-pb', ' best ★'));
+        /* the leading space stays the first text node here, so .closing-pb's
+           white-space: normal still restores exactly one break opportunity */
+        part.appendChild(say(el('span', 'closing-pb'), ' best ★'));
       }
       row.appendChild(part);
     });
@@ -1003,7 +1076,7 @@
     var st = store.streak;
     var line = st.count > 1 ? '🔥 ' + st.count + ' days running' : '🔥 day one — come back tomorrow and it becomes a streak';
     if (st.freezes > 0) line += ' · ❄️ ' + st.freezes + ' rest day' + (st.freezes > 1 ? 's' : '') + ' banked';
-    box.appendChild(el('p', 'closing-streak', line));
+    box.appendChild(say(el('p', 'closing-streak'), line));
 
     var tom = tomorrowPick();
     if (tom.length) {
@@ -1132,8 +1205,9 @@
        tree, so every milestone was written into a region that did not exist
        and then revealed, which AT may treat as a new region rather than an
        announcement. Emptying it leaves the region in place (and paints
-       nothing, via .page-toast:empty). */
-    box.textContent = msg;
+       nothing, via .page-toast:empty — say() only ever adds children, so an
+       emptied box still matches it). */
+    say(box, msg);
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function () {
       box.textContent = '';
@@ -1174,8 +1248,15 @@
     if (!nextBtn) return;
     if (!(player && player.open)) { nextBtn.hidden = true; return; }
     var nxt = nextUnfinished();
+    /* aria-label, not say(): .player-next is an inline-FLEX box, so splitting
+       the arrow into its own element would make it a separate flex item and
+       the space before it — now trailing whitespace on an anonymous item —
+       would be dropped, closing the gap on screen. The label is the visible
+       text minus the arrow, which keeps "next: Steady Lines" a spoken (and
+       voice-clickable, WCAG 2.5.3) prefix instead of "…rightwards arrow". */
     if (nxt) {
       nextBtn.textContent = 'next: ' + nxt.name + ' →';
+      nextBtn.setAttribute('aria-label', 'next: ' + nxt.name);
       nextBtn.setAttribute('data-act', 'next');
       nextBtn.hidden = false;
       return;
@@ -1187,6 +1268,7 @@
        halfway down the page, so the summary was never seen at all. */
     if (todayComplete()) {
       nextBtn.textContent = "see today's card →";
+      nextBtn.setAttribute('aria-label', "see today's card");
       nextBtn.setAttribute('data-act', 'card');
       nextBtn.hidden = false;
       return;

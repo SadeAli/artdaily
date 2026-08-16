@@ -32,7 +32,7 @@
 <!-- ?v= busts the CDN/browser cache on deploy: registry.js is served
      with a 4h max-age, so without this a returning visitor keeps an old
      catalogue. Bump V in every asset URL below when css/js changes. -->
-<link rel="stylesheet" href="css/style.css?v=17">
+<link rel="stylesheet" href="css/style.css?v=18">
 <script>
 (function(){var t=null;try{t=localStorage.getItem('sadeali-theme');}catch(e){}document.documentElement.dataset.theme=(t==='dark')?'dark':'light';})();
 </script>
@@ -90,18 +90,29 @@
 
 <nav class="jumpnav" id="jumpNav" aria-label="Drill categories" hidden></nav>
 
-<!-- These two lines used to sit AFTER </main> — i.e. after all 38 cards.
+<main id="catalogue" aria-label="Drill catalogue">
+<!-- INSIDE <main>, since wave 12. These three lines used to sit between
+     </nav> and <main>, which puts them in no landmark at all — and landmark
+     jumping is how a screen reader user crosses a page this long. Going
+     nav → main skipped every one of them, so the only gloss for
+     "math-scored / fit-scored / curated" and the only note about hardware
+     allowances were unreachable by the one navigation method that makes a
+     39-card catalogue tractable. That is the same mistake these lines were
+     moved up the page to fix in the first place (see below), left standing
+     for anyone not reading top to bottom. renderCatalogue appends its
+     spreads, so they still print above the first card.
+     These two lines used to sit AFTER </main> — i.e. after all 39 cards.
      Between them they are (a) the only sentence that says what the whole
      catalogue is for, and (b) the only gloss for "math-scored / fit-scored /
      curated", which are printed in the corner of the very first card a
-     beginner scrolls to. A gloss that arrives 38 cards after its own jargon
+     beginner scrolls to. A gloss that arrives 39 cards after its own jargon
      is not a gloss, and the tagmark's title= is no answer: a title never
      opens on a touchscreen. Both moved above the catalogue — and so, since
      wave 9, has the hardware note that used to be left behind below it. -->
 <p class="aboutline">a warmup, not a curriculum — pick a drill, do a round, come back tomorrow</p>
 <p class="legendline">every drill scores out of 100, and you are only ever compared with your own past rounds · the pencil mark in a card's corner says how it is scored: <b>math-scored</b> = pure geometry &amp; colour math · <b>fit-scored</b> = a comparison algorithm with tuning · <b>curated</b> = classic guidelines, honestly subjective</p>
 <!-- The single biggest thing about a score here, and it used to be printed
-     BELOW the catalogue — i.e. after all 38 cards, which on a phone's
+     BELOW the catalogue — i.e. after all 39 cards, which on a phone's
      one-column grid is the better part of ten thousand pixels of scrolling.
      The trackpad beginner this sentence exists to keep was the one player
      guaranteed never to reach it. It is the same mistake the two lines above
@@ -111,7 +122,6 @@
      1.7 / 1.6 / 1.0 (bigger dots for a pen or a finger). -->
 <p class="legendline">scores are tuned to what you draw with: a mouse or trackpad is allowed twice the wobble of a pen tablet, a finger sits in between, and start dots are drawn bigger for a pen or a finger. each drill's panel says which it is scoring for — so if you switch hardware, an older best of yours was measured with a different-sized allowance.</p>
 
-<main id="catalogue" aria-label="Drill catalogue">
   <noscript>
     <div class="section">
       <p class="noscript-note">the arcade player needs JavaScript, but every drill lives on its own page — plain links:</p>
@@ -123,6 +133,7 @@
         <li><a href="https://sadeali.github.io/artdaily-neutral-hunt/">Neutral Hunt</a></li>
         <li><a href="https://sadeali.github.io/artdaily-temperature-sort/">Temperature Sort</a></li>
         <li><a href="https://sadeali.github.io/artdaily-colour-constancy/">Colour Constancy</a></li>
+        <li><a href="https://sadeali.github.io/artdaily-sun-and-sky/">Sun &amp; Sky</a></li>
         <li><a href="https://sadeali.github.io/artdaily-values/">Value Squint</a></li>
         <li><a href="https://sadeali.github.io/artdaily-sphere-shade/">Shade a Sphere</a></li>
         <li><a href="https://sadeali.github.io/artdaily-value-thumbnail/">Value Thumbnail</a></li>
@@ -187,7 +198,13 @@
       <button class="player-x" id="playerClose" type="button" aria-label="Close game">✕</button>
     </div>
     <iframe class="player-frame" id="playerFrame" src="about:blank" title="Art Daily game"></iframe>
-    <p class="player-foot"><span id="playerStatus" aria-live="polite"></span><span class="player-foot-spacer"></span><button class="player-next" id="playerNext" type="button" hidden></button></p>
+    <!-- aria-atomic: the score line is now built from several nodes (the ✓ and
+         the ★ are split into aria-hidden spans so they are not spoken as
+         "heavy check mark" / "black star" — see say() in app.js). Without it
+         aria-live="polite" announces only the nodes that changed, which can
+         deliver "recorded" and "62/100 — new best +15 on your old 71" as two
+         unrelated fragments. Atomic re-reads the whole sentence, once. -->
+    <p class="player-foot"><span id="playerStatus" aria-live="polite" aria-atomic="true"></span><span class="player-foot-spacer"></span><button class="player-next" id="playerNext" type="button" hidden></button></p>
   </div>
 </dialog>
 
@@ -203,9 +220,9 @@
   <p class="fineprint">© SadeAli · free · no ads · no tracking</p>
 </footer>
 
-<script src="js/support-config.js?v=17"></script>
-<script src="js/registry.js?v=17"></script>
-<script src="js/main.js?v=17"></script>
-<script src="js/app.js?v=17"></script>
+<script src="js/support-config.js?v=18"></script>
+<script src="js/registry.js?v=18"></script>
+<script src="js/main.js?v=18"></script>
+<script src="js/app.js?v=18"></script>
 </body>
 </html>

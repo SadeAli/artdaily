@@ -311,6 +311,16 @@ name — what a links-list announces out of context — ended *"add it to my
 Art Daily record rightwards arrow"*. Wrap the glyph in an
 `aria-hidden="true"` span and leave the sentence clean.
 
+The rule bites hardest inside an accessible **name**, because that is what
+gets announced out of context, so audit every link and button before you
+audit prose. Two that shipped anyway: the template's own back link read
+*"leftwards arrow artdaily"* until its `←` was wrapped, and the SDK's
+hand-off sentence separated the round from the session best with a bare
+`·` — *"scored 30 middle dot best this session 90"* — four lines from the
+`glyph()` helper written to fix precisely that. Both are fixed; the lesson
+is that a helper existing is not the same as a helper being used, and the
+one place nobody re-reads is the chrome that was written first.
+
 **Do not destroy a control to update the text around it.** Removing a
 focused element drops focus to `<body>`. The hand-off bar rebuilt its
 whole contents every round, so a keyboard player who had tabbed onto
@@ -323,7 +333,7 @@ was rebuilt or not; from the second paint on the bar is deliberately silent
 announcement at all and still cost a keyboard player their place.
 
 **3:1 for every mark that carries information, on both sheets.** See the
-UX bar for the palette numbers. Two traps beyond the raw accent:
+UX bar for the palette numbers. Three traps beyond the raw accent:
 
 - *"Faint" is a look, not a licence to be unreadable.* The reveal's
   dotted zero-ring — the scale the printed number is measured on, the
@@ -335,6 +345,30 @@ UX bar for the palette numbers. Two traps beyond the raw accent:
 - *Measure against what is actually behind the mark*, which on a drill
   canvas is `--card` **plus the dot grid** (`--ink` at 8%), not the
   swatch in your head.
+- *Accent **text** owes 4.5, and the chrome inks it one rung **lighter**
+  than the canvas.* The shared sheet paints accent text with
+  `color-mix(--game-accent 55%, --ink)`, while the canvas uses
+  `--canvas-accent`, the 45% mix. So the two surfaces that owe the *higher*
+  bar because they are text — the HUD's round/score/best (16.8px/900) and
+  the SDK's hand-off link (18.4px bold, which lands just under the 18.66px
+  large-text line and therefore owes the full 4.5) — are painted paler than
+  a canvas ring that only owes 3:1. On paper that clears AA for five
+  accents and misses for `--sunny`: **4.09** in the HUD and **4.11** on the
+  link, against 5.27–6.01 for coral, mint, sky, lilac and bubblegum. The
+  night studio is fine everywhere. Until the shared 55% moves, spend one
+  value for both by adding this **below the marker** — worst case becomes
+  5.01, dark is untouched (there `--canvas-accent` *is* the raw accent),
+  and the HUD number and the toast sticker, which print the same score in
+  the same instant, stay the same colour as each other:
+
+  ```css
+  :root[data-theme="light"] .hud-stat dd,
+  :root[data-theme="light"] .handoff-link,
+  :root[data-theme="light"] .toast .toast-accent { color: var(--canvas-accent); }
+  ```
+
+  The template ships it, so a drill copied today inherits it; six live
+  drills chose `--sunny` before it existed.
 
 Check a colour before you commit it — no dependencies:
 
@@ -352,7 +386,11 @@ do not wrap a control in `overflow: hidden` that clips it, and keep the
 DOM order the reading order (the SDK inserts the hand-off bar directly
 after `.game-controls` for exactly that reason). Anything you toggle
 open needs `aria-expanded` + `aria-controls` on the button that toggles
-it, as `#btnHow` does.
+it, as `#btnHow` does. And keep the chrome inside **landmarks**: the
+template's top bar is a `<header>`, not a bare `<div>`, so the back link
+and the theme toggle — the only controls outside `<main>` — are reachable
+by a player who navigates by region rather than by tab. Content in no
+landmark at all is content that kind of navigation never lands on.
 
 **Reduced motion, again.** The stylesheet flattens CSS animation and
 transition; it cannot reach a canvas tween or a `setInterval`. See the
@@ -511,8 +549,16 @@ Rules that follow from this:
   point continues the same attempt.
 - **Put a pixel floor under relative tolerances**, or a phone gets a
   stricter standard than a desktop for the identical drill.
-- **Keep `<dd id="inputMode">` in the HUD.** The SDK fills it with
-  "scoring for mouse or trackpad" — we ease the score, so we say so.
+- **Keep `<dd id="inputMode">` in the HUD** — and give it a `<dt>`. The SDK
+  fills the `<dd>` with "scoring for mouse or trackpad": we ease the score,
+  so we say so. The id is fixed by protocol v1, but a `<dd>` on its own is
+  not a legal description-list group, and an orphan value is read either
+  with no term at all or hung off the term before it — *"best: scoring for
+  mouse or trackpad"*, which is a HUD that lies about the player's record.
+  The template pairs it with a visually hidden `<dt class="hud-input-term">`
+  (hidden below the CSS marker, with `clip-path` rather than `display:
+  none`, which would take it out of the accessibility tree too and fix
+  nothing).
 
 ## Performance, or: the hand has to feel listened to
 
