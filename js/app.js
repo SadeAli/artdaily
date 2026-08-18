@@ -2087,6 +2087,49 @@
      syncClosing shows it when today IS finished and hides it otherwise. */
   syncClosing();
 
+  /* ---- structured data ----
+
+     The catalogue as an ItemList, so a crawler is told the page is a
+     collection of 42 named things and which URL each one is, instead of
+     inferring it from a grid of anchors it has to render first.
+
+     Built from the registry rather than written into index.html, because a
+     hand-kept copy is a FIFTH place a new drill has to be registered — after
+     the folder, the registry, the <noscript> list and the sitemap — and the
+     one nobody would notice going stale. Google renders the page before it
+     reads structured data, so a script-injected block is read like any other;
+     the static <noscript> list is still what a non-rendering crawler follows.
+     Live drills only: a 'soon' card is a promise, not a page. */
+  (function () {
+    try {
+      var items = liveGames.map(function (g, i) {
+        return {
+          '@type': 'ListItem',
+          position: i + 1,
+          name: g.name,
+          description: g.tagline,
+          url: new URL(gameUrl(g), location.href).href,
+        };
+      });
+      var el = document.createElement('script');
+      el.type = 'application/ld+json';
+      el.textContent = JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: 'Art Daily',
+        url: location.origin + '/',
+        description: document.querySelector('meta[name="description"]').content,
+        mainEntity: {
+          '@type': 'ItemList',
+          numberOfItems: items.length,
+          itemListOrder: 'https://schema.org/ItemListOrderAscending',
+          itemListElement: items,
+        },
+      });
+      document.head.appendChild(el);
+    } catch (e) {}   /* structured data is a bonus; never break the page for it */
+  })();
+
   /* Day rollover: a tab left open overnight re-renders the checklist
      and streak for the new day when it next becomes visible. It also
      re-reads the store — a day-old snapshot in memory would otherwise be
