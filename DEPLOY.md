@@ -69,9 +69,35 @@ Pages setup to do: shipping a drill is a commit here.
 3. Add its entry to `js/registry.js` with `status: 'live'`. No `url` field:
    the address is derived from the slug. `url` survives only as an override,
    for a drill served from somewhere other than this repo.
-4. Add one `<loc>` line to `sitemap.xml`. Nothing generates that file, so a
-   drill left out of it is a drill Google is never told about.
-5. Push. On the next Pages build the page lists, embeds and scores it.
+4. Add its plain link to the `<noscript>` list in `index.html`. Two
+   registrations, not one — `GAME_GUIDE.md` carries the one-liner that checks
+   the list against the registry, and three drills once shipped half-listed.
+5. Write the drill's `<section class="about">` and its `<title>` and
+   `<meta name="description">`. This is not decoration: a drill page is a
+   canvas, so without that section it is a near-empty document to a search
+   engine, and the title is the only place the *practice* — "value drill",
+   "ellipse exercise" — is named at all. Every number in it must come from the
+   drill's own scoring code. The section sits outside `<main>` and is hidden by
+   `:root.embed .about`, so the player iframe never shows it.
+6. Regenerate the sitemap and push:
+
+   ```sh
+   git commit -am "Add <slug>"
+   node tools/build-sitemap.js     # reads the registry; writes <lastmod> from git
+   git commit -am "sitemap" && git push
+   ```
+
+   It runs after the commit because `<lastmod>` comes from the last commit that
+   touched the folder. Nothing runs it on the server — the site is still plain
+   files, this is just the file that used to be kept in sync by hand.
+7. Tell the search engines. Google picks it up from `sitemap.xml` (submitted
+   once, via the index at `https://sadeali.com/sitemap-index.xml`). Everyone
+   else gets `node tools/indexnow.js`, which pushes the URL list to Bing,
+   Yandex, Seznam and Naver instead of waiting to be crawled. That needs the
+   IndexNow key file at the repo root to stay where it is — the API fetches it
+   to prove you control the host, and deleting it turns every future
+   submission into a silent rejection.
+8. On the next Pages build the page lists, embeds and scores it.
 
 ## 5. The hub card
 

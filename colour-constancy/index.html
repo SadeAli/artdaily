@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Colour Constancy — Art Daily</title>
-<meta name="description" content="match what the colour is, not what it looks like — a daily art drill from artdaily.sadeali.com">
+<title>Colour Constancy — a drill in discounting coloured light</title>
+<meta name="description" content="One coloured light tints the whole scene. Work out the patch's true surface colour and rebuild it, training your eye to discount the light as you paint.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Colour Constancy">
 <meta property="og:description" content="match what the colour is, not what it looks like — a daily art drill">
@@ -149,6 +149,15 @@
     </div>
   </div>
 </main>
+
+<section class="about" aria-labelledby="aboutHead">
+  <h2 id="aboutHead">Seeing past a coloured light</h2>
+  <p>One coloured light tints a small scene: the ground, a labelled white card, a grey block, an off-hue prop and the patch itself. The scene is built as reflectance times illuminant per channel in linear RGB, so the light only removes energy and nothing clips. On a neutral grey field beside it you rebuild the patch's real surface colour with hue, saturation and lightness sliders — ±1 buttons for the last few degrees, held to walk — then lock it in. Four colours a round, the light strengthening and the patch growing more muted as it runs.</p>
+  <p>The card labelled white is genuinely white, so whatever colour it appears to be is the colour of the light. Subtract that and the surface remains. Your eye does this discounting all day unasked, and that is the reflex a painter has to switch off. Deals where the light barely touches the patch are re-dealt: an item you can win by copying what you see teaches nothing.</p>
+  <h3>How much of the light you left in</h3>
+  <p>Each lock is measured as CIE76 ΔE against the patch's true reflectance and mapped through 100 × clamp(1 − ΔE/30, 0, 1). The miss is then split by direction: the part along the light's own axis — light you did not take off — is charged in full, while slop across that axis costs under a third as much. Knowing the light and being a few degrees out beats precision about the wrong colour; on a strong cast, copying what you see scores nothing. That ΔE 30 zero point is identical on every device; what a coarse pointer costs you is taps on the ±1 buttons, not marks. On reveal the light drops back to neutral, so the cast visibly leaves the scene, and your hue, saturation and lightness misses print with their signs; the round is the mean of the four, and closes with the way your eye leans.</p>
+  <p class="about-more">More colour drills: <a href="../sun-and-sky/">Sun & Sky</a> · <a href="../colors/">Color Mixer</a> · <a href="../palette-pick/">Palette Pick</a> · <a href="../">all 42 drills</a></p>
+</section>
 
 <footer class="footer">
   <nav class="footnav" aria-label="Site links">

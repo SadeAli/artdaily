@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Temperature Sort — Art Daily</title>
-<meta name="description" content="order the swatches warm to cool — a daily art drill from artdaily.sadeali.com">
+<title>Temperature Sort — a warm and cool colour drill</title>
+<meta name="description" content="Drag five swatches into warm-to-cool order. A colour temperature exercise that trains hue judgement when lightness and saturation give nothing away.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Temperature Sort">
 <meta property="og:description" content="order the swatches warm to cool — a daily art drill">
@@ -93,6 +93,15 @@
     </div>
   </div>
 </main>
+
+<section class="about" aria-labelledby="aboutHead">
+  <h2 id="aboutHead">Judging colour temperature by hue alone</h2>
+  <p>Five colour chips arrive in a row, shuffled. You order them warmest on the left to coolest on the right &mdash; drag a chip into a new slot, or tap one chip and then another to swap the two, which is the path that works from a keyboard or an assistive device. Then press &ldquo;done sorting&rdquo;. A round is four sets, and they tighten as you go: hue gaps start near 45&deg; and close to roughly 16&deg; by set four, whose swatches sit almost on top of each other on purpose.</p>
+  <p>Every swatch in a set carries the same lightness and the same chroma, generated in OKLCH and fitted back into the screen&rsquo;s gamut, which removes the two cues people lean on without noticing: the lighter chip is not the warmer one here, and neither is the more saturated one. Hue is the only honest evidence left. The swatches stay on the orange&ndash;yellow&ndash;green&ndash;blue arc, since magenta and purple read warm or cool depending on what sits beside them. The habit the reveal keeps rewarding is that temperature is relative &mdash; find the two extremes first, then bracket the middle against them.</p>
+  <h3>Counting pairs, not positions</h3>
+  <p>Five chips make ten possible pairs, and each pair is judged on its own: in the right relative order it earns, reversed it costs. That count is Kendall&rsquo;s tau rescaled onto 0&ndash;100, with the zero point set below a shuffle rather than at it. A perfect row is 100, one swapped pair 83, two 67, half the pairs right 17, and an untouched shuffle averages about a fifth of the scale, where raw concordance would have paid it 50. The four set scores are averaged for the round, and every reveal puts the swatches back in their true places on a warm&rarr;cool strip.</p>
+  <p class="about-more">More colour drills: <a href="../colour-constancy/">Colour Constancy</a> · <a href="../sun-and-sky/">Sun & Sky</a> · <a href="../colors/">Color Mixer</a> · <a href="../">all 42 drills</a></p>
+</section>
 
 <footer class="footer">
   <nav class="footnav" aria-label="Site links">

@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Light Direction — Art Daily</title>
-<meta name="description" content="read the form, place the light — a daily art drill from artdaily.sadeali.com">
+<title>Light Direction — a light source and shading drill</title>
+<meta name="description" content="A hidden sun shades a matte form. Read the highlight and shadow edge back to the light source, then place the sun on a direction ring and tilt arc.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Light Direction">
 <meta property="og:description" content="read the form, place the light — a daily art drill">
@@ -85,6 +85,15 @@
     </div>
   </div>
 </main>
+
+<section class="about" aria-labelledby="aboutHead">
+  <h2 id="aboutHead">Tracing light back to its source</h2>
+  <p>Six forms make a round, spheres first and then lumpy blended shapes, with the contrast dropping and the sun’s height running to extremes as the round goes on. Each is lit by a sun you cannot see. You aim at it with two controls — the ring says which direction the light comes from, the corner arc says how far it is tilted toward you — while a small preview of the same form under <em>your</em> current light sits beside the real one, so the guess is a visual match rather than a number. Lock in, and the reveal shows the true sun and names the miss on each dial.</p>
+  <p>The picture is not decorated, it is computed: the form is shaded per pixel from real surface normals against a real light vector, and the cast shadow is that same form projected along the vector onto the floor under a declared 16° camera pitch. Shadow length therefore comes from the sun's true altitude — raking light throws a long faint one, an overhead sun leaves a tight pool — and it cannot contradict the shading above it. The shadow edge, where the light stops and the dark side begins, is the second cue; painters call it the terminator, the reveal labels it, and the sun lies on the line from there through the brightest spot.</p>
+  <h3>Degrees off, and what they cost</h3>
+  <p>Each form scores <code>100 · clamp(1 − max(0, angErr − 3°) / 42°)</code>, where angErr is the angle in 3D between the light vector you placed and the real one. Inside a 3° grace cone it is a flat 100; at 45° off it is zero; the round is the mean of the six. Those two constants hold on every device — what changes with your hardware is only how big the targets are, the ring reading ±34px under a trackpad, ±54 under a finger and ±58 for a pen.</p>
+  <p class="about-more">More value & light drills: <a href="../values/">Value Squint</a> · <a href="../sphere-shade/">Shade a Sphere</a> · <a href="../value-thumbnail/">Value Thumbnail</a> · <a href="../">all 42 drills</a></p>
+</section>
 
 <footer class="footer">
   <nav class="footnav" aria-label="Site links">

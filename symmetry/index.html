@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mirror Mirror — Art Daily</title>
-<meta name="description" content="finish the other half of the figure — a daily art drill from artdaily.sadeali.com">
+<title>Mirror Mirror — a freehand symmetry drawing drill</title>
+<meta name="description" content="Draw the missing half of a figure across a mirror line, freehand. A symmetry drill that trains measuring distances instead of eyeballing them.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Mirror Mirror">
 <meta property="og:description" content="finish the other half of the figure — a daily art drill">
@@ -86,6 +86,15 @@
     </div>
   </div>
 </main>
+
+<section class="about" aria-labelledby="aboutHead">
+  <h2 id="aboutHead">Symmetry you measure rather than feel</h2>
+  <p>A dashed vertical line splits the sheet; one smooth half-figure is already drawn against it, and the missing half is yours, freehand, in as many strokes as you like. Lifting between strokes costs nothing, undo drops the last one, clear restarts the figure, and neither is penalised. The round runs three figures, each curvier than the one before. The thin bar under the sheet is ink: redrawing the same curve over and over spends it, the first 20px of every stroke are free so marking heights is cheap, and when it runs out the drill stops inking and asks for done rather than scoring you mid-stroke.</p>
+  <p>The habit being drilled is measured symmetry. Copying the given outline stroke for stroke is the slow way to be wrong; picking three or four heights, reading how far the drawn half sits from the dashed line at each of them, putting a mark that far out on the right and joining the marks is the way symmetry is actually kept — distances from the axis, not an eyeballed shape. After each figure the true mirror is laid over your attempt in lilac, with short whiskers pointing at the two or three widest misses.</p>
+  <h3>The pixel band your strokes have to land in</h3>
+  <p>Your strokes are mirrored back across the line and compared with the true curve by a symmetric point-to-segment chamfer distance, then graded in a band measured in pixels. Anything inside the free zone — 0.4% of the figure's height, or 2.5px, whichever is larger — is still a clean 100. The score falls to zero at 8% of the figure's height or 16px, whichever is larger, with a further pixel allowance added for the hardware in your hand, since a mouse pivots at the wrist and cannot creep. The three figure scores are averaged into the round, and the numbers are only set against your own history.</p>
+  <p class="about-more">More line & hand drills: <a href="../angle-snap/">Angle Snap</a> · <a href="../steady-tunnel/">Steady Tunnel</a> · <a href="../even-spacing/">Even Spacing</a> · <a href="../">all 42 drills</a></p>
+</section>
 
 <footer class="footer">
   <nav class="footnav" aria-label="Site links">

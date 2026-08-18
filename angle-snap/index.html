@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Angle Snap — Art Daily</title>
-<meta name="description" content="eyeball an angle, commit in one stroke — a daily art drill from artdaily.sadeali.com">
+<title>Angle Snap — a daily drill for judging angles by eye</title>
+<meta name="description" content="Read an angle from a reference line and commit it in one stroke. A drawing drill for judging angles by eye instead of measuring them.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Angle Snap">
 <meta property="og:description" content="eyeball an angle, commit in one stroke — a daily art drill">
@@ -83,6 +83,15 @@
     </div>
   </div>
 </main>
+
+<section class="about" aria-labelledby="aboutHead">
+  <h2 id="aboutHead">Reading an angle off a reference line</h2>
+  <p>Each item gives an anchor dot, a grey reference line through it, and a prompt in plain words: 45° counter-clockwise from that line, say. An amber arrow at the anchor turns the same way, so the direction is checkable before you commit. Then you pull one stroke, from anywhere on the sheet — only direction counts, so the drill slides your line onto the anchor. The true ray appears with a protractor arc and your error in degrees; hold the press to study it, release for the next of six. The opener always sets the reference flat or upright.</p>
+  <p>What this trains is reading and committing, not a steady hand. Direction is fitted across every sample of the pull, so two strokes that share a principal axis are graded identically, whether one shook out of a mouse and the other ran dead straight off a tablet: smoothness, speed and shake fall out of the maths. Turning the right amount the wrong way counts as its own mistake — land near the mirrored target and the drill calls it “right size, wrong way round” and gives the item back once, free.</p>
+  <h3>From one pull to a number</h3>
+  <p>The stroke's least-squares direction is compared with the target angle. Inside a free zone the marks are full; past it they fall in a straight line to zero at 27° of error. The 27° never widens for hardware: what it grades is the judgement, and no pointer makes that judgement better. The free zone is the hardware's: min(8°, 2° + atan(eased 2.5px / pull length)). It widens on short pulls — ±2.5px of jitter is ±3.6° over a 40px pull but ±1.2° over a 120px one — and widens again for a mouse or finger, which jitters about twice as far as a pen nib. A round is the mean of six strokes, and the angles asked for get finer as it runs.</p>
+  <p class="about-more">More line & hand drills: <a href="../steady-tunnel/">Steady Tunnel</a> · <a href="../even-spacing/">Even Spacing</a> · <a href="../line-weight/">Line Weight</a> · <a href="../">all 42 drills</a></p>
+</section>
 
 <footer class="footer">
   <nav class="footnav" aria-label="Site links">

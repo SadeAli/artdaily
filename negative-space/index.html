@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Negative Space — Art Daily</title>
-<meta name="description" content="draw what isn't there — a daily art drill from artdaily.sadeali.com">
+<title>Negative Space — a drawing drill for the gaps</title>
+<meta name="description" content="Trace the pocket of paper trapped between the shapes instead of the objects themselves. A negative space drawing exercise for shape observation.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Negative Space">
 <meta property="og:description" content="draw what isn't there — a daily art drill">
@@ -87,6 +87,15 @@
     </div>
   </div>
 </main>
+
+<section class="about" aria-labelledby="aboutHead">
+  <h2 id="aboutHead">Drawing the gap instead of the object</h2>
+  <p>A round builds three small compositions — a mug with the hole in its handle, a pierced arch, interlocking arcs, leaning slabs — and each traps a single pocket of paper between its shapes. That pocket breathes twice in a wash of colour, then goes quiet, and you draw its outline straight onto the picture. Three spaces per round, each slimmer than the last; the first of a fresh round stays tinted while you trace it, and “show again” replays the breath without disturbing your line.</p>
+  <p>The habit this works against is naming. Once a shape has been filed as “mug”, the hand starts drawing the remembered mug instead of the one on screen. Trapped paper has no name to fall back on, so its edges have to be copied as they actually run. The gap polygon is generated first and the silhouettes are assembled around it, which makes the correct answer exact rather than inferred, and its narrow side is floored in real pixels, so no round hands you a gap narrower than the fingertip trying to trace it.</p>
+  <h3>How your line is measured against the true edge</h3>
+  <p>Your strokes and the densely sampled true boundary are compared with a symmetric chamfer distance, run both ways and then combined by whichever direction did worse, so a line has to be close to the edge and complete around it. Distance is measured from each point to the path itself rather than to the nearest sample, so a quick drag whose points landed far apart loses nothing to how often your device reports them. The chamfer that scores zero is the larger of 0.09 × the gap's diagonal or a fixed floor, plus slop, both eased by input mode so a phone is not a stricter drill. A lift shorter than roughly 6% of that diagonal joins two strokes into one line.</p>
+  <p class="about-more">More observation drills: <a href="../anatomy-spot/">Anatomy Spot</a> · <a href="../gesture-capture/">Gesture Capture</a> · <a href="../contour-memory/">Contour Memory</a> · <a href="../">all 42 drills</a></p>
+</section>
 
 <footer class="footer">
   <nav class="footnav" aria-label="Site links">

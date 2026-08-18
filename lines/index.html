@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Steady Lines — Art Daily</title>
-<meta name="description" content="pull straight strokes from dot to dot — a daily art drill from artdaily.sadeali.com">
+<title>Steady Lines — a straight-line confidence drill</title>
+<meta name="description" content="Two dots appear: press on A and pull one straight stroke to B. Straight-line practice, six a round, with your last two attempts ghosting behind.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Steady Lines">
 <meta property="og:description" content="pull straight strokes from dot to dot — a daily art drill">
@@ -83,6 +83,15 @@
     </div>
   </div>
 </main>
+
+<section class="about" aria-labelledby="aboutHead">
+  <h2 id="aboutHead">Pulling a line that does not wobble</h2>
+  <p>Two dots, A and B. Press on A, pull one stroke across to B, lift. Six of them make a round, roughly forty seconds, and the pairs sit further apart as it goes on. Hitting A exactly is not part of it — a press anywhere inside the wide dashed circle is accepted and the line measured from where you actually landed. Your previous two attempts stay faintly on the sheet behind the new one, straight paths and all: redrawing over your own last try is the studio warm-up the whole drill is built out of.</p>
+  <p>What gets trained is the committed pull rather than the careful steer. The reveal overlays the true path, ticks the point of widest drift, and reads your stroke as a steady pull or as hesitant — a coaching note, never a penalty. At round end, if most of your lines bowed the same way, the drill names the tendency: a consistent curve belongs to the hand, not to the stroke. Running out of desk is not a fault: a stroke that stops before 88% of the way to B is not scored at all, and a circle at the lift point lets you carry the same one on.</p>
+  <h3>What counts as straight</h3>
+  <p>The measurement is RMS perpendicular drift away from the straight A-to-B path, in pixels, graded in a band: under <code>max(0.4% × |AB|, 3px)</code> is a clean 100, and the score reaches zero at <code>ease × max(5.5% × |AB|, 16px)</code>. Up to 20 points come off for stopping short of B, and the round is the mean of the six. Ease is 1.0 for a pen, 1.5 for a finger and 2.0 for a mouse or trackpad, because a wrist-pivoted device cannot creep the way a nib can: the same 15px of wobble across a 300px pull is a fair mouse line and a careless pen one.</p>
+  <p class="about-more">More line & hand drills: <a href="../ellipses/">Ellipse Orbit</a> · <a href="../draw-through/">Draw Through</a> · <a href="../symmetry/">Mirror Mirror</a> · <a href="../">all 42 drills</a></p>
+</section>
 
 <footer class="footer">
   <nav class="footnav" aria-label="Site links">

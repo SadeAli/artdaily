@@ -339,6 +339,38 @@ a { color: inherit; }
 .howto p { margin: 4px 0; }
 .howto-cmd { font-weight: 800; }
 
+/* ---- page copy ----
+   What this drill is, in prose, for the visitor who arrived from a search
+   result rather than from the catalogue — the drill itself says almost
+   nothing a crawler can read, because it is a canvas. It sits OUTSIDE
+   <main> and is hidden in the player (see the :root.embed rule further
+   down), so the arcade's iframe is exactly what it always was. */
+.about {
+  width: 100%;
+  max-width: 860px;      /* the .stage column, so it lines up under the drill */
+  margin: 0 auto;
+  padding: 0 20px 40px;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+.about h2, .about h3 {
+  color: var(--ink);
+  font-family: var(--hand);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.about h2 { font-size: 1.5rem; margin: 8px 0 6px; }
+.about h3 { font-size: 1.2rem; margin: 18px 0 4px; }
+.about p { margin: 0 0 10px; }
+.about a { color: var(--link); }
+.about-more {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+  font-size: 0.86rem;
+}
+
 /* ===== Footer ===== */
 
 .footer { text-align: center; padding: 40px 20px 28px; color: var(--muted); }
@@ -367,6 +399,7 @@ a { color: inherit; }
 :root.embed .term { border: 0; box-shadow: none; border-radius: 0; background: transparent; }
 :root.embed .term::before { display: none; }
 :root.embed .term-body { padding: 0; }
+:root.embed .about { display: none; }
 
 @media (max-width: 480px) {
   .stage { padding: 14px 12px 36px; }

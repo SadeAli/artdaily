@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Color Mixer — Art Daily</title>
-<meta name="description" content="mix the exact target color by eye — a daily art drill from artdaily.sadeali.com">
+<title>Color Mixer — a color matching drill with HSL sliders</title>
+<meta name="description" content="Five target swatches, three sliders, no numbers until you commit. Mix each color by eye, then see how far off you were and which axis missed.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Color Mixer">
 <meta property="og:description" content="mix the exact target color by eye — a daily art drill">
@@ -122,6 +122,15 @@
     </div>
   </div>
 </main>
+
+<section class="about" aria-labelledby="aboutHead">
+  <h2 id="aboutHead">Matching a color without numbers</h2>
+  <p>Five target swatches a round, three sliders — hue, saturation, lightness — and no numbers until you commit. You push the mix until it melts into the target and lock it in; only then does the reveal show both HSL triples, how far apart they were, and which axis carried the miss — “biggest miss: lightness — yours lighter by 8”. The five run easy, then vivid, then muted, ending near-grey where the eye drifts furthest and the hint warns that hue has stopped mattering. A recap then lines all five pairs up with their scores.</p>
+  <p>Mixing well means splitting one impression into three judgements, and the reveal says which of the three you got wrong — most mixes fail on lightness, not hue. Nothing here is eased for hardware, because nothing here is a stroke: the eye that reads a colour is the same eye behind a pen, a trackpad or a thumb. What hardware does get is a way to enter the value you meant — ±1 steppers on both sides of each slider, plus the arrow keys, so an exact hue is reachable even on a phone track carrying a couple of degrees per pixel.</p>
+  <h3>What ΔE measures here</h3>
+  <p>Both colors are converted from HSL through sRGB, linear RGB and XYZ into Lab, then compared with CIE76 ΔE. A ΔE of 2 or under is below what the eye can pick apart and takes a full 100. Above that the score falls in a straight line to zero, and the zero point scales with the target's own chroma: about ΔE 45 on a vivid color, about 20 on a near-grey. That is what keeps a 10° hue error costing about the same wherever it lands. The first two items carry a little extra room, so the warm-up is a real win. The round is the mean of the five.</p>
+  <p class="about-more">More colour drills: <a href="../palette-pick/">Palette Pick</a> · <a href="../mix-to-target/">Mix to Target</a> · <a href="../value-trap/">Value Trap</a> · <a href="../">all 42 drills</a></p>
+</section>
 
 <footer class="footer">
   <nav class="footnav" aria-label="Site links">

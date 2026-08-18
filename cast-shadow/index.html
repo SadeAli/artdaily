@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cast Shadow — Art Daily</title>
-<meta name="description" content="construct the shadow the light demands — a daily art drill from artdaily.sadeali.com">
+<title>Cast Shadow — a daily shadow construction drill</title>
+<meta name="description" content="Run one light ray per corner and land the shadow the sun demands, measuring against a gnomon stick. Practice constructing cast shadows by projection.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Cast Shadow">
 <meta property="og:description" content="construct the shadow the light demands — a daily art drill">
@@ -83,6 +83,15 @@
     </div>
   </div>
 </main>
+
+<section class="about" aria-labelledby="aboutHead">
+  <h2 id="aboutHead">Building a cast shadow from the light</h2>
+  <p>A form stands on a ground grid under a directional sun — parallel arrows at the frame edge, no disc for rays to converge on. Beside it a gnomon stick one unit tall throws its true shadow, and that stick is the given: which way the light throws, and how far one stick-height of shadow reaches. Press a numbered top corner, pull its ray down to where you think the shadow lands, release; four rays, then done. The true shadow inks itself in amber over yours, a dotted hop running from each landing to where it should have been.</p>
+  <p>The drill asks for projection, not a smudge around the base: a corner twice the stick's height throws its shadow twice as far, so you count in stick-heights rather than copying the stick's length. Your rays are never cleared away: they are the construction, not working-out to be tidied up. The geometry is real: the light direction is built from azimuth and altitude, each corner projected onto the ground exactly, so the drawn rays are genuinely parallel. Item 1 is a flat-topped box under a high sun; from item 2 the top slopes, so the corners sit at four heights and each ray has its own length.</p>
+  <h3>What separates your landings from the true ones</h3>
+  <p>An item scores the mean distance between your landings and the true ones, normalized by the true shadow's bounding diagonal: 100 · clamp(1 − meanErr / 0.28, 0, 1). A dead zone is forgiven first, so a construction as accurate as the hand allows reads 100: 0.012 diagonals for a pen, doubled for a mouse or trackpad, floored in real pixels, because 0.012 of a diagonal comes to under one pixel on a phone — finer than any pointer's own noise. The 0.28 ramp is identical on every device: what is measured is the proportional rule, not steadiness. The round is the mean of its items.</p>
+  <p class="about-more">More form & perspective drills: <a href="../horizon-read/">Horizon Read</a> · <a href="../cross-contour/">Wrap the Form</a> · <a href="../down-the-row/">Down the Row</a> · <a href="../">all 42 drills</a></p>
+</section>
 
 <footer class="footer">
   <nav class="footnav" aria-label="Site links">

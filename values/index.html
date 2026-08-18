@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Value Squint — Art Daily</title>
-<meta name="description" content="sort values and match grays like a squinting painter — a daily art drill from artdaily.sadeali.com">
+<title>Value Squint — sort values, match grays by eye</title>
+<meta name="description" content="Sort gray ladders light to dark, then build a gray that matches a color's value with a slider or by hatching. A value drill of about 45 seconds.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Value Squint">
 <meta property="og:description" content="sort values and match grays like a squinting painter — a daily art drill">
@@ -84,6 +84,15 @@
     </div>
   </div>
 </main>
+
+<section class="about" aria-labelledby="aboutHead">
+  <h2 id="aboutHead">Judging lightness with the color squinted away</h2>
+  <p>A round is six items and takes about 45 seconds. Three of them are gray ladders dealt out of order: tap two chips to swap them until the run reads light to dark, and the ranges narrow as you go. The other three show a colored swatch and ask for a gray of exactly its value &mdash; set it on the slider, or move to the hatch pad and lay strokes on white paper until the density of the marks carries the same tone. Saturation falls across those three, so the near-grays come last. Every item reveals the ideal answer over your attempt and then waits; nothing advances on its own.</p>
+  <p>The two halves of the round split the skill: sorting is reading lightness with nothing else in the frame, and matching is reading it while a colour sits next to it arguing. Sorting and matching with the color deliberately set aside is how an eye learns to read lightness by itself. The hatch pad matters for a second reason: judging a value and producing it with marks are separate skills, and both are measured here against the same ruler.</p>
+  <h3>How a ladder and a match are marked</h3>
+  <p>Ladders score on Kendall tau across the 15 chip pairs &mdash; 100 &middot; max(0, 2 &middot; ordered / 15 &minus; 1) &mdash; so a perfect run is 100, a reversed one 0, and the deal you start from is worth roughly nothing. Matches convert both swatches to CIE L* through relative luminance, the hatch pad averaging its pixels in linear light the way squinting really blurs them, and then score 100 &middot; (1 &minus; &Delta;L* / 22), with the first 1 L* forgiven for slider granularity. Hatching is a drawn mark, so its window is eased per hardware &mdash; 22 on a pen, 27 on a finger, 32 on a trackpad &mdash; while the slider, pure eye, reads the same everywhere. The round is the mean of the six.</p>
+  <p class="about-more">More value & light drills: <a href="../sphere-shade/">Shade a Sphere</a> · <a href="../value-thumbnail/">Value Thumbnail</a> · <a href="../hatch-ramp/">Hatch a Ramp</a> · <a href="../">all 42 drills</a></p>
+</section>
 
 <footer class="footer">
   <nav class="footnav" aria-label="Site links">

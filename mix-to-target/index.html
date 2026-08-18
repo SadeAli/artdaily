@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mix to Target — Art Daily</title>
-<meta name="description" content="blend base pigments into the target colour — a daily art drill from artdaily.sadeali.com">
+<title>Mix to Target — a daily colour-mixing ratio drill</title>
+<meta name="description" content="Blend base pigments until your mix matches the target colour. A browser colour mixing exercise that trains ratio judgement and reading a hue by its value.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Mix to Target">
 <meta property="og:description" content="blend base pigments into the target colour — a daily art drill">
@@ -99,6 +99,15 @@
     </div>
   </div>
 </main>
+
+<section class="about" aria-labelledby="aboutHead">
+  <h2 id="aboutHead">What mixing to a target teaches</h2>
+  <p>The bench holds two swatches side by side — the target colour, and whatever your current blend reads as — with one ratio slider beneath it for each base pigment, named for what it looks like rather than given a bare letter. A round is four colours: two bases to begin with, a third pigment for the last two, and a closing pair of hues so near each other that the only dependable way to separate them is by value. Every colour opens on a deliberately wrong blend, at least ΔE 12 from the target, so no colour ever opens on an accidental match.</p>
+  <p>What the drill measures is ratio judgement — not which pigments belong in a mix, but how much of each one it really takes. Sliders are relative shares, so 80/40 makes the same colour as 40/20, and the percentage beside each row reports the balance you have actually set. Mixing runs on a subtractive, pigment-style model, and every target is generated through that same model, so an exact match always exists on the sliders. After a lock-in the true ratios appear beside yours, and the Lab deltas are read back as plain direction — too light, a touch too warm.</p>
+  <h3>Where the ΔE number comes from</h3>
+  <p>Each colour is scored on ΔE (CIE76), the distance in Lab between your mix and the target, converted by 100 × (1 − ΔE/26). Below about 3 the two halves stop reading as different colours; 26 apart is worth nothing. A round's score is the mean of its four, carried live in the HUD as you work. Because the true ratios are rounded to whole percents, the correct answer always lands on a notch a hand can actually reach, which is what keeps 100 attainable; locking the opening blend without moving anything averages around 18.</p>
+  <p class="about-more">More colour drills: <a href="../value-trap/">Value Trap</a> · <a href="../neutral-hunt/">Neutral Hunt</a> · <a href="../temperature-sort/">Temperature Sort</a> · <a href="../">all 42 drills</a></p>
+</section>
 
 <footer class="footer">
   <nav class="footnav" aria-label="Site links">

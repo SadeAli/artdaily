@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ellipse in Plane — Art Daily</title>
-<meta name="description" content="lay a correct ellipse onto the face — a daily art drill from artdaily.sadeali.com">
+<title>Ellipse in Plane — a drill for ellipses in perspective</title>
+<meta name="description" content="Sweep an ellipse onto the highlighted face of a perspective box, then nudge it with handles. The plate-on-a-table, wheel-on-an-axle skill.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Ellipse in Plane">
 <meta property="og:description" content="lay a correct ellipse onto the face — a daily art drill">
@@ -84,6 +84,15 @@
     </div>
   </div>
 </main>
+
+<section class="about" aria-labelledby="aboutHead">
+  <h2 id="aboutHead">Fitting an ellipse to a face seen at an angle</h2>
+  <p>A box in two-point perspective arrives with one face highlighted, and you lay the ellipse belonging to that face onto it. Sweep the whole way round; lifting does not end the attempt, since a press near where you stopped joins the pieces — no trackpad crosses a 250px closed arc in one contact. The stroke is fitted, and handles appear to nudge centre, length, tilt and width; handles mode skips the sweep. Three faces per round, each turned further away.</p>
+  <p>This is the plate-on-a-table, wheel-on-an-axle problem: a circle only reads as lying on a surface when its ellipse belongs to that surface. The reveal draws the axle — the face’s real 3D normal projected through the same camera, not your minor axis extended — because the minor axis runs down the axle, straight out along the hub of a wheel. It prints the true ellipse’s degree — the number templates are sold in — and names whichever of placement, tilt or size you missed by most, so you leave with a direction, not just a mark.</p>
+  <h3>What a locked plate is marked on</h3>
+  <p>The truth is not sampled and fitted: the face’s inscribed circle lives in 3D and its conic is pushed straight through the plane-to-screen homography, so the revealed ellipse is that circle’s image to floating-point precision. Your attempt is scored on three errors: centre offset, normalized by the face’s mean projected diagonal; axis angle, which counts for less the rounder the truth is, since a near-circle points nowhere in particular; and size, which is scale plus the error in the degree itself, capped so it cannot zero an otherwise sound ellipse. Anything inside the full-credit zone reads 100; that zone is 2% of the face diagonal on a pen, doubled on a trackpad, and floored at five eased pixels, since 2% of a 150px phone face is smaller than a fingertip’s jitter.</p>
+  <p class="about-more">More form &amp; perspective drills: <a href="../cylinder-ends/">Cylinder Ends</a> · <a href="../cast-shadow/">Cast Shadow</a> · <a href="../horizon-read/">Horizon Read</a> · <a href="../">all 42 drills</a></p>
+</section>
 
 <footer class="footer">
   <nav class="footnav" aria-label="Site links">
