@@ -43,7 +43,16 @@ https://sadeali.github.io/artdaily-<slug>/
 
 Ship order per game: push the repo → enable Pages → open the URL and finish
 a round → set its registry entry here to `status: 'live'` (or add the entry)
-→ push this repo. Nothing else changes.
+→ push this repo → **re-run the drill sitemap** and push it:
+
+```sh
+cd ../../sadeali.github.io && node gen_sitemap.js && git commit -am "sitemap: <slug>"
+```
+
+That repo is the root of `sadeali.github.io`, and it is the only place the
+drill URLs can legally be declared — a sitemap may only list URLs on its own
+host, so *this* site's `sitemap.xml` cannot cover them. See
+`sadeali.github.io/README.md`. Nothing else changes.
 
 ## 5. The hub card
 
