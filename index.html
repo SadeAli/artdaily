@@ -21,18 +21,19 @@
 <meta name="twitter:image" content="https://artdaily.sadeali.com/og.png">
 <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🎨&lt;/text&gt;&lt;/svg&gt;">
 <link rel="preload" href="fonts/caveat-latin.woff2" as="font" type="font/woff2" crossorigin>
-<!-- Every drill is deployed on a DIFFERENT origin, and the player iframe is
-     the first thing that ever touches it — so the first tap on a card used to
-     pay for DNS + TCP + TLS before a single byte of the game arrived. Warm the
-     connection while the visitor is still reading the catalogue. No crossorigin
-     here on purpose: an iframe document load is a credentialed navigation and
-     would not reuse an anonymous connection. -->
-<link rel="preconnect" href="https://sadeali.github.io">
-<link rel="dns-prefetch" href="https://sadeali.github.io">
-<!-- ?v=6 busts the CDN/browser cache on deploy: registry.js is served
+<!-- The drills used to live on a different origin, so the first tap on a card
+     paid for DNS + TCP + TLS before a byte of the game arrived and this page
+     preconnected to warm it. They are folders here now: same origin, same
+     connection, already open. The font preloaded above is the one every drill
+     loads as well, at the same URL, so reading the catalogue really does warm
+     it. The scripts below are NOT shared that way: this page versions them
+     (?v=) and a drill loads them bare, so one file sits in the cache twice.
+     That is the deliberate trade — versioning them from a drill would mean
+     bumping ?v= inside 43 folders on every deploy. -->
+<!-- ?v=7 busts the CDN/browser cache on deploy: registry.js is served
      with a 4h max-age, so without this a returning visitor keeps an old
      catalogue. Bump V in every asset URL below when css/js changes. -->
-<link rel="stylesheet" href="css/style.css?v=6">
+<link rel="stylesheet" href="css/style.css?v=7">
 <script>
 (function(){var t=null;try{t=localStorage.getItem('sadeali-theme');}catch(e){}document.documentElement.dataset.theme=(t==='dark')?'dark':'light';})();
 </script>
@@ -160,48 +161,48 @@
     <div class="section">
       <p class="noscript-note">the arcade player needs JavaScript, but every drill lives on its own page — plain links:</p>
       <ul class="plainlist" id="noscriptList">
-        <li><a href="https://sadeali.github.io/artdaily-colors/">Color Mixer</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-palette-pick/">Palette Pick</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-mix-to-target/">Mix to Target</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-value-trap/">Value Trap</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-neutral-hunt/">Neutral Hunt</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-temperature-sort/">Temperature Sort</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-colour-constancy/">Colour Constancy</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-sun-and-sky/">Sun &amp; Sky</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-values/">Value Squint</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-sphere-shade/">Shade a Sphere</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-value-thumbnail/">Value Thumbnail</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-hatch-ramp/">Hatch a Ramp</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-light-direction/">Light Direction</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-warm-up/">Warm Up</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-superimposed/">Superimposed Lines</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-lines/">Steady Lines</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-ellipses/">Ellipse Orbit</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-draw-through/">Draw Through</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-symmetry/">Mirror Mirror</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-angle-snap/">Angle Snap</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-steady-tunnel/">Steady Tunnel</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-even-spacing/">Even Spacing</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-line-weight/">Line Weight</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-perspective/">Vanishing Act</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-cube-from-plane/">Cube From Plane</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-box-check/">Box Check</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-vp-hunt/">Vanishing Point Hunt</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-rotate-place/">Rotate &amp; Place</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-ellipse-in-plane/">Ellipse in Plane</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-cylinder-ends/">Cylinder Ends</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-cast-shadow/">Cast Shadow</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-horizon-read/">Horizon Read</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-cross-contour/">Wrap the Form</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-down-the-row/">Down the Row</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-crop-it/">Crop It</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-focal-place/">Focal Placement</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-counterweight/">Counterweight</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-contour-memory/">Contour Memory</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-proportion-eye/">Proportion Eye</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-negative-space/">Negative Space</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-anatomy-spot/">Anatomy Spot</a></li>
-        <li><a href="https://sadeali.github.io/artdaily-gesture-capture/">Gesture Capture</a></li>
+        <li><a href="colors/">Color Mixer</a></li>
+        <li><a href="palette-pick/">Palette Pick</a></li>
+        <li><a href="mix-to-target/">Mix to Target</a></li>
+        <li><a href="value-trap/">Value Trap</a></li>
+        <li><a href="neutral-hunt/">Neutral Hunt</a></li>
+        <li><a href="temperature-sort/">Temperature Sort</a></li>
+        <li><a href="colour-constancy/">Colour Constancy</a></li>
+        <li><a href="sun-and-sky/">Sun &amp; Sky</a></li>
+        <li><a href="values/">Value Squint</a></li>
+        <li><a href="sphere-shade/">Shade a Sphere</a></li>
+        <li><a href="value-thumbnail/">Value Thumbnail</a></li>
+        <li><a href="hatch-ramp/">Hatch a Ramp</a></li>
+        <li><a href="light-direction/">Light Direction</a></li>
+        <li><a href="warm-up/">Warm Up</a></li>
+        <li><a href="superimposed/">Superimposed Lines</a></li>
+        <li><a href="lines/">Steady Lines</a></li>
+        <li><a href="ellipses/">Ellipse Orbit</a></li>
+        <li><a href="draw-through/">Draw Through</a></li>
+        <li><a href="symmetry/">Mirror Mirror</a></li>
+        <li><a href="angle-snap/">Angle Snap</a></li>
+        <li><a href="steady-tunnel/">Steady Tunnel</a></li>
+        <li><a href="even-spacing/">Even Spacing</a></li>
+        <li><a href="line-weight/">Line Weight</a></li>
+        <li><a href="perspective/">Vanishing Act</a></li>
+        <li><a href="cube-from-plane/">Cube From Plane</a></li>
+        <li><a href="box-check/">Box Check</a></li>
+        <li><a href="vp-hunt/">Vanishing Point Hunt</a></li>
+        <li><a href="rotate-place/">Rotate &amp; Place</a></li>
+        <li><a href="ellipse-in-plane/">Ellipse in Plane</a></li>
+        <li><a href="cylinder-ends/">Cylinder Ends</a></li>
+        <li><a href="cast-shadow/">Cast Shadow</a></li>
+        <li><a href="horizon-read/">Horizon Read</a></li>
+        <li><a href="cross-contour/">Wrap the Form</a></li>
+        <li><a href="down-the-row/">Down the Row</a></li>
+        <li><a href="crop-it/">Crop It</a></li>
+        <li><a href="focal-place/">Focal Placement</a></li>
+        <li><a href="counterweight/">Counterweight</a></li>
+        <li><a href="contour-memory/">Contour Memory</a></li>
+        <li><a href="proportion-eye/">Proportion Eye</a></li>
+        <li><a href="negative-space/">Negative Space</a></li>
+        <li><a href="anatomy-spot/">Anatomy Spot</a></li>
+        <li><a href="gesture-capture/">Gesture Capture</a></li>
       </ul>
     </div>
   </noscript>
@@ -260,9 +261,9 @@
   <p class="fineprint">© SadeAli · free · no ads · no tracking</p>
 </footer>
 
-<script src="js/support-config.js?v=6"></script>
-<script src="js/registry.js?v=6"></script>
-<script src="js/main.js?v=6"></script>
-<script src="js/app.js?v=6"></script>
+<script src="js/support-config.js?v=7"></script>
+<script src="js/registry.js?v=7"></script>
+<script src="js/main.js?v=7"></script>
+<script src="js/app.js?v=7"></script>
 </body>
 </html>

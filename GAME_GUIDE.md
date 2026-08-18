@@ -1,27 +1,60 @@
 # Adding a game to Art Daily
 
-Art Daily is an arcade of tiny art drills. The page (this repo) knows
-nothing about any game except its `js/registry.js` entry; every game is
-its own repo on its own URL. That's the whole architecture — page and
-games only meet through an iframe and three postMessage types.
+Art Daily is an arcade of tiny art drills. The page knows nothing about
+any game except its `js/registry.js` entry; every game is a folder in this
+repo, served at `/<slug>/`. That's the whole architecture — page and games
+meet through an iframe and three postMessage types, plus the four files
+below that both of them load.
 
 ```
-artdaily repo (this)              artdaily-<slug> repo (one per game)
+artdaily repo (all of it)         <slug>/ — a folder, not a repo
 ┌──────────────────────┐          ┌──────────────────────────────┐
-│ index.html  the page │  iframe  │ index.html   the drill       │
-│ js/registry.js  ←────┼──────────┼→ js/game.js                  │
-│ js/app.js   player,  │ ready /  │ js/artdaily-sdk.js (vendored │
-│   streaks, meters    │ result / │   copy — never edited)       │
-│ sdk/artdaily-sdk.js  │ theme    │ css/style.css tokens+chrome  │
-│   (canonical copy)   │          │                              │
+│ index.html  the page │  iframe  │ <slug>/index.html  the drill │
+│ js/registry.js  ←────┼──────────┼→ <slug>/js/game.js           │
+│ js/app.js   player,  │ ready /  │ <slug>/css/style.css         │
+│   streaks, meters    │ result / │    tokens + chrome           │
+│ sdk/artdaily-sdk.js  │ theme    │                              │
+│ js/main.js           │          │ every drill loads these four │
+│ js/support-config.js │          │ from up here: three scripts  │
+│ fonts/caveat…   ←────┼──────────┼─ as ../ paths, the font as   │
+│                      │          │   ../../ — one copy, not 43  │
 └──────────────────────┘          └──────────────────────────────┘
+      served at /                        served at /<slug>/
 ```
+
+Every drill used to be a repo of its own — `artdaily-<slug>`, published at
+`sadeali.github.io/artdaily-<slug>/` — so the page and the drill it
+embedded were two origins meeting over an iframe, and those four files
+were vendored into every drill and into the template, 43 copies to keep in
+step. They are folders here now. The protocol did not change and neither
+did anything below it; what changed is that there is one copy of each
+shared file instead of 43, one origin instead of two, and no address to
+keep in sync, because a drill's URL *is* its slug.
 
 ## The contract (protocol v1)
 
 A game must:
 
-1. Vendor `sdk/artdaily-sdk.js` unmodified as `js/artdaily-sdk.js`.
+1. Load the shared files from the page instead of copying them. A drill's
+   `index.html` ends with
+
+   ```html
+   <script src="../sdk/artdaily-sdk.js"></script>
+   <script src="../js/support-config.js"></script>
+   <script src="../js/main.js"></script>
+   <script src="js/game.js"></script>
+   ```
+
+   and its `css/style.css` reaches the handwriting font at
+   `url('../../fonts/caveat-latin.woff2')`. Those four used to be vendored
+   into every drill, and the rule here was *never edit the vendored copy* —
+   43 copies that had to stay byte-identical to be worth anything. There is
+   one copy of each now, so the rule turns around: **each of those files is
+   shared by the page and every drill, and a change to one changes all 43.**
+   Read what the page does with it before you touch it, and never edit one
+   to suit a single drill — a drill's own `index.html`, `css/style.css` and
+   `js/game.js` (with its `README.md`, that is the whole folder) are the
+   only files it owns.
 2. Call `ArtDaily.init({ slug: '<slug>' })` on load.
 3. Call `ArtDaily.report(score)` — 0–100, rounded and clamped for you —
    **exactly once** every time a player *finishes* a drill, on every path
@@ -42,24 +75,35 @@ A game must:
    `isFirst` exists because `isNewBest` is trivially true on it — see the
    first-thirty-seconds section below before you write that toast. Both
    flags stay honest even where `localStorage` cannot be used at all
-   (private mode throws on `setItem`; a browser blocking third-party
-   storage throws on `getItem` too, *inside the player iframe*, which is the
-   arcade's main path): the SDK mirrors the best in memory for the sitting.
-   Without that mirror every round came back `isFirst`, so a drill said
-   *"that is your bar now"* after an 84 and then again after the 20 that
-   followed, with 20 standing in the HUD's `best` column.
+   (private mode throws on `setItem`): the SDK mirrors the best in memory
+   for the sitting. Without that mirror every round came back `isFirst`, so
+   a drill said *"that is your bar now"* after an 84 and then again after
+   the 20 that followed, with 20 standing in the HUD's `best` column. That
+   failure was found on the arcade's main path, the player dialog, back when
+   the drill inside it was a *third-party* iframe and a browser told to
+   block third-party storage threw on `getItem` as well. The iframe is
+   same-origin now, so the storage a drill sees inside it is the page's own
+   and that half of the case is gone; the private-mode half is not, and the
+   mirror is what keeps the drill from lying either way.
 4. Repaint through `ArtDaily.onTheme(draw)` so embedded theme switches
    restyle the canvas.
 5. Work standalone at its own URL (the SDK shows/hides the chrome).
 
 The page in turn:
 
-- embeds `<game url>?embed=1&theme=<current>` in the player dialog,
+- embeds `<slug>/?embed=1&theme=<current>` in the player dialog,
 - answers the game's `ready` with the current theme and follows the
   toggle live,
 - accepts `result` messages only from the game iframe it opened, clamps
   scores, and turns them into today's-warmup ticks, the daily streak
   and per-skill meters (all in this origin's localStorage).
+
+That last parenthesis is the drill's origin too now, which it was not while
+the drills lived on `sadeali.github.io` and could name a key anything they
+liked. A drill writing to `localStorage` directly is writing into the same
+store the page keeps the record in, so stay on keys nobody else owns: the
+page holds `artdaily-progress-v1`, the SDK holds `artdaily-best-<slug>` and
+`artdaily-input`, and both read `sadeali-theme`.
 
 ## The first thirty seconds (the only thirty a beginner gives you)
 
@@ -1022,25 +1066,49 @@ all derive from that table.
 ## Ship it
 
 The step-by-step checklist (copy template → rename → build → verify →
-repo → Pages → registry entry) lives in the game template's README:
-`../artdaily-games/game-template/` in the workspace.
+push → registry entry) lives in the game template's README:
+`game-template/`, here in this repo. There is no repo to create and no
+Pages switch to flip any more — `cp -r game-template <slug>/`, build it,
+add the entry to `js/registry.js`, push, and it is live at `/<slug>/` with
+the rest of the site. Read the header and the field comments in
+`js/registry.js` for the entry shape before you write one: the slug *is*
+the folder the drill is served from, so there is no `url` to fill in (it
+survives only as an override for a drill that is not served from
+`/<slug>/`, and nothing uses it), and the `dev` field is gone with it.
+
+Local dev is the same shape as production now, which is the point of it:
+serve the **repo root** — `python3 -m http.server 8080` — and the page is
+at `/` with every drill at `/<slug>/`, embedded from the same origin, off
+the same server, with nothing to point anywhere. A server rooted inside a
+drill folder serves that drill with no SDK, no shared chrome and no font,
+because all three live above it.
+
+`game-template/` ships in the repo like any other folder, so it is kept out
+of the index deliberately: it carries a `robots` `noindex` meta tag and is
+the one game folder missing from `sitemap.xml`. A real drill is the
+opposite of both — delete that meta line from your copy and add the drill's
+URL to the sitemap.
 
 **Two registrations, not one.** A registry entry alone leaves the drill
 invisible with JavaScript disabled. Every `status: 'live'` entry also
-needs its `url` in the `<noscript>` plain-link list in `index.html`.
+needs a plain `<slug>/` link in the `<noscript>` list in `index.html`.
 Check before pushing — three drills once shipped half-listed this way:
 
 ```sh
 node -e "const fs=require('fs'),vm=require('vm'),c={window:{}};vm.createContext(c);
 vm.runInContext(fs.readFileSync('js/registry.js','utf8'),c);
 const h=fs.readFileSync('index.html','utf8');
-const m=c.window.ARTDAILY_GAMES.filter(g=>g.status==='live'&&h.indexOf(g.url)<0);
+const m=c.window.ARTDAILY_GAMES.filter(g=>g.status==='live'&&h.indexOf('href=\"'+(g.url||g.slug+'/')+'\"')<0);
 console.log(m.length?'MISSING from <noscript>: '+m.map(g=>g.slug):'noscript list complete');"
 ```
 
 ## Versioning
 
 The SDK carries `version: 1` in every message. If the protocol ever
-changes, bump `VERSION` in `sdk/artdaily-sdk.js`, keep the page
-accepting older versions, and recopy the SDK into games as they update
-— never fork it per-game.
+changes, bump `VERSION` in `sdk/artdaily-sdk.js` and teach the page the new
+shape in the same push. There is nothing to recopy any more, and that cuts
+both ways: every drill loads the one `../sdk/artdaily-sdk.js`, so a bump
+moves all 42 at once and there is no drill left behind to migrate — but
+there is also no staggered rollout to hide behind. Keep the page accepting
+the older version anyway: a tab left open across the deploy is still
+running the old SDK. Never fork it per-drill.

@@ -56,15 +56,12 @@
 
   /* ---- registry helpers ---- */
 
-  /* file:// or localhost serves the sibling workspace copies from the
-     registry's dev paths, so games run without being deployed. */
-  function isLocal() {
-    return location.protocol === 'file:' ||
-      location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-  }
-
+  /* Every drill is a folder in this repo, so its address is just its slug.
+     One relative path covers file://, localhost and the live site alike —
+     there is no longer a published URL and a dev path to keep in step.
+     `url` stays as an override for a drill served from anywhere else. */
   function gameUrl(g) {
-    return (isLocal() && g.dev) ? g.dev : g.url;
+    return g.url || (g.slug + '/');
   }
 
   function taggedSkillIds() {
@@ -1889,17 +1886,17 @@
        where that drill is actually published. */
     if (d.type !== 'artdaily:result') return;
     var g = gameBySlug(d.slug);
-    /* gameUrl(g), not g.url: this asks "where does this drill legitimately
-       live", and the answer is wherever the "open full page ↗" link actually
-       sent the player — which on file:// or localhost is the registry's dev
-       path on THIS origin, not the published one (see gameUrl/isLocal). Checked
-       against g.url, every round finished in its own tab on a dev machine was
-       measured against sadeali.github.io, failed, and was dropped with nothing
-       on screen to say so: the last route a standalone score has home, dead on
-       exactly the setup the arcade is built and tested on. On the deployed site
-       isLocal() is false and gameUrl(g) IS g.url, so production is untouched —
-       and the check still only ever trusts the origin the drill is served
-       from. */
+    /* This asks "where does this drill legitimately live", and the answer is
+       wherever the "open full page ↗" link actually sent the player. Now that
+       the drills are folders here, gameUrl(g) is a relative path and originOf
+       resolves it against THIS page — so the check reads "same origin as us",
+       and it holds on file://, on localhost and on the live site without a
+       published address written down anywhere. It survives the drills moving
+       hosts again only because it is derived, never hardcoded: the old form
+       compared against a literal sadeali.github.io URL, which meant every
+       round finished in its own tab on a dev machine failed the check and was
+       dropped with nothing on screen to say so — the last route a standalone
+       score has home, dead on exactly the setup the arcade is built on. */
     if (!g || originOf(gameUrl(g)) !== ev.origin) return;
     var s = Math.max(0, Math.min(100, Math.round(Number(d.score) || 0)));
     /* The status line lives in the player foot, which is not on screen for

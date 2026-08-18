@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mix to Target — Art Daily</title>
+<meta name="description" content="blend base pigments into the target colour — a daily art drill from artdaily.sadeali.com">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Mix to Target">
+<meta property="og:description" content="blend base pigments into the target colour — a daily art drill">
+<meta property="og:site_name" content="Art Daily · SadeAli">
+<meta property="og:url" content="https://artdaily.sadeali.com/mix-to-target/">
+<link rel="canonical" href="https://artdaily.sadeali.com/mix-to-target/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Mix to Target">
+<meta name="twitter:description" content="blend base pigments into the target colour — a daily art drill">
+<link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;⚗️&lt;/text&gt;&lt;/svg&gt;">
+<link rel="stylesheet" href="css/style.css">
+<script>
+(function(){var q=null,t=null;try{q=new URLSearchParams(location.search).get('theme');}catch(e){}try{t=localStorage.getItem('sadeali-theme');}catch(e){}var v=(q==='light'||q==='dark')?q:t;document.documentElement.dataset.theme=(v==='dark')?'dark':'light';})();
+</script>
+</head>
+<body>
+<div class="topbar">
+  <a class="backlink" href="https://artdaily.sadeali.com/">← artdaily</a>
+  <div class="topbar-spacer"></div>
+  <button class="iconbtn" id="themeToggle" aria-label="Toggle light or dark theme" title="Toggle theme" hidden>
+    <svg class="ic-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/></svg>
+    <svg class="ic-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+  </button>
+</div>
+
+<main class="stage game-wide">
+  <div class="term">
+    <div class="term-bar" aria-hidden="true"><i class="dot d1"></i><i class="dot d2"></i><i class="dot d3"></i><span class="term-title">~/artdaily/mix-to-target</span></div>
+    <div class="term-body game-body">
+      <div class="game-hud">
+        <div class="game-id">
+          <h1 class="game-name"><span class="game-emoji" aria-hidden="true">⚗️</span> Mix to Target</h1>
+          <p class="game-tagline">blend base pigments into the target colour</p>
+        </div>
+        <dl class="hud-stats">
+          <div class="hud-stat"><dt>round</dt><dd id="hudRound">–</dd></div>
+          <div class="hud-stat"><dt>score</dt><dd id="hudScore">–</dd></div>
+          <div class="hud-stat"><dt>best</dt><dd id="hudBest">–</dd></div>
+                <div class="hud-stat hud-input"><dd id="inputMode" hidden></dd></div>
+        </dl>
+      </div>
+
+      <p class="hint" id="hint" aria-live="polite">Loading…</p>
+
+      <div class="game-stage">
+        <div class="mix-drill" role="group" aria-label="the mixing bench: the target and your mix side by side, a greyscale toggle, then one ratio slider per pigment">
+          <div class="mix-compare">
+            <div class="mix-half">
+              <div class="mix-swatch" id="targetSwatch"></div>
+              <span class="mix-cap">target</span>
+            </div>
+            <div class="mix-half">
+              <div class="mix-swatch" id="mixSwatch"></div>
+              <span class="mix-cap">your mix</span>
+            </div>
+          </div>
+          <div class="mix-squint-row">
+            <button class="btn mix-squint" id="btnSquint" aria-pressed="false" hidden>squint ◐</button>
+          </div>
+          <div class="mix-bases" id="mixBases"></div>
+          <p class="mix-verdict" id="mixVerdict" role="status" aria-live="polite" hidden></p>
+          <div class="mix-actions">
+            <button class="btn btn-primary" id="btnLock">lock it in</button>
+          </div>
+        </div>
+        <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+      </div>
+
+      <div class="game-controls">
+        <button class="btn btn-primary" id="btnRound">new round <span aria-hidden="true">↻</span></button>
+        <button class="btn" id="btnHow" aria-expanded="false" aria-controls="howTo">how to play</button>
+      </div>
+      <div class="howto" id="howTo" hidden>
+        <p class="howto-cmd" aria-hidden="true"><span class="prompt">$</span> man mix-to-target</p>
+        <p>Slide each paint's share until your mix matches the target, then lock it in. Every colour opens on a deliberately-off blend, so there is always a gap to close. Only the <em>balance</em> between sliders matters — 80/40 mixes the same colour as 40/20 — and the % beside each slider shows its real share. The ± buttons step by exactly 1 — hold one down and it runs, the same way holding an arrow key on a focused slider does. Four colours per round; the last two add a third paint.</p>
+        <p>Scored by ΔE — how far apart your eye reads the two halves. Under 3 they look identical; 26 apart scores zero. The reveal shows the true ratios next to yours — of each pair of bars the flat one on top is your share and the taller outlined one below it is the true share — and says which way the mix missed (too light, too warm…).</p>
+        <p>Studio tip: get the lightness right first. “squint ◐” drops the colour out of both halves and leaves only light and dark — it is available the whole time, not just after you lock in.</p>
+      </div>
+
+      <noscript><p class="hint">This drill needs JavaScript — nothing else, no trackers, no accounts.</p></noscript>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <nav class="footnav" aria-label="Site links">
+    <a href="https://artdaily.sadeali.com/">More drills</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://sadeali.com/">More experiments</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
+    <span aria-hidden="true">·</span>
+    <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span id="supportLinks"></span>
+  </nav>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no tracking</p>
+</footer>
+
+<script src="../sdk/artdaily-sdk.js"></script>
+<script src="../js/support-config.js"></script>
+<script src="../js/main.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>

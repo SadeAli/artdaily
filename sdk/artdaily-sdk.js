@@ -1,10 +1,12 @@
 /* ============================================================
    artdaily-sdk.js — protocol v1.
-   The single bridge between a game (its own repo, its own URL)
-   and the Art Daily page. Each game repo vendors a byte-identical
-   copy of this file; the canonical copy lives in the artdaily
-   repo under sdk/. Never fork it per-game — bump protocol
-   versions here and recopy (see GAME_GUIDE.md).
+   The single bridge between a drill and the Art Daily page.
+   There is now exactly one copy of this file: every drill is a
+   folder one level down and loads it as ../sdk/artdaily-sdk.js, so
+   an edit here lands in all 43 at once — bump protocol versions in
+   place (see GAME_GUIDE.md). It used to be vendored byte-identically
+   into each game's own repo, which made a protocol change 43 pushes
+   and let the copies drift apart between them.
 
    A game only ever calls:
      ArtDaily.init({ slug: 'lines' })      once, on load
@@ -299,11 +301,17 @@ window.ArtDaily = (function () {
   /* ============================================================
      STANDALONE HAND-OFF
 
-     Progress lives in localStorage, which is per-origin: the page is
-     artdaily.sadeali.com but a drill played on its own runs on its own
-     host, so a score earned there can never reach the record on its
-     own. (A hidden cross-origin iframe used to bridge this; browsers
-     now partition that storage, so it silently would not work.)
+     The record lives under the page's own localStorage key, and the
+     page is the only thing that writes it. A drill opened in its own
+     tab is a folder on that same site now, so it shares the origin and
+     could reach in — but a drill writing the page's store directly is
+     exactly the coupling this protocol exists to avoid, so a score
+     earned out there is still handed over rather than written.
+     (Before the drills moved into this repo they ran on their own host
+     and could not have reached it at all. A hidden cross-origin iframe
+     used to bridge that; browsers partitioned the storage and it
+     silently stopped working, which is why the two routes below —
+     not a third — are what a standalone round gets.)
 
      Two honest routes instead:
        1. If this tab was opened FROM the page, its window.opener is the
@@ -481,10 +489,13 @@ window.ArtDaily = (function () {
   function bestKey() { return 'artdaily-best-' + slug; }
 
   /* The sitting's best, mirrored in memory, because localStorage is not
-     always there to be used. Safari's private mode throws on setItem, and a
-     browser told to block third-party storage throws on getItem as well
-     inside a cross-origin iframe — which is the arcade's MAIN path, the
-     page's player dialog, not an exotic one.
+     always there to be used. Safari's private mode throws on setItem — that
+     one is unchanged. The other used to be the common case: a browser told to
+     block third-party storage throws on getItem too, and the player dialog's
+     iframe was cross-origin, so the arcade's MAIN path hit it. That iframe is
+     first-party now and the mirror is no longer load-bearing there — but it
+     stays, because a drill embedded on anyone else's site lands right back in
+     it, and because private mode never went away.
      With no mirror, readBest() answers null after every round, so report()
      calls EVERY round the first one ever played: isFirst true forever,
      isNewBest true forever, and `best` merely the round just finished. The
@@ -492,7 +503,7 @@ window.ArtDaily = (function () {
      press new round and beat it." directly after an 84, with 20 standing in
      the HUD's "best" column. Both are simply false.
      A memory best is not a record — it dies with the tab, and the page keeps
-     the real progress on its own origin anyway — but it stops the drill
+     the real progress in its own store either way — but it stops the drill
      lying for the length of a sitting. Storage still wins whenever it
      answers, so nothing moves for a player who has one. */
   var memBest = null;

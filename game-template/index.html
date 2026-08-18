@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- TODO: replace every GAME_NAME / GAME_TAGLINE / game-slug (grep each
+     token), pick the emoji favicon, then build the drill in js/game.js.
+     Full recipe: README.md + GAME_GUIDE.md at the repo root. -->
+<title>GAME_NAME — Art Daily</title>
+<meta name="description" content="GAME_TAGLINE — a daily art drill from artdaily.sadeali.com">
+<meta property="og:type" content="website">
+<meta property="og:title" content="GAME_NAME">
+<meta property="og:description" content="GAME_TAGLINE — a daily art drill">
+<meta property="og:site_name" content="Art Daily · SadeAli">
+<meta property="og:url" content="https://artdaily.sadeali.com/game-slug/">
+<link rel="canonical" href="https://artdaily.sadeali.com/game-slug/">
+<!-- The template ships inside the live site, so it is reachable at
+     /game-template/ — noindex keeps a page full of GAME_NAME out of
+     search results. DELETE this line when you copy it to a real slug. -->
+<meta name="robots" content="noindex">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="GAME_NAME">
+<meta name="twitter:description" content="GAME_TAGLINE — a daily art drill">
+<!-- TODO: pick this game's emoji favicon -->
+<link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🎯&lt;/text&gt;&lt;/svg&gt;">
+<link rel="stylesheet" href="css/style.css">
+<script>
+(function(){var q=null,t=null;try{q=new URLSearchParams(location.search).get('theme');}catch(e){}try{t=localStorage.getItem('sadeali-theme');}catch(e){}var v=(q==='light'||q==='dark')?q:t;document.documentElement.dataset.theme=(v==='dark')?'dark':'light';})();
+</script>
+</head>
+<body>
+<!-- A landmark, not a bare div: the back link and the theme toggle are the
+     only controls outside <main>, and content in no landmark at all is
+     content a screen-reader player skipping by region never lands on. -->
+<header class="topbar">
+  <!-- The arrow is decoration, and it is decoration INSIDE A LINK NAME —
+       unhidden it makes the accessible name "leftwards arrow artdaily",
+       which is what a links list reads out of context. -->
+  <a class="backlink" href="https://artdaily.sadeali.com/"><span aria-hidden="true">←</span> artdaily</a>
+  <div class="topbar-spacer"></div>
+  <button class="iconbtn" id="themeToggle" aria-label="Toggle light or dark theme" title="Toggle theme" hidden>
+    <svg class="ic-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/></svg>
+    <svg class="ic-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+  </button>
+</header>
+
+<main class="stage game-wide">
+  <div class="term">
+    <div class="term-bar" aria-hidden="true"><i class="dot d1"></i><i class="dot d2"></i><i class="dot d3"></i><span class="term-title">~/artdaily/game-slug</span></div>
+    <div class="term-body game-body">
+      <div class="game-hud">
+        <div class="game-id">
+          <h1 class="game-name"><span class="game-emoji" aria-hidden="true">🎯</span> GAME_NAME</h1>
+          <p class="game-tagline">GAME_TAGLINE</p>
+        </div>
+        <dl class="hud-stats">
+          <div class="hud-stat"><dt>round</dt><dd id="hudRound">–</dd></div>
+          <div class="hud-stat"><dt>score</dt><dd id="hudScore">–</dd></div>
+          <div class="hud-stat"><dt>best</dt><dd id="hudBest">–</dd></div>
+          <!-- The SDK fills and unhides this; keep the id (protocol v1).
+               The <dt> is for assistive tech only (hidden below the CSS
+               marker): a <dd> alone is not a legal description-list group,
+               and an orphan value is either read with no term at all or
+               hung off the one before it — "best: scoring for mouse or
+               trackpad", which is a HUD that lies. -->
+          <div class="hud-stat hud-input"><dt class="hud-input-term">input</dt><dd id="inputMode" hidden></dd></div>
+        </dl>
+      </div>
+
+      <!-- The teaching line: it carries the prompt AND the per-attempt
+           reveal in words, so it is a live region — otherwise a screen
+           reader hears the prompt once and never hears a single result.
+           It is also the drill's ONLY live region: two of them written in
+           the same tick queue up and say the same thing twice. -->
+      <p class="hint" id="hint" aria-live="polite">Loading…</p>
+
+      <div class="game-stage">
+        <!-- role="img" + a name that js/game.js keeps CURRENT (describeSheet):
+             the canvas is the whole drill, and a name frozen at boot describes
+             a blank rectangle for the rest of the session.
+             NO tabindex: this drill is played with a pointer, so a tab stop
+             here is a focus ring on something a keyboard cannot use. If your
+             drill adds key handling, add tabindex="0" in the same commit —
+             never one without the other. -->
+        <canvas class="game-canvas" id="gameCanvas" role="img" aria-label="GAME_NAME drill area"></canvas>
+        <!-- Decoration: every word of it is in the hint line already. -->
+        <div class="toast" id="toast" aria-hidden="true" hidden></div>
+      </div>
+
+      <div class="game-controls">
+        <button class="btn btn-primary" id="btnRound">new round <span aria-hidden="true">↻</span></button>
+        <button class="btn" id="btnHow" aria-expanded="false" aria-controls="howTo">how to play</button>
+      </div>
+      <div class="howto" id="howTo" hidden>
+        <p class="howto-cmd" aria-hidden="true"><span class="prompt">$</span> man game-slug</p>
+        <!-- TODO: what to do, how it is scored, what the reveal shows you,
+             one studio tip — the five below are the shape, not a limit.
+             Nothing here may be the ONLY place the verb is taught: the hint
+             line and the canvas do that before anyone opens this, and the
+             first reveal names the dotted ring on the spot. This box is for
+             the second time someone wonders, never the first. -->
+        <p>Tap the centre dot of each target. Five targets, then a score.</p>
+        <p>Closer is better: dead centre is 100, and the score fades to 0 the further out you land.</p>
+        <p>After every tap the target stays up with your mark on it and a line to the dot, so you can see which way you were off before the next one. The dotted ring is where the score runs out — land on it and that tap is worth nothing. (The drill says this once, on your first reveal; it is here for the second time you wonder.)</p>
+        <p>At the end of the round, if your taps all drifted the same way, it says so — and how far to aim the other way next round. That is the habit to fix, not any one tap.</p>
+        <p>Studio tip: aim with the whole arm, not the fingers — pin the eye on the dot and let the hand arrive.</p>
+      </div>
+
+      <noscript><p class="hint">This drill needs JavaScript — nothing else, no trackers, no accounts.</p></noscript>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <nav class="footnav" aria-label="Site links">
+    <a href="https://artdaily.sadeali.com/">More drills</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://sadeali.com/">More experiments</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
+    <span aria-hidden="true">·</span>
+    <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span id="supportLinks"></span>
+  </nav>
+  <!-- The separators are decoration, exactly like the ones in the nav above
+       and the ones the SDK's glyph() helper wraps: read out, this line ended
+       "SadeAli middle dot free middle dot no ads middle dot no tracking".
+       Same rule, same fix, in the one bit of chrome nobody re-reads. -->
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli <span aria-hidden="true">·</span> free <span aria-hidden="true">·</span> no ads <span aria-hidden="true">·</span> no tracking</p>
+</footer>
+
+<script src="../sdk/artdaily-sdk.js"></script>
+<script src="../js/support-config.js"></script>
+<script src="../js/main.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
