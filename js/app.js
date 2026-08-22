@@ -1501,7 +1501,7 @@
 
     var form = document.createElement('form');
     form.className = 'ask-form';
-    form.action = 'https://buttondown.email/api/emails/embed-subscribe/' + S.buttondown;
+    form.action = 'https://buttondown.com/api/emails/embed-subscribe/' + S.buttondown;
     form.method = 'post';
     form.target = '_blank';
     var input = document.createElement('input');
