@@ -124,14 +124,35 @@
      work it is about to redo. Only ever written here, in saveStore, and by the
      reset button. */
   var storeRaw = null;
-  /* A value localStorage.getItem can never return (it returns a string or
-     null), so `storeRaw === was` is guaranteed false once this is in there.
-     Used by saveStore to disarm the shortcut after a write that failed. */
-  var NEVER_SEEN = {};
+  /* THE MEMORY FALLBACK. In a browser where setItem throws — Safari Private
+     Browsing, "block site data", a full quota — every finished round used to
+     be deleted by the NEXT finished round: saveStore caught the throw,
+     recordResult's adoptStore() then re-read a disk that never received the
+     round, and the in-memory store holding it was replaced. Watched from the
+     page, each round UN-TICKED the previous one, the streak could never pass
+     1, and the closing card never appeared (reproduced in the wave-19 suite;
+     re-reproduced by scratchpad/storage-suite/harness.js scenario 2).
+
+     While storageOk is false the serialized store lives in memoryRaw and
+     loadStore reads it back from there — the bytes move house, the
+     storeRaw-comparison contract and every derived cache stay exactly as
+     they are. The fallback is STICKY for the sitting, deliberately: a tab
+     that entered it has been blind to the disk, so a later successful write
+     would clobber anything another tab logged in the meantime — the exact
+     stale-snapshot erasure adoptStore exists to prevent. A browser that CAN
+     write never enters the fallback, and one that cannot has no second
+     writer to lose to. */
+  var storageOk = true;
+  var memoryRaw = null;
+  var storageToastDone = false;
 
   function loadStore() {
     var raw = null;
-    try { raw = localStorage.getItem(STORE_KEY); } catch (e) { raw = null; }
+    if (!storageOk && memoryRaw !== null) {
+      raw = memoryRaw;
+    } else {
+      try { raw = localStorage.getItem(STORE_KEY); } catch (e) { raw = null; }
+    }
     storeRaw = raw;
     var s = null;
     try { s = JSON.parse(raw); } catch (e) { s = null; }
@@ -266,19 +287,27 @@
   function saveStore() {
     var txt = JSON.stringify(store);
     /* On success the text on disk IS what we just wrote, which is what lets
-       the next adoptStore() see that nothing moved.
-       On failure it is not. setItem throwing is an anticipated state here —
-       a full quota, or a private window that refuses storage — and the round
-       that was just played is then only in memory, exactly as it always was.
-       But the caches were rebuilt from that in-memory round, and the next
-       adoptStore() re-reads the disk and rolls `store` back to the version
-       WITHOUT it. Leave storeRaw pointing at the disk text and that rollback
-       keeps the caches: the very next round announced "44 under your best of
-       99" against a 99 that exists nowhere, on the one device where the page
-       cannot remember anything. NEVER_SEEN is a value getItem cannot return,
-       so the next adopt is forced through the full re-read that drops them. */
+       the next adoptStore() see that nothing moved. On the FIRST failure the
+       page switches to the memory fallback (see the block above storeRaw):
+       from then on memoryRaw is the bytes of record, loadStore reads it, and
+       adoptStore keeps comparing like with like — a finished round can no
+       longer be rolled back by the next one re-reading a disk that never
+       received it. Sticky by design; never retried (the clobber note above).
+       The toast is the only surface that ever explains what this device is
+       seeing — without it the rounds simply vanish on the next visit with
+       no reason given. Queued once per sitting, ahead of the round's own
+       toasts, from inside the same recordResult that triggered the save. */
+    if (!storageOk) { memoryRaw = txt; storeRaw = txt; return; }
     try { localStorage.setItem(STORE_KEY, txt); storeRaw = txt; }
-    catch (e) { storeRaw = NEVER_SEEN; }
+    catch (e) {
+      storageOk = false;
+      memoryRaw = txt;
+      storeRaw = txt;
+      if (!storageToastDone) {
+        storageToastDone = true;
+        toastPage('this browser is not letting the page save — today’s rounds will work, but they will be gone when you close the tab');
+      }
+    }
   }
 
   /* Local-timezone day keys — toISOString flips the day at UTC
@@ -2170,6 +2199,13 @@
          wiped store against a live one and decide nothing had changed. */
       storeRaw = null;
       setStore(freshStore());
+      /* In the memory fallback the memory copy IS the disk — and the real
+         disk may still hold the pre-fallback store (removeItem can refuse
+         where setItem already did). Pin the fresh state as the bytes of
+         record, or the next adoptStore() reads the old disk text and
+         resurrects everything the player just watched get wiped
+         (harness.js scenario 3). */
+      if (!storageOk) saveStore();
       clearToasts();  /* milestones already scheduled are no longer true */
       hideClosing();  /* else it keeps showing the scores just wiped */
       renderAll();
