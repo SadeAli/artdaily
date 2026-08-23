@@ -963,7 +963,7 @@
       holdPointer = null;
       if (state === 'reveal') {
         if (ev.type === 'pointercancel') {
-          if (revealTimer === null) {
+          if (revealTimer === null && !document.hidden) {
             revealAt = Date.now();
             revealTimer = setTimeout(nextStep, REVEAL_MS);
           }

@@ -911,7 +911,7 @@
        and hand the beat back in full, guard window included. */
     if (holdPointer !== null && ev.pointerId === holdPointer) {
       holdPointer = null;
-      if (playing && revealing && revealTimer === null) {
+      if (playing && revealing && revealTimer === null && !document.hidden) {
         revealAt = Date.now();
         revealTimer = setTimeout(nextStep, REVEAL_MS);
       }

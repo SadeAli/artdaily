@@ -1230,7 +1230,7 @@
        and hand the beat back in full. */
     if (holdPointer !== null && ev.pointerId === holdPointer) {
       holdPointer = null;
-      if (playing && revealing && revealTimer === null) {
+      if (playing && revealing && revealTimer === null && !document.hidden) {
         revealTimer = setTimeout(nextStep, REVEAL_MS);
       }
       return;

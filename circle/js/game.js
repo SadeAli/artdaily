@@ -1513,7 +1513,7 @@
        lift on purpose. Drop the hold and hand the beat back, full. */
     if (holdPointer !== null && ev.pointerId === holdPointer) {
       holdPointer = null;
-      if (playing && reveal && revealTimer === null) {
+      if (playing && reveal && revealTimer === null && !document.hidden) {
         revealTimer = setTimeout(nextItem, (reveal && reveal.beat) || REVEAL_MIN_MS);
       }
       return;

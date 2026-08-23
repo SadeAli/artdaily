@@ -845,7 +845,7 @@
       holdPointer = null;
       if (phase === 'reveal') {
         if (ev.type === 'pointercancel') {
-          if (revealTimer === null) revealTimer = setTimeout(nextFigure, REVEAL_MS);
+          if (revealTimer === null && !document.hidden) revealTimer = setTimeout(nextFigure, REVEAL_MS);
         } else {
           nextFigure();
         }
