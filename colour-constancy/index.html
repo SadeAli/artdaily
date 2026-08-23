@@ -10,18 +10,19 @@
 <meta property="og:description" content="match what the colour is, not what it looks like — a daily art drill">
 <meta property="og:site_name" content="Art Daily · SadeAli">
 <meta property="og:url" content="https://artdaily.sadeali.com/colour-constancy/">
-<!-- The page's own card, deliberately: the drills have no per-drill art, and a
-     share with no image at all renders as a grey box. 1200x630, declared so a
-     scraper can lay out the card before it has fetched the file. -->
-<meta property="og:image" content="https://artdaily.sadeali.com/og.png">
+<!-- This drill's own card, built from its registry entry by tools/build-og.js:
+     name, tagline and the drill's URL, so a screenshot of the share is also
+     directions. 1200x630, declared so a scraper can lay out the card before it
+     has fetched the file. -->
+<meta property="og:image" content="https://artdaily.sadeali.com/og/colour-constancy.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Art Daily — tiny daily drills for artists">
+<meta property="og:image:alt" content="Art Daily card: Colour Constancy — match what the colour is, not what it looks like — artdaily.sadeali.com/colour-constancy">
 <link rel="canonical" href="https://artdaily.sadeali.com/colour-constancy/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Colour Constancy">
 <meta name="twitter:description" content="match what the colour is, not what it looks like — a daily art drill">
-<meta name="twitter:image" content="https://artdaily.sadeali.com/og.png">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og/colour-constancy.png">
 <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🎭&lt;/text&gt;&lt;/svg&gt;">
 <link rel="stylesheet" href="css/style.css">
 <script>
@@ -145,7 +146,7 @@
         <p>Studio tip: the sliders start where the patch <em>looks</em>, not on some unrelated colour. Your job is to move away from what you see — which is the whole lesson.</p>
       </div>
 
-      <noscript><p class="hint">This drill needs JavaScript — nothing else, no trackers, no accounts.</p></noscript>
+      <noscript><p class="hint">This drill needs JavaScript. Nothing to install, and no account needed.</p></noscript>
     </div>
   </div>
 </main>
@@ -155,8 +156,8 @@
   <p>One coloured light tints a small scene: the ground, a labelled white card, a grey block, an off-hue prop and the patch itself. The scene is built as reflectance times illuminant per channel in linear RGB, so the light only removes energy and nothing clips. On a neutral grey field beside it you rebuild the patch's real surface colour with hue, saturation and lightness sliders — ±1 buttons for the last few degrees, held to walk — then lock it in. Four colours a round, the light strengthening and the patch growing more muted as it runs.</p>
   <p>The card labelled white is genuinely white, so whatever colour it appears to be is the colour of the light. Subtract that and the surface remains. Your eye does this discounting all day unasked, and that is the reflex a painter has to switch off. Deals where the light barely touches the patch are re-dealt: an item you can win by copying what you see teaches nothing.</p>
   <h3>How much of the light you left in</h3>
-  <p>Each lock is measured as CIE76 ΔE against the patch's true reflectance and mapped through 100 × clamp(1 − ΔE/30, 0, 1). The miss is then split by direction: the part along the light's own axis — light you did not take off — is charged in full, while slop across that axis costs under a third as much. Knowing the light and being a few degrees out beats precision about the wrong colour; on a strong cast, copying what you see scores nothing. That ΔE 30 zero point is identical on every device; what a coarse pointer costs you is taps on the ±1 buttons, not marks. On reveal the light drops back to neutral, so the cast visibly leaves the scene, and your hue, saturation and lightness misses print with their signs; the round is the mean of the four, and closes with the way your eye leans.</p>
-  <p class="about-more">More colour drills: <a href="../sun-and-sky/">Sun & Sky</a> · <a href="../colors/">Color Mixer</a> · <a href="../palette-pick/">Palette Pick</a> · <a href="../">all 42 drills</a></p>
+  <p>Each lock is measured as CIE76 ΔE against the patch's true reflectance and mapped through 100 × clamp(1 − ΔE/30, 0, 1). The true reflectance is a number the scene was built from, not something a model has to guess at, so that formula is the whole judge. The miss is then split by direction: the part along the light's own axis — light you did not take off — is charged in full, while slop across that axis costs under a third as much. Knowing the light and being a few degrees out beats precision about the wrong colour; on a strong cast, copying what you see scores nothing. That ΔE 30 zero point is identical on every device; what a coarse pointer costs you is taps on the ±1 buttons, not marks. On reveal the light drops back to neutral, so the cast visibly leaves the scene, and your hue, saturation and lightness misses print with their signs; the round is the mean of the four, and closes with the way your eye leans.</p>
+  <p class="about-more">More colour drills: <a href="../sun-and-sky/">Sun & Sky</a> · <a href="../colors/">Color Mixer</a> · <a href="../palette-pick/">Palette Pick</a> · <a href="../">the whole catalogue</a></p>
 </section>
 
 <footer class="footer">
@@ -168,9 +169,13 @@
     <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
     <span aria-hidden="true">·</span>
     <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/for-teachers/">For teachers</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/privacy/">Privacy</a>
     <span id="supportLinks"></span>
   </nav>
-  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no tracking</p>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no account needed</p>
 </footer>
 
 <script src="../sdk/artdaily-sdk.js"></script>

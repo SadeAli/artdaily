@@ -54,7 +54,7 @@ never switches mid-stroke; pressure is pen-only (an Android finger's
 a palm that landed first; coalesced events keep a 120Hz sweep intact;
 and the sheet is taller on phones.
 
-Zero build, no trackers: plain HTML/CSS/JS. Run `python3 -m http.server 8080`
+Zero build, no third-party code in the drill itself: plain HTML/CSS/JS. Run `python3 -m http.server 8080`
 in the repo root one level up — the SDK, the page chrome and the font come from
 `../`, so a server rooted in this folder cannot reach them — then open
 `http://localhost:8080/line-weight/`.

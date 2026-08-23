@@ -418,7 +418,36 @@
      finishRound() is presentation only (see revealSet) */
   var roundResult = null;
 
-  function rand(lo, hi) { return lo + Math.random() * (hi - lo); }
+  /* ---- where the round's four guide lines come from -------------------
+     THE ROUND'S CONTENT IS A SEQUENCE OF NORMALISED DRAWS, and only that.
+     Round 1 of a sitting is dealt from ArtDaily.roundRandom(1) — seeded off
+     today and this slug — so every player gets the same four guides today and
+     a score finally has a denominator. Round 2 and on are practice: same
+     generator, same distribution, unshared seed.
+
+     rand() is unchanged as a function — lo + u * (hi - lo), with Math.random
+     swapped for the round's uniform — and that identity is the whole
+     distribution argument: u is uniform on [0,1) either way, so every value
+     downstream keeps exactly the shape it had. A seeded set is not an easier
+     or a harder set, only a shared one.
+
+     NO PER-SET CACHE IS NEEDED HERE, unlike lines. makeGuide() is called
+     exactly once per set (newRound for set 0, nextStep for the rest) — a
+     resize RESCALES the guide it already has rather than re-making it, see
+     rescaleGeometry — so this rolling generator is never walked forward twice
+     for the same guide. If makeGuide ever starts being called again for a set
+     already on screen, it needs lines' cached-draws treatment first.
+
+     THE SAME DRAWS ARE NOT THE SAME PIXELS: len is W * spec.frac and the
+     offsets are drawn into whatever room the canvas has left over, so what is
+     shared is WHERE IN THAT ROOM the line sits, not how many pixels from the
+     edge. A phone and a desktop get the same round laid out for their sheet.
+
+     Starts as Math.random so a draw made before the first newRound (there is
+     none today) can never see a null. */
+  var roundRng = Math.random;
+
+  function rand(lo, hi) { return lo + roundRng() * (hi - lo); }
 
   function setLabel() {
     return 'set ' + Math.min(setIdx + 1, SETS_PER_ROUND) + ' of ' + SETS_PER_ROUND +
@@ -446,10 +475,10 @@
     var roomH = Math.max(40, H - 2 * margin);
     var len = Math.min(W * spec.frac, roomW);
     var ang = (spec.ang + rand(-10, 10)) * Math.PI / 180;
-    if (Math.random() < 0.4) ang += Math.PI;   /* some sets pull the other way */
+    if (roundRng() < 0.4) ang += Math.PI;   /* some sets pull the other way */
     var a = { x: 0, y: 0 };
     var b = { x: Math.cos(ang) * len, y: Math.sin(ang) * len };
-    var side = Math.random() < 0.5 ? -1 : 1;
+    var side = roundRng() < 0.5 ? -1 : 1;
     var nx = -Math.sin(ang) * side, ny = Math.cos(ang) * side;
     var c = { x: (a.x + b.x) / 2 + nx * spec.bow * len, y: (a.y + b.y) / 2 + ny * spec.bow * len };
     var pts = quadSample(a, c, b, 48);
@@ -507,6 +536,22 @@
     activePointer = null;
     activeType = '';
     revealing = null;
+    /* THE ONE LINE THAT MAKES A SCORE COMPARABLE. round is already 1 on the
+       first round of a sitting, so round 1 is today's shared round and every
+       "new round" after it is practice.
+
+       GUARDED, and the guard is load-bearing. index.html cache-busts its own
+       scripts with ?v=, but every drill loads ../sdk/artdaily-sdk.js BARE, so
+       the two files cache INDEPENDENTLY and roundRandom is new: a returning
+       visitor holding a warm SDK from another drill plus a cold copy of this
+       file would call a function that does not exist, throw inside newRound()
+       before the first guide is made, and sit on "Loading…" with a blank sheet.
+       Falling back to Math.random costs today's player nothing but a
+       non-comparable round, which is exactly what they had yesterday, and it
+       self-heals when the SDK's max-age expires. */
+    roundRng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round)
+      : Math.random;
     playing = true;
     makeGuide(0);
     hudRound.textContent = String(round);
@@ -952,7 +997,14 @@
     hint.textContent = 'round done — ' + coachLine(fray, commit, start) + ' Press “new round” to go again.';
     updateButtons();
     draw();
-    if (res) showToast((res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+    /* A first-ever round has no previous best, so isNewBest is trivially
+       true and "new best!" celebrates nothing — on the one round where the
+       number most needs saying what it IS. The SDK marks that round with
+       isFirst; where it is undefined the old wording stands. */
+    if (res) showToast(res.isFirst
+      ? 'first score ' + res.score + ' / 100 — your mark to beat'
+      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100',
+      res.isNewBest && !res.isFirst);
   }
 
   function updateButtons() {

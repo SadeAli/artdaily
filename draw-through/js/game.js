@@ -615,6 +615,11 @@
          at the wrist and cannot creep, so it gets the most room.
      Always ease the base constant, never an already-enlarged zone. */
   var RESUME_BASE = 26;
+
+  /* The round's content generator; see nextGuide(). Starts as Math.random so
+     a draw made before the first newRound (there is none today) cannot meet a
+     null. */
+  var roundRng = Math.random;
   function resumeRadius() { return ArtDaily.startRadius(RESUME_BASE); }
   function agreeZero(meanR) { return sizedTolerance(ArtDaily.ease(AGREE_BASE), meanR); }
   function fitZero(meanR) { return sizedTolerance(ArtDaily.ease(FIT_BASE), meanR); }
@@ -651,15 +656,36 @@
     { rf: 0.145, tilt: 1.11, jitter: 0.14 },   /* ~64° */
   ];
 
+  /* ---- where the round's four guides come from -------------------------
+     THE ROUND'S CONTENT IS A SEQUENCE OF NORMALISED DRAWS, and this drill
+     already stored it that way: guideF is nothing but fractions (rf, tilt,
+     rot, cxf, cyf) and guideAt() lays them onto whatever canvas is present.
+     So seeding here buys more than it does almost anywhere else — three
+     draws, and two players on the same day get the SAME four ellipses, not
+     merely the same statistics. (guideAt still clamps a centre inwards on a
+     sheet too small to hold the shape, so a very narrow phone can pull a
+     corner-ish guide back towards the middle; the fractions are identical
+     either way.)
+
+     Round 1 of a sitting is dealt from ArtDaily.roundRandom(1) — seeded off
+     today and this slug. Round 2 and on are practice: same generator, same
+     distribution, unshared seed. Only the SOURCE of the three uniforms below
+     moves; each is still a plain uniform on [0,1), so the rotation is no more
+     upright and the centre no more central than it was.
+
+     Called exactly once per loop (newRound for loop 0, nextItem for the
+     rest); a resize re-lays the guide it already has rather than re-drawing
+     one, so this rolling generator is never walked forward twice for the same
+     ellipse — no per-item cache is needed, unlike lines. */
   function nextGuide(idx) {
     var step = RAMP[Math.max(0, Math.min(RAMP.length - 1, idx))];
     var j = step.jitter;
     guideF = {
       rf: step.rf,
       tilt: step.tilt,
-      rot: idx ? (Math.random() - 0.5) * Math.PI : (Math.random() - 0.5) * 0.5,
-      cxf: 0.5 + (Math.random() - 0.5) * 2 * j,
-      cyf: 0.5 + (Math.random() - 0.5) * 2 * j,
+      rot: idx ? (roundRng() - 0.5) * Math.PI : (roundRng() - 0.5) * 0.5,
+      cxf: 0.5 + (roundRng() - 0.5) * 2 * j,
+      cyf: 0.5 + (roundRng() - 0.5) * 2 * j,
     };
     cancelStroke();
     nudged = false;
@@ -698,6 +724,22 @@
     playing = true;
     lastScore = null;
     clearReveal();        /* a queued advance from the abandoned round must not fire */
+    /* THE ONE LINE THAT MAKES A SCORE COMPARABLE. round is already 1 on the
+       first round of a sitting, so round 1 is today's shared round and every
+       "new round" after it is practice.
+
+       GUARDED, and the guard is load-bearing. index.html cache-busts its own
+       scripts with ?v=, but every drill loads ../sdk/artdaily-sdk.js BARE, so
+       the two files cache INDEPENDENTLY and roundRandom is new: a returning
+       visitor holding a warm SDK from another drill plus a cold copy of this
+       file would call a function that does not exist, throw inside newRound()
+       before the first guide exists, and sit on "Loading…" with a blank sheet.
+       Falling back to Math.random costs today's player nothing but a
+       non-comparable round — exactly what they had yesterday — and it
+       self-heals when the SDK's max-age expires. */
+    roundRng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round)
+      : Math.random;
     nextGuide(0);
     hudRound.textContent = String(round);
     hudScore.textContent = '–';

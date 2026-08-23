@@ -18,4 +18,4 @@ perfect, 11% off is zero, and both windows have an absolute pixel floor run
 through `ArtDaily.ease()`, so a 215px phone segment is not judged against a
 2.15px perfect zone while a desktop gets 4.5px; item = mean of its marks,
 round = mean of six items. Part of [artdaily.sadeali.com](https://artdaily.sadeali.com/):
-zero build, no trackers, shared SDK at `../sdk/artdaily-sdk.js`.
+zero build, no third-party code in the drill itself, shared SDK at `../sdk/artdaily-sdk.js`.

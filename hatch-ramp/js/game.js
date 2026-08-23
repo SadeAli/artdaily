@@ -971,7 +971,7 @@
        leaves it undefined and the old wording stands. */
     showToast(res.isFirst
       ? 'first score ' + res.score + ' / 100 — your mark to beat'
-      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest && !res.isFirst);
     draw();
   }
 

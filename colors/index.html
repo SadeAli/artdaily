@@ -3,25 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Color Mixer — a color matching drill with HSL sliders</title>
+<title>Colour Matching Practice — mix the target colour by eye</title>
 <meta name="description" content="Five target swatches, three sliders, no numbers until you commit. Mix each color by eye, then see how far off you were and which axis missed.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Color Mixer">
 <meta property="og:description" content="mix the exact target color by eye — a daily art drill">
 <meta property="og:site_name" content="Art Daily · SadeAli">
 <meta property="og:url" content="https://artdaily.sadeali.com/colors/">
-<!-- The page's own card, deliberately: the drills have no per-drill art, and a
-     share with no image at all renders as a grey box. 1200x630, declared so a
-     scraper can lay out the card before it has fetched the file. -->
-<meta property="og:image" content="https://artdaily.sadeali.com/og.png">
+<!-- This drill's own card, built from its registry entry by tools/build-og.js:
+     name, tagline and the drill's URL, so a screenshot of the share is also
+     directions. 1200x630, declared so a scraper can lay out the card before it
+     has fetched the file. -->
+<meta property="og:image" content="https://artdaily.sadeali.com/og/colors.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Art Daily — tiny daily drills for artists">
+<meta property="og:image:alt" content="Art Daily card: Color Mixer — mix the exact target colour by eye — artdaily.sadeali.com/colors">
 <link rel="canonical" href="https://artdaily.sadeali.com/colors/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Color Mixer">
 <meta name="twitter:description" content="mix the exact target color by eye — a daily art drill">
-<meta name="twitter:image" content="https://artdaily.sadeali.com/og.png">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og/colors.png">
 <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🎨&lt;/text&gt;&lt;/svg&gt;">
 <link rel="stylesheet" href="css/style.css">
 <script>
@@ -118,7 +119,7 @@
         <p>Studio tip: get the lightness right first (half-shut your eyes until the colors drop away), then which color it is, then how strong. Most mixes fail on lightness, not hue.</p>
       </div>
 
-      <noscript><p class="hint">This drill needs JavaScript — nothing else, no trackers, no accounts.</p></noscript>
+      <noscript><p class="hint">This drill needs JavaScript. Nothing to install, and no account needed.</p></noscript>
     </div>
   </div>
 </main>
@@ -128,8 +129,8 @@
   <p>Five target swatches a round, three sliders — hue, saturation, lightness — and no numbers until you commit. You push the mix until it melts into the target and lock it in; only then does the reveal show both HSL triples, how far apart they were, and which axis carried the miss — “biggest miss: lightness — yours lighter by 8”. The five run easy, then vivid, then muted, ending near-grey where the eye drifts furthest and the hint warns that hue has stopped mattering. A recap then lines all five pairs up with their scores.</p>
   <p>Mixing well means splitting one impression into three judgements, and the reveal says which of the three you got wrong — most mixes fail on lightness, not hue. Nothing here is eased for hardware, because nothing here is a stroke: the eye that reads a colour is the same eye behind a pen, a trackpad or a thumb. What hardware does get is a way to enter the value you meant — ±1 steppers on both sides of each slider, plus the arrow keys, so an exact hue is reachable even on a phone track carrying a couple of degrees per pixel.</p>
   <h3>What ΔE measures here</h3>
-  <p>Both colors are converted from HSL through sRGB, linear RGB and XYZ into Lab, then compared with CIE76 ΔE. A ΔE of 2 or under is below what the eye can pick apart and takes a full 100. Above that the score falls in a straight line to zero, and the zero point scales with the target's own chroma: about ΔE 45 on a vivid color, about 20 on a near-grey. That is what keeps a 10° hue error costing about the same wherever it lands. The first two items carry a little extra room, so the warm-up is a real win. The round is the mean of the five.</p>
-  <p class="about-more">More colour drills: <a href="../palette-pick/">Palette Pick</a> · <a href="../mix-to-target/">Mix to Target</a> · <a href="../value-trap/">Value Trap</a> · <a href="../">all 42 drills</a></p>
+  <p>Both colors are converted from HSL through sRGB, linear RGB and XYZ into Lab, then compared with CIE76 ΔE. That conversion is the whole judge — a formula, not a model, so the same pair of colors always scores the same number. A ΔE of 2 or under is below what the eye can pick apart and takes a full 100. Above that the score falls in a straight line to zero, and the zero point scales with the target's own chroma: about ΔE 45 on a vivid color, about 20 on a near-grey. That is what keeps a 10° hue error costing about the same wherever it lands. The first two items carry a little extra room, so the warm-up is a real win. The round is the mean of the five.</p>
+  <p class="about-more">More colour drills: <a href="../palette-pick/">Palette Pick</a> · <a href="../mix-to-target/">Mix to Target</a> · <a href="../value-trap/">Value Trap</a> · <a href="../">the whole catalogue</a></p>
 </section>
 
 <footer class="footer">
@@ -141,9 +142,13 @@
     <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
     <span aria-hidden="true">·</span>
     <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/for-teachers/">For teachers</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/privacy/">Privacy</a>
     <span id="supportLinks"></span>
   </nav>
-  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no tracking</p>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no account needed</p>
 </footer>
 
 <script src="../sdk/artdaily-sdk.js"></script>

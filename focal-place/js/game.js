@@ -206,10 +206,57 @@
   var itemScores = [], phase = 'idle'; /* idle | placing | reveal */
   var roundOver = true, lastLock = null;
 
-  function rand(lo, hi) { return lo + Math.random() * (hi - lo); }
+  /* ---- where a round's content comes from ----------------------------
+     THE ROUND'S CONTENT IS A SEQUENCE OF NORMALISED DRAWS. Round 1 of a
+     sitting is dealt from ArtDaily.roundRandom(1) — seeded from today and
+     this slug — so every player gets the same four frames today and a score
+     finally has a denominator. Round 2 and on are practice: same generator,
+     same distribution, unshared seed.
+
+     THE ITEM IS ALREADY STORED IN FRAME FRACTIONS, which is what makes the
+     seed worth having here: facing, horizon, the secondary's u/v/rFrac and
+     the answer in item.best are all fractions of the frame, so the shared
+     round survives a resize and a phone and a desktop get the same frame
+     laid out for their own sheet. What is identical between two players is
+     the sequence of normalised draws, not the pixels.
+
+     ONE HONEST CAVEAT, and it is the canvas again. makeItem() re-rolls the
+     item until bestPlacement() proves a 100 is reachable, so the number of
+     draws a frame consumes depends on that search — and the search runs in
+     PIXELS, with a hill-climb whose step floor (0.05px) is absolute while
+     everything else about it is proportional. In practice the accept test
+     is “did anything land on the exact-100 plateau”, and both the grid and
+     the climb that find it are scale-free, so the try count is the same on
+     every sheet; a frame whose plateau were narrower than a twentieth of a
+     pixel could in principle be accepted on a desktop and re-rolled on a
+     phone, and from there the two rounds would differ. Written down rather
+     than papered over.
+
+     rand() is UNCHANGED AS A FUNCTION — lo + u * (hi - lo), with only the
+     SOURCE of u swapped — so every value downstream keeps exactly the shape
+     it had and a seeded round is not an easier or a harder round.
+
+     GUARDED, AND THE GUARD IS LOAD-BEARING. index.html cache-busts its own
+     scripts with ?v=, but every drill loads ../sdk/artdaily-sdk.js BARE, so
+     the two files cache INDEPENDENTLY: a returning visitor holding a warm
+     old SDK plus a cold copy of this file would call a roundRandom that does
+     not exist, throw inside newRound() before the first frame was built, and
+     sit on a blank canvas. Falling back to Math.random costs today's player
+     nothing but a non-comparable round — which is what they had yesterday —
+     and it self-heals when the SDK's max-age expires. Only the BARE CALL
+     FORM is used (rng(), never rng.range): Math.random has no helpers on it,
+     and a fallback that is not a true drop-in is not a fallback. */
+  var roundRng = null;
+  function u01() { return roundRng ? roundRng() : Math.random(); }
+
+  function rand(lo, hi) { return lo + u01() * (hi - lo); }
+
+  /* The cosmetic twin, still on Math.random — see the blob loop below. */
+  function crand(lo, hi) { return lo + Math.random() * (hi - lo); }
 
   function buildItem(idx) {
-    var facing = Math.random() < 0.5 ? 1 : -1;
+    /* CONTENT: facing IS the breathing-room rule, 30 of the 100 points. */
+    var facing = u01() < 0.5 ? 1 : -1;
     /* ramp: frames 1–2 plain, 3–4 add a secondary element,
        5–6 keep it and push the horizon to the extremes. */
     /* The horizon used to be shoved to 0.10-0.20 or 0.80-0.90 on the
@@ -217,19 +264,34 @@
        decoration: not one of the three rules reads item.horizon. A drill
        that visually signals "this matters" and then does not score it
        teaches the wrong lesson, so the extremes are gone. */
+    /* CONTENT, despite the note above it: the horizon LINE is only painted,
+       but the secondary's v is measured off it a few lines down, and that
+       coordinate is half of scoreSeparation. A draw is content when the
+       score can feel it, however indirectly. */
     var horizon = rand(0.32, 0.68);
     var sec = null;
     if (idx >= 2) {
       var r = rand(0.05, 0.075);
-      var blobs = [], n = 3 + Math.floor(rand(0, 3)), i;
+      /* COSMETIC, and left on Math.random on purpose: the blobs are the
+         lumps that make a rock read as a rock. Separation is scored against
+         the secondary's CENTRE and rFrac — scoreSeparation never sees this
+         array, and neither does the dashed keep-out ring the reveal draws
+         from the same two numbers. This is the hand-drawn jitter on the
+         silhouette, so two players get the same obstacle in the same place
+         at the same size, bumpy in their own way. Seeding it would spend
+         four to ten draws of the round's sequence on texture. */
+      var blobs = [], n = 3 + Math.floor(crand(0, 3)), i;
       for (i = 0; i < n; i++) {
-        blobs.push({ a: rand(0, Math.PI * 2), d: rand(0.15, 0.62), s: rand(0.45, 0.85) });
+        blobs.push({ a: crand(0, Math.PI * 2), d: crand(0.15, 0.62), s: crand(0.45, 0.85) });
       }
       sec = {
         u: rand(0.14, 0.86),
         v: Math.min(0.94, horizon + rand(0.04, 0.16)),
         rFrac: r,
-        kind: Math.random() < 0.5 ? 'rock' : 'bush',
+        /* CONTENT, thinly: the kind picks which silhouette is painted AND is
+           the noun the critique says out loud (“too cozy with the rock”), so
+           two players comparing a frame should be told the same sentence. */
+        kind: u01() < 0.5 ? 'rock' : 'bush',
         blobs: blobs,
       };
     }
@@ -363,6 +425,14 @@
   function newRound() {
     clearDiscard();
     round += 1;
+    /* THE ONE LINE THAT MAKES A SCORE COMPARABLE, re-seeded per round and
+       set before nextItem() deals the first frame of it. round is already 1
+       on the first round of a sitting, so round 1 is today's shared round
+       and every “new round” after it is practice. Guarded: see the block by
+       u01(). */
+    roundRng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round)
+      : Math.random;
     itemIdx = 0;
     itemScores = [];
     roundOver = false;
@@ -487,10 +557,19 @@
        instead of the "next frame" branch), and the round score only ever
        reached a screen reader through the toast — which is a silent sticker
        now. Both belong in the one spoken line. */
+    /* A first-ever round has no previous best, so isNewBest is trivially
+       true and "new best!" celebrates nothing — on the one round where the
+       number most needs saying what it IS. The SDK marks that round with
+       isFirst; where it is undefined the old wording stands. */
     hint.textContent = (lastLock ? lastLock.text + ' ' : '') +
-      (res.isNewBest ? 'new best! round ' : 'round done — ') + res.score +
-      '/100. press “new round” to go again.';
-    showToast((res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+      (res.isFirst
+        ? 'round done — ' + res.score + '/100. that is your bar now — press “new round” and beat it.'
+        : (res.isNewBest ? 'new best! round ' : 'round done — ') + res.score +
+          '/100. press “new round” to go again.');
+    showToast(res.isFirst
+      ? 'first score ' + res.score + ' / 100 — your mark to beat'
+      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100',
+      res.isNewBest && !res.isFirst);
   }
 
   /* WHAT THE CANVAS SAYS IT IS. "Focal Placement drill area" is true and

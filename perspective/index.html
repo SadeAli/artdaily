@@ -3,25 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vanishing Act — a daily linear perspective drill</title>
+<title>Linear Perspective Practice — aim edges at the vanishing point</title>
 <meta name="description" content="Stroke two receding edges out to a hidden vanishing point, then aim a fresh edge into a given one. A linear perspective exercise drawn by hand.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Vanishing Act">
 <meta property="og:description" content="hunt vanishing points and aim receding edges — a daily art drill">
 <meta property="og:site_name" content="Art Daily · SadeAli">
 <meta property="og:url" content="https://artdaily.sadeali.com/perspective/">
-<!-- The page's own card, deliberately: the drills have no per-drill art, and a
-     share with no image at all renders as a grey box. 1200x630, declared so a
-     scraper can lay out the card before it has fetched the file. -->
-<meta property="og:image" content="https://artdaily.sadeali.com/og.png">
+<!-- This drill's own share card, built from the registry by tools/build-og.js:
+     its name, tagline, category and address. 1200x630, declared so a scraper
+     can lay out the card before it has fetched the file. -->
+<meta property="og:image" content="https://artdaily.sadeali.com/og/perspective.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Art Daily — tiny daily drills for artists">
+<meta property="og:image:alt" content="Vanishing Act — hunt vanishing points and aim receding edges. A form &amp; perspective drill at artdaily.sadeali.com/perspective">
 <link rel="canonical" href="https://artdaily.sadeali.com/perspective/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Vanishing Act">
 <meta name="twitter:description" content="hunt vanishing points and aim receding edges — a daily art drill">
-<meta name="twitter:image" content="https://artdaily.sadeali.com/og.png">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og/perspective.png">
 <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;📐&lt;/text&gt;&lt;/svg&gt;">
 <link rel="stylesheet" href="css/style.css">
 <script>
@@ -78,7 +78,7 @@
         <p>Studio tip: the hidden point always sits ON the drawn horizon — don't search the whole sheet. Sight along the given edge, let your eye slide down it to the horizon, and pull through without stopping.</p>
       </div>
 
-      <noscript><p class="hint">This drill needs JavaScript — nothing else, no trackers, no accounts.</p></noscript>
+      <noscript><p class="hint">This drill needs JavaScript — nothing else, and no account needed.</p></noscript>
     </div>
   </div>
 </main>
@@ -88,8 +88,8 @@
   <p>Six puzzles make a round, alternating two jobs. A hunt puzzle gives two edges running away from you and no point: press the dot at the near end of either edge and stroke it onward to where you think they meet. An aim puzzle gives the point instead, and you pull a receding edge into it blind — the ink appears only when you let go, so it tests aim rather than tracing. When you let go, the drill lays the real construction over your attempt in accent and prints the raw miss beside it — 14px left of the point, or 2.1° off and aimed 9px high.</p>
   <p>Both jobs rest on one fact: parallel edges running away from the viewer converge on a single spot, and that spot sits on the horizon, at eye level. Extending an edge until it arrives there is what construction lines do on paper; aiming a new edge at a point you already have is the half that decides whether a second box agrees with the first. A stroke that runs out of trackpad resumes where you lifted.</p>
   <h3>What the geometry pays</h3>
-  <p>Nothing here is timed. A hunt stroke earns half its points on the angle between it and the true tip-to-point ray, against an 18° base tolerance, and half on how near the line passes to the point — measured perpendicular to your line rather than along the horizon, since a shallow ray turns a 1° wobble into three or four times as much sideways error (11% of canvas width, with a 42px floor). An aim stroke is scored on its best-fit angle off the true edge, folded into 0–90°. Both are scaled by straightness, the RMS wobble off the stroke's own best-fit line, so a line corrected halfway across loses to one committed pull. The round is the mean of six, recapped with a hunt/aim split.</p>
-  <p class="about-more">More form & perspective drills: <a href="../cube-from-plane/">Cube From Plane</a> · <a href="../box-check/">Box Check</a> · <a href="../vp-hunt/">Vanishing Point Hunt</a> · <a href="../">all 42 drills</a></p>
+  <p>Nothing here is timed. A hunt stroke earns half its points on the angle between it and the true tip-to-point ray, against an 18° base tolerance, and half on how near the line passes to the point — measured perpendicular to your line rather than along the horizon, since a shallow ray turns a 1° wobble into three or four times as much sideways error (11% of canvas width, with a 42px floor). An aim stroke is scored on its best-fit angle off the true edge, folded into 0–90°. Both are scaled by straightness, the RMS wobble off the stroke's own best-fit line, so a line corrected halfway across loses to one committed pull. The round is the mean of six, recapped with a hunt/aim split. No model is involved in any of it: every term is an angle or a distance measured against the construction the puzzle was built from, so the same stroke always earns the same mark.</p>
+  <p class="about-more">More form & perspective drills: <a href="../cube-from-plane/">Cube From Plane</a> · <a href="../box-check/">Box Check</a> · <a href="../vp-hunt/">Vanishing Point Hunt</a> · <a href="../">the whole catalogue</a></p>
 </section>
 
 <footer class="footer">
@@ -101,9 +101,13 @@
     <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
     <span aria-hidden="true">·</span>
     <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/for-teachers/">For teachers</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/privacy/">Privacy</a>
     <span id="supportLinks"></span>
   </nav>
-  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no tracking</p>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no account needed</p>
 </footer>
 
 <script src="../sdk/artdaily-sdk.js"></script>

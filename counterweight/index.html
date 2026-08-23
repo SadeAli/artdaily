@@ -6,25 +6,26 @@
 <!-- Counterweight — place one shape so the frame stops leaning.
      Chrome and protocol come from the Art Daily game template; the drill
      itself is js/game.js. Recipe: the artdaily repo's GAME_GUIDE.md. -->
-<title>Counterweight — a visual balance and composition drill</title>
+<title>Visual Balance Practice — small, far out, outweighs big</title>
 <meta name="description" content="Place one shape in a frame so the picture stops leaning. A composition exercise in visual weight and balance, scored against the one spot that balances.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Counterweight">
 <meta property="og:description" content="a small shape far out holds up a big one near the middle — a daily art drill">
 <meta property="og:site_name" content="Art Daily · SadeAli">
 <meta property="og:url" content="https://artdaily.sadeali.com/counterweight/">
-<!-- The page's own card, deliberately: the drills have no per-drill art, and a
-     share with no image at all renders as a grey box. 1200x630, declared so a
-     scraper can lay out the card before it has fetched the file. -->
-<meta property="og:image" content="https://artdaily.sadeali.com/og.png">
+<!-- This drill's own card, built by tools/build-og.js from the registry row:
+     emoji, chapter, name, tagline and the drill's own URL, so a screenshot of
+     the share is directions. 1200x630, declared so a scraper can lay out the
+     card before it has fetched the file. -->
+<meta property="og:image" content="https://artdaily.sadeali.com/og/counterweight.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Art Daily — tiny daily drills for artists">
+<meta property="og:image:alt" content="Counterweight — a small shape far out holds up a big one near the middle. A composition drill at artdaily.sadeali.com/counterweight">
 <link rel="canonical" href="https://artdaily.sadeali.com/counterweight/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Counterweight">
 <meta name="twitter:description" content="a small shape far out holds up a big one near the middle — a daily art drill">
-<meta name="twitter:image" content="https://artdaily.sadeali.com/og.png">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og/counterweight.png">
 <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🪶&lt;/text&gt;&lt;/svg&gt;">
 <link rel="stylesheet" href="css/style.css">
 <script>
@@ -111,7 +112,7 @@
         <p>And a caveat worth having: a picture that balances perfectly can still be dull, and plenty of good ones lean on purpose. Learn where the pivot is first — then lean off it because you meant to.</p>
       </div>
 
-      <noscript><p class="hint">This drill needs JavaScript — nothing else, no trackers, no accounts.</p></noscript>
+      <noscript><p class="hint">This drill needs JavaScript — nothing else. No download, no account needed.</p></noscript>
     </div>
   </div>
 </main>
@@ -121,8 +122,8 @@
   <p>Every frame opens holding one to three flat masses, all leaning it one way, with one more shape waiting in the tray underneath. Press inside the frame where that shape belongs, drag to adjust, let go to place it. Four frames, then a score. Each frame ends with the answer drawn over your attempt: the balancing spot ringed, the gap dashed across to your shape, and the lever — a line from the pull of everything already in the picture, through the pivot at the centre, out to the answer.</p>
   <p>Two things decide a shape's pull: its weight — area multiplied by how dark it reads against the paper — and its arm, the distance out from the frame's middle. Beginners count the weight and forget the arm, so the counterweight goes far too close to the middle and the picture keeps leaning; naming that habit is what the round-end line is for. Where the subject goes is a different question, one that cropping and thirds anchors answer; this is about what holds it up.</p>
   <h3>Balance is a moment sum, not a matter of taste</h3>
-  <p>Take weight as area times darkness and the pivot as the middle of the frame, and the pulls of everything already there cancel at exactly one spot. The frame generator runs the same function the scorer uses, so the answer it validates is the answer it grades. Your score is how far you landed from it, run against a zero-point set at 26% of the frame's width — a composition is judged in fractions of the picture, never in pixels of screen — with a floor in real pixels so a small sheet cannot turn hand tremor into the whole result. On a 600px sheet, 2% of the frame width out scores 92, 10% scores 62, 20% scores 23.</p>
-  <p class="about-more">More composition drills: <a href="../crop-it/">Crop It</a> · <a href="../focal-place/">Focal Placement</a> · <a href="../">all 42 drills</a></p>
+  <p>Take weight as area times darkness and the pivot as the middle of the frame, and the pulls of everything already there cancel at exactly one spot. The frame generator runs the same function the scorer uses, so the answer it validates is the answer it grades. No AI is involved: that spot is one line of algebra — the moments about the centre have to cancel — solved for where the missing shape must go. Your score is how far you landed from it, run against a zero-point set at 26% of the frame's width — a composition is judged in fractions of the picture, never in pixels of screen — with a floor in real pixels so a small sheet cannot turn hand tremor into the whole result. On a 600px sheet, 2% of the frame width out scores 92, 10% scores 62, 20% scores 23.</p>
+  <p class="about-more">More composition drills: <a href="../crop-it/">Crop It</a> · <a href="../focal-place/">Focal Placement</a> · <a href="../">the whole catalogue</a></p>
 </section>
 
 <footer class="footer">
@@ -134,13 +135,17 @@
     <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
     <span aria-hidden="true">·</span>
     <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/for-teachers/">For teachers</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/privacy/">Privacy</a>
     <span id="supportLinks"></span>
   </nav>
   <!-- The separators are decoration, exactly like the ones in the nav above
        and the ones the SDK's glyph() helper wraps: read out, this line ended
-       "SadeAli middle dot free middle dot no ads middle dot no tracking".
+       "SadeAli middle dot free middle dot no ads middle dot no account needed".
        Same rule, same fix, in the one bit of chrome nobody re-reads. -->
-  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli <span aria-hidden="true">·</span> free <span aria-hidden="true">·</span> no ads <span aria-hidden="true">·</span> no tracking</p>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli <span aria-hidden="true">·</span> free <span aria-hidden="true">·</span> no ads <span aria-hidden="true">·</span> no account needed</p>
 </footer>
 
 <script src="../sdk/artdaily-sdk.js"></script>

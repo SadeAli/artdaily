@@ -217,7 +217,46 @@
      closing stroke of every round is the one that never gets read back */
   var lastWords = '';
 
-  function rand(lo, hi) { return lo + Math.random() * (hi - lo); }
+  /* ---- where the round's six prompts come from -------------------------
+     THE ROUND'S CONTENT IS A SEQUENCE OF NORMALISED DRAWS, and only that.
+     Round 1 of a sitting is dealt from ArtDaily.roundRandom(1) — seeded off
+     today and this slug — so every player gets the same six angles today and
+     a score finally has a denominator. Round 2 and on are practice: same
+     generator, same distribution, unshared seed.
+
+     rand() is unchanged as a function — lo + u * (hi - lo), with Math.random
+     swapped for the round's uniform. u is uniform on [0,1) either way, so a
+     seeded round asks for no easier a set of angles than an unseeded one.
+
+     THE ANGLES ARE THE SHARED THING, and here that is unusually clean: the
+     target magnitude comes from a fixed pool, the sign is a coin, and the
+     reference direction is a plain angle — none of them touches W or H, so
+     two players on the same day are asked for exactly the same six turns
+     whatever sheet they are on. Only WHERE the anchor sits is a fraction of
+     the canvas.
+
+     …and the anchor is why placeItem() below draws through a CACHE. Unlike
+     the other line drills, this one legitimately re-places its item on every
+     resize (see the resize handler: "same angles, new anchor"), and a bare
+     rolling generator would walk two values further along each time — a
+     different anchor under the player's hand, and every later item's ANGLES
+     shifted with it, so the phone that was rotated once mid-round would stop
+     playing today's round. Cached per item, a resize re-places the same
+     anchor and only a genuinely new item pulls new values. Grown on demand
+     rather than dealt up front so the draw is still taken exactly where the
+     old code took it, and still not taken at all in the degenerate
+     no-room-for-an-anchor branch. */
+  var roundRng = Math.random;
+
+  function rand(lo, hi) { return lo + roundRng() * (hi - lo); }
+
+  /* The item's remembered uniform for `key`, dealt the first time it is
+     asked for and replayed on every re-place after. */
+  function itemRand(key, lo, hi) {
+    if (!item) return lo;
+    if (item[key] === undefined) item[key] = roundRng();
+    return lo + item[key] * (hi - lo);
+  }
 
   function strokeLabel() { return 'stroke ' + (strokeIdx + 1) + ' of ' + STROKES_PER_ROUND; }
 
@@ -242,20 +281,20 @@
     if (yHi <= yLo) { yLo = H * 0.42; yHi = H * 0.74; }
     item.rayLen = rayLen;
     item.a = {
-      x: (W - m > m) ? rand(m, W - m) : W / 2,
-      y: (yHi > yLo) ? rand(yLo, yHi) : H * 0.58,
+      x: (W - m > m) ? itemRand('ux', m, W - m) : W / 2,
+      y: (yHi > yLo) ? itemRand('uy', yLo, yHi) : H * 0.58,
     };
   }
 
   function makeItem(idx) {
     var pool = ANGLE_POOLS[Math.min(idx, ANGLE_POOLS.length - 1)];
-    var mag = pool[Math.floor(Math.random() * pool.length)];
-    var sign = Math.random() < 0.5 ? 1 : -1;
+    var mag = pool[Math.floor(roundRng() * pool.length)];
+    var sign = roundRng() < 0.5 ? 1 : -1;
     /* first item of a round: the reference lies flat or straight up, so
        the beginner's first judgement is anchored to something they
        already have an intuition for. From item 2 it is free. */
     var refA = idx === 0
-      ? (Math.random() < 0.5 ? 0 : -Math.PI / 2)
+      ? (roundRng() < 0.5 ? 0 : -Math.PI / 2)
       : rand(0, Math.PI * 2);
     item = { target: sign * mag, refA: refA, a: null, rayLen: 0, flipHinted: false, flipForgiven: false };
     placeItem();
@@ -279,6 +318,24 @@
     revealing = null;
     holdingReveal = false;
     lastWords = '';
+    /* THE ONE LINE THAT MAKES A SCORE COMPARABLE. round is already 1 on the
+       first round of a sitting, so round 1 is today's shared round and every
+       "new round" after it is practice. The per-item anchor cache lives on
+       `item`, which makeItem() replaces wholesale, so a new round cannot
+       replay the last one's placements.
+
+       GUARDED, and the guard is load-bearing. index.html cache-busts its own
+       scripts with ?v=, but every drill loads ../sdk/artdaily-sdk.js BARE, so
+       the two files cache INDEPENDENTLY and roundRandom is new: a returning
+       visitor holding a warm SDK from another drill plus a cold copy of this
+       file would call a function that does not exist, throw inside newRound()
+       before the first prompt exists, and sit on "Loading…" with a blank
+       sheet. Falling back to Math.random costs today's player nothing but a
+       non-comparable round — exactly what they had yesterday — and it
+       self-heals when the SDK's max-age expires. */
+    roundRng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round)
+      : Math.random;
     playing = true;
     makeItem(0);
     hudRound.textContent = String(round);
@@ -752,7 +809,14 @@
     hudBest.textContent = res.best === null ? '–' : String(res.best);
     hint.textContent = 'round done — ' + (lastWords ? lastWords + ' ' : '') +
       'press "new round" to go again.';
-    showToast((res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+    /* A first-ever round has no previous best, so isNewBest is trivially
+       true and "new best!" celebrates nothing — on the one round where the
+       number most needs saying what it IS. The SDK marks that round with
+       isFirst; where it is undefined the old wording stands. */
+    showToast(res.isFirst
+      ? 'first score ' + res.score + ' / 100 — your mark to beat'
+      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100',
+      res.isNewBest && !res.isFirst);
   }
 
   var toastTimer = null;

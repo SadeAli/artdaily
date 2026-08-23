@@ -3,25 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Value Thumbnail — a three-value composition study</title>
+<title>Three-Value Thumbnail — notan composition practice</title>
 <meta name="description" content="Squint at a painted scene and rebuild its light, mid and dark masses on a 12x8 grid. A thumbnail value study for reading composition before you draw.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Value Thumbnail">
 <meta property="og:description" content="reduce the scene to three flat values — a daily art drill">
 <meta property="og:site_name" content="Art Daily · SadeAli">
 <meta property="og:url" content="https://artdaily.sadeali.com/value-thumbnail/">
-<!-- The page's own card, deliberately: the drills have no per-drill art, and a
-     share with no image at all renders as a grey box. 1200x630, declared so a
-     scraper can lay out the card before it has fetched the file. -->
-<meta property="og:image" content="https://artdaily.sadeali.com/og.png">
+<!-- This drill's own card, built by tools/build-og.js from the registry entry
+     (icon, category, name, tagline, URL). 1200x630, declared so a scraper can
+     lay out the card before it has fetched the file. -->
+<meta property="og:image" content="https://artdaily.sadeali.com/og/value-thumbnail.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Art Daily — tiny daily drills for artists">
+<meta property="og:image:alt" content="Value Thumbnail — reduce the scene to three flat values — artdaily.sadeali.com/value-thumbnail">
 <link rel="canonical" href="https://artdaily.sadeali.com/value-thumbnail/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Value Thumbnail">
 <meta name="twitter:description" content="reduce the scene to three flat values — a daily art drill">
-<meta name="twitter:image" content="https://artdaily.sadeali.com/og.png">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og/value-thumbnail.png">
 <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🎞️&lt;/text&gt;&lt;/svg&gt;">
 <link rel="stylesheet" href="css/style.css">
 <script>
@@ -107,7 +107,7 @@
         <p>Studio tip: paint the pattern, not the objects — three values is a composition tool, not a colouring book.</p>
       </div>
 
-      <noscript><p class="hint">This drill needs JavaScript — nothing else, no trackers, no accounts.</p></noscript>
+      <noscript><p class="hint">This drill needs JavaScript — nothing else. Free, no ads, no account needed.</p></noscript>
     </div>
   </div>
 </main>
@@ -117,8 +117,8 @@
   <p>Each round paints a fresh procedural landscape and puts an empty 12&times;8 grid beside it, every cell starting on mid. You rebuild its value pattern in three flat values: pick a swatch and drag to lay a mass down, or tap a single cell to cycle it light &rarr; mid &rarr; dark. &ldquo;Brush mode&rdquo; hands you a freehand pad instead of the grid: lay the masses in as strokes, and pressing &ldquo;done&rdquo; reduces what you painted to the same 96 cells before scoring. Both surfaces edit one answer, so you can move between them without losing work.</p>
   <p>Squinting is the thing being practised, and it is not a metaphor here: three values is barely enough resolution to describe an object, so the only way to fill the grid is to look at masses. A sky and a distant hill may collapse into one shape; a lit roof may belong with the water rather than with the wall under it. That is the read a thumbnail exists to test before any drawing is committed to &mdash; the pattern, not the objects.</p>
   <h3>Where the three cuts come from</h3>
-  <p>The scene is drawn to an offscreen canvas, each of the 96 cells is averaged into a single luminance, and the light, mid and dark bands are then found by natural-breaks clustering of those 96 means (exact Fisher&ndash;Jenks, k = 3). The cuts belong to that scene, so a smooth gradient is not chopped at arbitrary thirds. An exact cell scores 1, one step off 0.15, a flipped cell 0, and cells sitting within a hair of a cut take either neighbouring value for full credit. The mean is rescaled against the best flat one-value grid, which lands on 30: perfect is 100, and painting nothing cannot beat 30. The reveal then overlays the true map &mdash; dashed one off, solid flipped, dotted borderline.</p>
-  <p class="about-more">More value & light drills: <a href="../hatch-ramp/">Hatch a Ramp</a> · <a href="../light-direction/">Light Direction</a> · <a href="../values/">Value Squint</a> · <a href="../">all 42 drills</a></p>
+  <p>The scene is drawn to an offscreen canvas, each of the 96 cells is averaged into a single luminance, and the light, mid and dark bands are then found by natural-breaks clustering of those 96 means (exact Fisher&ndash;Jenks, k = 3). The cuts belong to that scene, so a smooth gradient is not chopped at arbitrary thirds. An exact cell scores 1, one step off 0.15, a flipped cell 0, and cells sitting within a hair of a cut take either neighbouring value for full credit. The mean is rescaled against the best flat one-value grid, which lands on 30: perfect is 100, and painting nothing cannot beat 30. The reveal then overlays the true map &mdash; dashed one off, solid flipped, dotted borderline. That is a cell-by-cell comparison against a measurement of the same scene &mdash; no model reads your grid, and a given scene always cuts at the same two thresholds.</p>
+  <p class="about-more">More value & light drills: <a href="../hatch-ramp/">Hatch a Ramp</a> · <a href="../light-direction/">Light Direction</a> · <a href="../values/">Value Squint</a> · <a href="../">the whole catalogue</a></p>
 </section>
 
 <footer class="footer">
@@ -130,9 +130,13 @@
     <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
     <span aria-hidden="true">·</span>
     <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/for-teachers/">For teachers</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/privacy/">Privacy</a>
     <span id="supportLinks"></span>
   </nav>
-  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no tracking</p>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no account needed</p>
 </footer>
 
 <script src="../sdk/artdaily-sdk.js"></script>

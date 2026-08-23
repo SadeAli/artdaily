@@ -182,6 +182,18 @@ window.ARTDAILY_GAMES = [
     status: 'live',
   },
   {
+    /* Sits next to Steady Lines because it is the same instrument — one
+       committed stroke, graded on how far it strayed — turned through 360
+       degrees. It is also the one drill here aimed at a query people
+       actually type in numbers ("draw a perfect circle"), which is why it
+       exists at all; see TITLE-MAP.md. */
+    slug: 'circle', name: 'Full Circle',
+    tagline: 'draw one circle freehand, all the way round',
+    icon: '⭕', accent: 'lilac', skills: ['line', 'ellipses'],
+    cat: 'line', tag: 'auto', minutes: 3,
+    status: 'live',
+  },
+  {
     slug: 'ellipses', name: 'Ellipse Orbit',
     tagline: 'draw clean ellipses inside their bounding planes',
     icon: '🪐', accent: 'sky', skills: ['ellipses', 'line'],

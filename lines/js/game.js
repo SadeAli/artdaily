@@ -334,7 +334,61 @@
      stroke a player most wants read back to them was the one that never was */
   var lastWords = '';
 
-  function rand(lo, hi) { return lo + Math.random() * (hi - lo); }
+  /* ---- where the six pairs come from ----------------------------------
+     THE ROUND'S CONTENT IS A SEQUENCE OF NORMALISED DRAWS, and only that.
+     Round 1 of a sitting is dealt from ArtDaily.roundRandom(1) — seeded
+     from today and this slug — so every player gets the same six draws
+     today and a score is finally a number with a denominator. Round 2 and
+     on are practice: same generator, same distribution, unshared seed, so
+     five goes in an afternoon are five different rounds rather than one
+     round five times.
+
+     THE SAME DRAWS ARE NOT THE SAME PIXELS, and this drill is the honest
+     example of why. `mx` is drawn into [margin+|hx|, W-margin-|hx|] — a
+     range that is a function of the canvas — so the shared thing is
+     WHERE IN THAT RANGE the midpoint sits, not how many pixels from the
+     left edge it is. A 390px phone and a 900px desktop get the same round
+     laid out for their own sheet. (And below 520px the drill already
+     chooses a different angle pool and a longer minimum pull — see
+     makePair — which is a deliberate fairness branch that predates this
+     and is not something a seed can or should paper over.)
+
+     THE DRAWS ARE REMEMBERED, per stroke, which is the part that is easy
+     to get wrong. makePair(strokeIdx) is called again on every resize —
+     that is what re-places the pair for the new canvas — and a bare
+     rolling generator would walk five values further along each time and
+     deal a DIFFERENT stroke under the player's hand. Cached, a resize
+     re-lays the same stroke out; only a genuinely new stroke pulls new
+     values, and it pulls them in a fixed order, so the round is the same
+     round however many times the phone was rotated during it. */
+  var roundRng = null;
+  var draws = [];           /* draws[strokeIdx] = the uniforms it was dealt */
+  var cursor = 0, cursorIdx = -1;
+
+  function dealFor(idx) {
+    if (!draws[idx]) draws[idx] = [];
+    cursorIdx = idx;
+    cursor = 0;
+  }
+
+  /* The next normalised draw for the stroke being built, dealt from the
+     round's generator the first time it is asked for and replayed from
+     the cache every time after. Grown on demand rather than counted up
+     front so adding a draw to makePair cannot silently fall off the end
+     of a fixed-size deal and place a dot at NaN. */
+  function u() {
+    var d = draws[cursorIdx];
+    if (!d) return 0.5;                        /* asked before any deal */
+    if (cursor >= d.length) d.push(roundRng ? roundRng() : Math.random());
+    return d[cursor++];
+  }
+
+  /* Unchanged as a function — lo + u * (hi - lo) is exactly what it always
+     was, with Math.random() swapped for the round's uniform. That identity
+     is the whole distribution argument: u is uniform on [0,1) either way,
+     so every value downstream of this line keeps precisely the shape it
+     had, and a seeded round is not an easier or a harder round. */
+  function rand(lo, hi) { return lo + u() * (hi - lo); }
 
   function strokeLabel() { return 'stroke ' + (strokeIdx + 1) + ' of ' + STROKES_PER_ROUND; }
 
@@ -346,6 +400,7 @@
      near-vertical on a narrow sheet because that is a pure thumb-pivot
      arc, not a test of anything. */
   function makePair(idx) {
+    dealFor(idx);          /* same idx ⇒ same draws, however often a resize asks */
     var margin = 26;
     var narrow = W < 520;
     var t = idx / (STROKES_PER_ROUND - 1);
@@ -363,7 +418,7 @@
     var my = rand(margin + Math.abs(hy), H - margin - Math.abs(hy));
     var p = { x: mx - hx, y: my - hy }, q = { x: mx + hx, y: my + hy };
     /* half the strokes run right-to-left / bottom-up for variety */
-    pair = Math.random() < 0.5 ? { a: p, b: q } : { a: q, b: p };
+    pair = u() < 0.5 ? { a: p, b: q } : { a: q, b: p };
   }
 
   function newRound() {
@@ -378,6 +433,30 @@
     pending = null;
     snapped = false;
     lastWords = '';
+    /* THE ONE LINE THAT MAKES A SCORE COMPARABLE. round is already 1 on the
+       first round of a sitting, so round 1 is today's shared round and every
+       "new round" after it is practice. The deal is cleared with it — a new
+       round must not replay the last one's cached draws.
+
+       GUARDED, and the guard is load-bearing. index.html cache-busts its own
+       scripts with ?v=, but every drill loads ../sdk/artdaily-sdk.js BARE —
+       deliberately, since versioning it from a drill would mean bumping ?v=
+       inside 43 folders on every deploy. The two files therefore cache
+       INDEPENDENTLY, and roundRandom is new: a returning visitor holding a
+       warm SDK from any other drill plus a cold copy of this file gets new
+       game.js against an old SDK, and an unguarded call throws inside
+       newRound() before the first pair is dealt — "Loading…" forever, blank
+       canvas, HUD at "–". Reproduced by serving the tree with
+       `git show HEAD:sdk/artdaily-sdk.js` in place.
+       Falling back to Math.random costs today's player nothing but a
+       non-comparable round, which is exactly what they had yesterday, and it
+       self-heals the moment the SDK's 4h max-age expires. Every drill
+       converted after this one needs the same guard. */
+    roundRng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round)
+      : Math.random;
+    draws = [];
+    cursorIdx = -1;
     drawing = false;
     activePointer = null;
     activeType = null;
@@ -826,7 +905,14 @@
     var coach = biasCoaching(biases);
     hint.textContent = 'round done — ' + (lastWords ? lastWords + ' ' : '') +
       (coach ? coach + ' ' : '') + 'press "new round" to go again.';
-    showToast((res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+    /* A first-ever round has no previous best, so isNewBest is trivially
+       true and "new best!" celebrates nothing — on the one round where the
+       number most needs saying what it IS. The SDK marks that round with
+       isFirst; where it is undefined the old wording stands. */
+    showToast(res.isFirst
+      ? 'first score ' + res.score + ' / 100 — your mark to beat'
+      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100',
+      res.isNewBest && !res.isFirst);
   }
 
   var toastTimer = null;

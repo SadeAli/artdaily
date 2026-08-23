@@ -117,7 +117,7 @@
         <p>Studio tip: aim with the whole arm, not the fingers — pin the eye on the dot and let the hand arrive.</p>
       </div>
 
-      <noscript><p class="hint">This drill needs JavaScript — nothing else, no trackers, no accounts.</p></noscript>
+      <noscript><p class="hint">This drill needs JavaScript — that is the only thing it asks for. It is free and no account is needed.</p></noscript>
     </div>
   </div>
 </main>
@@ -136,7 +136,19 @@
   <p>TODO</p>
   <h3>How it is scored</h3>
   <p>TODO</p>
-  <p class="about-more">More CATEGORY drills: <a href="../game-slug/">Sibling</a> · <a href="../">all 42 drills</a></p>
+  <!-- Keep a sentence like the one below, but make it TRUE of your scorer.
+       "Arithmetic, not a model" is honest for a drill that computes a formula
+       from a known answer, which is what the reference tap-the-dot drill in
+       js/game.js does. If yours fits or compares curves, say the score is a
+       measured comparison. If any part of the mark is a curated answer key or
+       the player's own rating, say that instead. Four of the communities this
+       site launches into ban AI outright and will assume a scored drawing tool
+       is a model, so the line is worth its space — but a false version of it
+       is worse than none. -->
+  <p>The scoring is arithmetic, not a model: the drill knows the right answer
+     because it generated it, and the score is the measured distance from
+     yours.</p>
+  <p class="about-more">More CATEGORY drills: <a href="../game-slug/">Sibling</a> · <a href="../">the whole catalogue</a></p>
 </section>
 
 <footer class="footer">
@@ -148,13 +160,17 @@
     <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
     <span aria-hidden="true">·</span>
     <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/for-teachers/">For teachers</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/privacy/">Privacy</a>
     <span id="supportLinks"></span>
   </nav>
   <!-- The separators are decoration, exactly like the ones in the nav above
        and the ones the SDK's glyph() helper wraps: read out, this line ended
-       "SadeAli middle dot free middle dot no ads middle dot no tracking".
+       "SadeAli middle dot free middle dot no ads middle dot no account needed".
        Same rule, same fix, in the one bit of chrome nobody re-reads. -->
-  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli <span aria-hidden="true">·</span> free <span aria-hidden="true">·</span> no ads <span aria-hidden="true">·</span> no tracking</p>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli <span aria-hidden="true">·</span> free <span aria-hidden="true">·</span> no ads <span aria-hidden="true">·</span> no account needed</p>
 </footer>
 
 <script src="../sdk/artdaily-sdk.js"></script>

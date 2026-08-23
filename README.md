@@ -50,14 +50,16 @@ the little pencil mark on the card).
 
 ## What gets stored (and where)
 
-Everything is localStorage, no accounts, nothing leaves the browser. The
+Everything is localStorage and no account is needed to play; nothing the
+drills record is sent to a server. The
 drills are folders on this domain now, so the page, the player iframe and a
 drill opened in its own tab all share one origin and one store — it used to
 be one store per game repo:
 
 - `artdaily-progress-v1` —
   `{ days: { "YYYY-MM-DD": { <slug>: bestScoreThatDay } },
-     streak: { count, last }, skills: { <skillId>: points } }`.
+     streak: { count, last, freezes, longest }, skills: { <skillId>: points } }`.
+  `longest` is the high-water mark a broken streak leaves behind.
   Day keys use the **local** timezone; a missed day quietly ends the streak.
   The progress section has a reset link.
 - `artdaily-best-<slug>` — the personal best the SDK keeps for standalone

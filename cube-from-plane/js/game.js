@@ -363,9 +363,49 @@
   var activeHandle = 0;
   var touchedAny = false; /* has this round any work worth protecting? */
 
-  function rnd(lo, hi) { return lo + Math.random() * (hi - lo); }
+  /* ---- where an item's numbers come from -------------------------------
+     THE ROUND'S CONTENT IS A SEQUENCE OF NORMALISED DRAWS. Round 1 of a
+     sitting is dealt from ArtDaily.roundRandom — seeded from today and
+     this slug — so every player gets the same boxes today and a score
+     finally has a denominator. Round 2 and on are practice: same
+     generator, same distribution, unshared seed.
+
+     ONE STREAM PER ITEM, because BOTH generators below are REJECTION
+     SAMPLERS whose draw count is a function of the canvas. genCube retries
+     up to 40 times against cubeFits(minW), and the caller raises minW on a
+     narrow sheet (46px of given face, whatever W is); ghostSpots retries up
+     to 24 times against pixel clamps (16px off the edge, 44px apart). A
+     phone and a desktop can therefore burn a different NUMBER of draws on
+     item 0 — and on one rolling generator that slides item 1 and item 2
+     along by that difference, so the two players are not playing the same
+     round any more. Asked per index, a divergence inside item N stays
+     inside item N. Every stream is the same generator with the same
+     uniform output, so nothing about the shape of these values moves.
+
+     No per-item draw cache is needed here (unlike the lines pilot): the
+     three items are dealt once in newRound and a resize only rescales,
+     since the box is stored normalized. */
+  var itemRng = Math.random;
+
+  /* Unchanged as a function — lo + u * (hi - lo) is exactly what it always
+     was, with Math.random() swapped for the round's uniform, which is
+     uniform on [0,1) just the same. Still injected into the pure
+     generators above, so they stay canvas-free and testable. */
+  function rnd(lo, hi) { return lo + itemRng() * (hi - lo); }
 
   function newItem(i) {
+    /* Re-seeded for THIS item, before a single value is drawn.
+       GUARDED, and the guard is load-bearing: index.html cache-busts its
+       own scripts with ?v=, but every drill loads ../sdk/artdaily-sdk.js
+       BARE, so the two cache independently. A returning visitor with a warm
+       old SDK and a cold copy of this file would call a function that does
+       not exist, and newRound would throw before the first box was built —
+       blank sheet, "–" in the HUD. Falling back to Math.random costs today's
+       player nothing but a non-comparable round, which is what they had
+       yesterday, and it self-heals when the SDK's max-age expires. */
+    itemRng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round, i)
+      : Math.random;
     /* on a narrow sheet the given face must stay wide enough to read: 46px
        of it, whatever the canvas is */
     var box = genCube(i, rnd, Math.max(0.09, 46 / Math.max(1, W)));
@@ -810,7 +850,7 @@
        leaves it undefined and the old wording stands. */
     showToast(res.isFirst
       ? 'first score ' + res.score + ' / 100 — your mark to beat'
-      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest && !res.isFirst);
   }
 
   var toastTimer = null;

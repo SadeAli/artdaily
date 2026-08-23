@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perspective Drawing Exercises — start at your eye level</title>
+<meta name="description" content="Perspective built from one fact: the horizon is your eye level. Vanishing points, cubes, foreshortening, cast shadows — with the drills that measure each one.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Perspective Drawing Exercises">
+<meta property="og:description" content="One fact does the work: the horizon is your eye level. Vanishing points, cubes and foreshortening follow from it.">
+<meta property="og:site_name" content="Art Daily · SadeAli">
+<meta property="og:url" content="https://artdaily.sadeali.com/practice/perspective/">
+<!-- The site card. The guides have no art of their own; tools/build-og.js
+     builds per-drill cards from the registry and has no guide template yet. -->
+<meta property="og:image" content="https://artdaily.sadeali.com/og/practice-perspective.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Art Daily — the perspective practice guide">
+<link rel="canonical" href="https://artdaily.sadeali.com/practice/perspective/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Perspective Drawing Exercises">
+<meta name="twitter:description" content="One fact does the work: the horizon is your eye level. Vanishing points, cubes and foreshortening follow from it.">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og/practice-perspective.png">
+<link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;📐&lt;/text&gt;&lt;/svg&gt;">
+<link rel="preload" href="../../fonts/caveat-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../css/style.css">
+<style>
+/* ---- /practice/ prose ----
+   NOT in css/style.css on purpose: that file is the shared sketchbook theme
+   every one of the 42 drills loads too, and these seven pages are the only
+   long-form copy on the site. Tokens only, so both themes come free.
+   This block is byte-identical on every page in the section — see
+   /practice/_TEMPLATE.md. Change it there and here together, or the six
+   guides stop looking like one section. */
+.guide { width: 100%; max-width: 44rem; margin: 0 auto; padding: 6px 20px 4px; overflow-wrap: break-word; }
+.guide h1 {
+  margin: 4px 0 8px;
+  font-family: var(--hand);
+  font-size: clamp(2rem, 7vw, 2.9rem);
+  font-weight: 700;
+  line-height: 1.05;
+  text-decoration: underline wavy var(--accent, var(--sunny)) 2px;
+  text-underline-offset: 9px;
+}
+.guide h2 { margin: 34px 0 6px; font-family: var(--hand); font-size: clamp(1.55rem, 5vw, 1.95rem); font-weight: 700; line-height: 1.12; }
+.guide h3 { margin: 22px 0 4px; font-family: var(--hand); font-size: 1.3rem; font-weight: 700; line-height: 1.15; }
+.guide p, .guide li { font-size: 0.95rem; line-height: 1.7; }
+.guide p { margin: 0 0 12px; }
+.guide ul, .guide ol { margin: 0 0 14px; padding-left: 1.35em; }
+.guide li { margin: 0 0 7px; }
+.guide a { color: var(--link); font-weight: 700; }
+.guide code { font-size: 0.86rem; padding: 1px 5px; border-radius: 4px; background: color-mix(in srgb, var(--ink) 8%, transparent); }
+.guide .lede { margin: 0 0 18px; font-family: var(--hand); font-size: 1.35rem; line-height: 1.35; color: var(--muted); }
+/* the one thing no other article about these subjects can print: the real
+   constant, lifted out of the drill's own scoring function */
+.guide .measured {
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+  border-left: 3px solid color-mix(in srgb, var(--accent, var(--sunny)) 60%, transparent);
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
+  border-radius: 0 8px 8px 0;
+}
+.guide .measured b { font-family: var(--hand); font-size: 1.1rem; font-weight: 700; display: block; }
+.guide .guide-more { margin-top: 20px; padding-top: 12px; border-top: 1px dashed var(--line); font-size: 0.86rem; color: var(--muted); }
+/* .section is 1080px wide for a 42-card catalogue. Narrow it to the prose
+   column so a page of guide text and a block of cards share one left edge. */
+.section.guide-cards { max-width: 44rem; }
+</style>
+<script>
+(function(){var q=null,t=null;try{q=new URLSearchParams(location.search).get('theme');}catch(e){}try{t=localStorage.getItem('sadeali-theme');}catch(e){}var v=(q==='light'||q==='dark')?q:t;document.documentElement.dataset.theme=(v==='dark')?'dark':'light';})();
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Art Daily", "item": "https://artdaily.sadeali.com/"}, {"@type": "ListItem", "position": 2, "name": "Practice", "item": "https://artdaily.sadeali.com/practice/"}, {"@type": "ListItem", "position": 3, "name": "Perspective", "item": "https://artdaily.sadeali.com/practice/perspective/"}]}
+</script>
+</head>
+<body>
+<div class="topbar">
+  <a class="backlink" href="../" aria-label="practice">← practice</a>
+  <div class="topbar-spacer"></div>
+  <button class="iconbtn" id="themeToggle" aria-label="Toggle light or dark theme" title="Toggle theme" hidden>
+    <svg class="ic-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/></svg>
+    <svg class="ic-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+  </button>
+</div>
+
+<main>
+
+<section class="guide accent-sky">
+  <h1>Perspective, starting from your eye level</h1>
+  <p class="lede">One fact does most of the work. Everything else in this chapter falls out of it.</p>
+  <p>Perspective is usually taught as a list: one-point, two-point, three-point, lines converge. Correct, and also why people can recite it and still draw a wonky box. A rule you cannot derive is a rule you cannot check.</p>
+  <p>One fact sits underneath all of it. <strong>The horizon in a picture is the height of the eye that made the picture</strong> — your eye level, not the skyline. Eleven drills measure some part of what follows, most against a real scene built in three dimensions. None is judged by a model or a hand-written answer key, and every number below came out of the drill's own scoring function.</p>
+</section>
+
+<section class="guide accent-sky">
+  <h2>The horizon is your eye level</h2>
+  <p>The line your gaze runs along when it goes neither up nor down is your eye level; in a picture that line is the horizon. It does not move when the ground rises; sit down and it drops with you. Two things follow.</p>
+  <ul>
+    <li>Anything below eye level shows its <strong>top</strong>; anything above shows its <strong>underside</strong>. A crate whose lid you can see sits below your eye; one showing neither is cut by the line.</li>
+    <li>A person your own height has their head <strong>on</strong> the horizon wherever they stand: their feet climb toward the line as they walk away, their head does not move.</li>
+  </ul>
+  <p><a href="../../horizon-read/">Horizon Read</a> is those two cues and nothing else: five scenes, no horizon drawn.</p>
+  <p class="measured"><b>What Horizon Read measures</b>The vertical miss as a fraction of the frame: <code>100 × clamp(1 − |Δy| / (0.14 × H))</code>. The whole band is 14% of the frame's height — on a 400px scene, 56px out scores nothing and 28px scores 50. No hardware allowance: you drag a line, you do not draw one.</p>
+</section>
+
+<section class="guide accent-sky">
+  <h2>What a vanishing point actually is</h2>
+  <p>A vanishing point is not a place in the world. It is the image of a <em>direction</em>: every line running that way draws to the same point on your page, because as they recede the gaps between them shrink to nothing.</p>
+  <p>So the point belongs to the direction, not the object. Slide a box across the floor without turning it and its points do not move; rotate it and both slide along the horizon. And a level line, extended forever, gets further away without getting higher — so its image creeps toward your own eye's height. Level directions vanish on the horizon <em>because</em> the horizon is eye level.</p>
+
+  <h3>One equation runs half this chapter</h3>
+  <p>Two level directions at right angles — the side edges of a box square on the floor — cannot land just anywhere. With <code>P</code> the principal point (where the camera's axis meets the picture) and <code>f</code> the focal length: <code>(vpL − P)·(vpR − P) = −f²</code>. <a href="../../cube-from-plane/">Cube From Plane</a> writes it as <code>f² = (u0 − vlx)(vrx − u0)</code> to build its cubes; <a href="../../vp-hunt/">Vanishing Point Hunt</a> generates its cities from it.</p>
+  <p class="measured"><b>What Vanishing Point Hunt measures</b>A scene is <code>0.4 × horizon + 0.3 × left point + 0.3 × right point</code> — the horizon outweighing either point. Full marks inside 1.5% of the frame height for the horizon and 2% of the width for a point; zero at 12% and 15%.</p>
+
+  <h3>Aiming at a point you cannot see</h3>
+  <p>Finding a point and <em>using</em> one are separate skills, and <a href="../../perspective/">Vanishing Act</a> alternates them: half its puzzles hide the point and ask you to stroke an edge onward to where it has to be, half give you the point and ask for a new edge pulled into it blind.</p>
+  <p class="measured"><b>What Vanishing Act measures</b>A hunt stroke earns half its marks on the angle off the true edge-to-point ray, against an <code>18°</code> base tolerance; half on how near the line passes the point, measured perpendicular to your line rather than along the horizon — <code>11%</code> of canvas width, <code>42px</code> floor. On the shallow ray to a distant point, a 1° wobble slides the horizon crossing several times as far as it moves the line. Both multiplied by straightness: wobble off your own best-fit line, free below 1% of the span, costing 40% by 7%.</p>
+</section>
+
+<section class="guide accent-sky">
+  <h2>How to draw a cube — and how to find out you did not</h2>
+  <p>A cube has three sets of parallel edges and three vanishing points, two on the horizon. Start from a square face: <a href="../../cube-from-plane/">Cube From Plane</a> gives you a horizon, one vertical face of a real cube, and three handles to drag until the box closes. A face known to be square, seen through a lens, pins both vanishing points and the focal length through the equation above: one cube grows out of it.</p>
+  <p class="measured"><b>What Cube From Plane measures</b>Each handle's distance from its true corner over the face diagonal, averaged: <code>100 × clamp(1 − mean(err) / 0.30)</code>. A mean of 30% of the diagonal scores nothing on any device; inside 1.5% is a clean 100.</p>
+
+  <h3>The critique</h3>
+  <p><a href="../../box-check/">Box Check</a> is the closest thing to a teacher this chapter has. You freehand a box, one stroke per edge; each becomes its dominant straight line, and the lines are sorted into three families — not by their angle on the page, since one world direction fans across more than 40° of it, but by which point they aim at. Each gets a number and a line of critique.</p>
+  <p class="measured"><b>What Box Check measures</b>Per family, the median angle by which its strokes miss their shared point. Inside <code>0.5°</code> is a flat 100 — as tight as a hand gets — ramping to zero over a span starting at <code>7.5°</code> for a pen on 150px edges. Underneath it is <em>pixels</em> of slop (<code>150 × tan 7.5° ≈ 19.7px</code>) re-expressed at the edge length you drew, so a small box is not marked harder.</p>
+  <p>Then the test no eye can do. Three sets of lines always meet somewhere, which proves nothing — so the drill finds the <strong>orthocenter</strong> of the triangle its three shared points make, which for three perpendicular directions seen by one camera is the camera's principal point, and reads the focal length off it as <code>f² = −(a − H)·(b − H)</code>. Negative, and no camera anywhere saw your three sets as one box. Positive but under <code>0.55</code> of the drawing's size, and that camera is a fisheye nobody sketched through. Either way the round caps at 30.</p>
+  <p>The verdict you will meet most: <em>"these spread apart as they go back — going away from you they should be closing in."</em> The hand draws the far edge parallel to the near one, or wider to make room, and the picture then describes a box that grows as it recedes.</p>
+</section>
+
+<section class="guide accent-sky">
+  <h2>Foreshortening, and why the far end is rounder</h2>
+  <p>A circle turned away keeps its width and loses its depth: it becomes an ellipse, whose <em>degree</em> — how tall against how wide — says how face-on the circle is. On a cylinder receding from you, <strong>the far end is always rounder than the near end</strong>: the further a circle sits from the eye, the smaller the angle it subtends, so the more face-on it is seen. Draw a tin can with two matching ellipses and you have not drawn a cylinder. <a href="../../cylinder-ends/">Cylinder Ends</a> gives you a wireframe cylinder whose far end is a flat line to drag out to the right roundness. The truth is not approximated: a circle through a pinhole is an exact conic, solved in closed form, so the ellipse revealed over yours is the answer, not a guess.</p>
+  <p class="measured"><b>What Cylinder Ends measures</b>Your height-over-width ratio against the true one: <code>100 × (1 − |yours − true| / zero)</code>, <code>zero</code> being 0.18 on a pen, 0.27 on a finger, 0.36 on a mouse. Copy the near end's roundness onto the far one and you are out by 0.20 of ratio at least — <strong>0 on a pen, 26 with a finger, 44 on a trackpad</strong>.</p>
+  <p><a href="../../ellipse-in-plane/">Ellipse in Plane</a> asks the harder version: lay an ellipse into a given face of a box. Three errors share a budget of <code>0.55</code> — centre weighted <code>1.4</code> of the face diagonal, tilt up to <code>0.8</code> of a right angle, size and shape capped at <code>0.38</code>. A centre miss of a tenth of the diagonal costs <code>0.14</code>, a quarter of the mark: wrong place beats wrong degree. The tilt term fades to nothing as the truth nears a circle.</p>
+  <p>A cross-contour is a line running <em>around</em> a form — the seam round a bottle. Without a mental model of the form it comes out straight across the shape, reading as a cut. <a href="../../cross-contour/">Wrap the Form</a> splits its judgement in two. How far your curve strayed from the true one dies at 11% of the wrap's width — a motor skill, measured against the sheet. How deeply you bowed it dies at 60% of the true curve's own depth, measured against the object rather than the paper, which is why a line drawn dead straight is called <em>too flat</em> on every device.</p>
+</section>
+
+<section class="guide accent-sky">
+  <h2>Even in the world, uneven in the picture</h2>
+  <p>Identical posts at identical spacings give gaps that close up and posts that shrink, faster than they look, because everything in a picture is divided by its own depth — and depth is what grows. <a href="../../down-the-row/">Down the Row</a> draws two posts of a receding row and asks for the third.</p>
+  <p class="measured"><b>What Down the Row measures</b>Foot and top are scored against one zero-point and averaged, so placement counts twice and height once — and that zero-point is <code>0.6 ×</code> the gap the answer sits at, so a row closed to 40px is not judged with the slack of one still 200px apart.</p>
+</section>
+
+<section class="guide accent-sky">
+  <h2>Shadows are not a decision</h2>
+  <p>Once the light is placed, every shadow is already determined. With the sun — far enough away that its rays arrive parallel — it is two facts. The <strong>direction</strong> is shared by everything in the scene. The <strong>length</strong> goes with height: a point at height <code>h</code> lands <code>h / tan(altitude)</code> from its base, so a corner twice as tall throws its shadow twice as far. One known shadow is a ruler for every other object; <a href="../../cast-shadow/">Cast Shadow</a> gives you that ruler as a stick with its shadow drawn.</p>
+  <p class="measured"><b>What Cast Shadow measures</b>Mean distance from your corners to the true ones, over the shadow's diagonal: <code>100 × clamp(1 − meanErr / 0.28)</code>. That ramp is not eased on any device: the difficulty here is the rule, not steadiness. The reveal then asks whether the rays ran the ruler's way (mean cosine below <code>0.94</code>, about 20° out) and whether the reach was right (under <code>0.85</code> short, over <code>1.18</code> long).</p>
+  <p>Short reach is the usual answer. Shadow <em>value</em> belongs to the <a href="../value/">value chapter</a>.</p>
+</section>
+
+<section class="guide accent-sky">
+  <h2>What none of this can teach you</h2>
+  <ul>
+    <li><strong>Pressure, materials, scale.</strong> Nothing here knows what a 2B does on rough paper, or how a line pulled from the shoulder across A2 differs from a wrist one.</li>
+    <li><strong>Choosing your eye level.</strong> Every scene here already has one; before a real subject, picking one and holding it is most of the work.</li>
+    <li><strong>Three-point and curvilinear perspective.</strong> The cameras here are level, so the third vanishing point stays at infinity and verticals stay vertical.</li>
+    <li><strong>Point lights and soft shadows.</strong> Cast Shadow uses a sun: parallel rays, hard edges, no penumbra.</li>
+  </ul>
+</section>
+
+<section class="guide accent-sky">
+  <h2>How to practise this week</h2>
+  <p>Four to six minutes a day.</p>
+  <ol>
+    <li><strong>Days 1–2, the horizon first.</strong> <a href="../../horizon-read/">Horizon Read</a>, then <a href="../../vp-hunt/">Vanishing Point Hunt</a>. Watch the direction of the miss, not its size: consistently high or low is a habit.</li>
+    <li><strong>Days 3–4, aim, then build.</strong> <a href="../../perspective/">Vanishing Act</a>, to learn to commit rather than steer, then <a href="../../cube-from-plane/">Cube From Plane</a>. If your score drops when you slow down, you are steering.</li>
+    <li><strong>Day 5, take the critique.</strong> One box in <a href="../../box-check/">Box Check</a>, hidden edges included. Read the three family lines before the number. If one says the set spreads apart going back, make the next box's far edges narrower than feels right.</li>
+    <li><strong>Days 6–7, round it off.</strong> <a href="../../cylinder-ends/">Cylinder Ends</a>, <a href="../../cross-contour/">Wrap the Form</a>, and <a href="../../rotate-place/">Rotate &amp; Place</a>, which scores pose as one number: the rotation angle carrying your box onto the target.</li>
+  </ol>
+  <p class="guide-more">Next door: <a href="../line/">line &amp; hand</a> · <a href="../value/">value &amp; light</a> · <a href="../composition/">composition</a> · <a href="../">all six guides</a> · <a href="../../">the catalogue, 42 drills</a> · free, no ads, no account needed</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <nav class="footnav" aria-label="Site links">
+    <a href="https://artdaily.sadeali.com/">More drills</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://sadeali.com/">More experiments</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
+    <span aria-hidden="true">·</span>
+    <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span id="supportLinks"></span>
+  </nav>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no account needed</p>
+</footer>
+
+<script src="../../js/support-config.js"></script>
+<script src="../../js/main.js"></script>
+</body>
+</html>

@@ -529,7 +529,52 @@
   var teaching = false, teachTimer = null;
   var lastWords = '';  /* the last scored item, in words, for the round-done line */
 
-  function rand(lo, hi) { return lo + Math.random() * (hi - lo); }
+  /* ---- where the round's four items come from --------------------------
+     THE ROUND'S CONTENT IS A SEQUENCE OF NORMALISED DRAWS, and only that.
+     Round 1 of a sitting is dealt from ArtDaily.roundRandom(1, …) — seeded
+     off today and this slug — so every player gets the same two baselines and
+     the same two boxes today and a score finally has a denominator. Round 2
+     and on are practice: same generator, same distribution, unshared seed.
+
+     rand() is unchanged as a function — lo + u * (hi - lo), with Math.random
+     swapped for the round's uniform. u is uniform on [0,1) either way, so a
+     seeded baseline is tilted exactly as far as an unseeded one was.
+
+     ONE STREAM PER ITEM, not one per round. The resize handler re-makes the
+     current item outright for the new sheet ("fresh item, no penalty"), and a
+     single rolling generator would be walked further along by every rotation
+     — dealing a different item under the player's hand and shifting all three
+     that follow. Asking for the stream keyed to `idx` at the moment item idx
+     is built gives the same answer however often it is asked, and keeps each
+     item independent of how many draws its neighbours took.
+
+     THE DRAWS ARE NORMALISED, THE PIXELS ARE NOT: the baseline's length and
+     the box's half-extents are fractions of W and H, and the centre is drawn
+     into whatever room is left over, so what is shared is where in that room
+     the item sits. Two branches that are canvas-dependent and older than the
+     seed stay exactly as they were — narrow() picks a chunkier box and a
+     smaller stroke count on a phone, and a sheet too short for the baseline's
+     y band centres it instead of drawing one. The second of those skips a
+     draw, which is why it is the LAST draw of its item: with per-item streams
+     it can shift nothing else. */
+  var roundRng = Math.random;
+
+  /* GUARDED, and the guard is load-bearing. index.html cache-busts its own
+     scripts with ?v=, but every drill loads ../sdk/artdaily-sdk.js BARE, so
+     the two files cache INDEPENDENTLY and roundRandom is new: a returning
+     visitor holding a warm SDK from another drill plus a cold copy of this
+     file would call a function that does not exist, throw before the first
+     item exists, and sit on "Loading…" with a blank sheet. Falling back to
+     Math.random costs today's player nothing but a non-comparable round —
+     exactly what they had yesterday — and it self-heals when the SDK's
+     max-age expires. */
+  function itemRandom(idx) {
+    return (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round, idx)
+      : Math.random;
+  }
+
+  function rand(lo, hi) { return lo + roundRng() * (hi - lo); }
 
   function itemLabel() { return 'item ' + (itemIdx + 1) + ' of ' + ITEMS_PER_ROUND; }
 
@@ -556,7 +601,7 @@
   function makeHatchItem(rotated) {
     var m = 16;
     var wide = narrow();
-    var ang = rotated ? rand(25, 35) * Math.PI / 180 * (Math.random() < 0.5 ? -1 : 1) : 0;
+    var ang = rotated ? rand(25, 35) * Math.PI / 180 * (roundRng() < 0.5 ? -1 : 1) : 0;
     var hw = (wide ? 0.40 : (rotated ? 0.27 : 0.31)) * W;
     var hh = (wide ? 0.30 : (rotated ? 0.22 : 0.27)) * H;
     var cu = Math.abs(Math.cos(ang)), su = Math.abs(Math.sin(ang));
@@ -568,7 +613,15 @@
     return { type: 'hatch', rotated: rotated, ang: ang, cx: cx, cy: cy, hw: hw, hh: hh };
   }
 
+  /* THE LINE THAT MAKES A SCORE COMPARABLE sits HERE rather than in
+     newRound(), because this function is also the rebuild path: a width
+     change re-runs it for the item already on screen. Re-asking for the same
+     stream re-deals the same item for the new sheet instead of walking a
+     rolling generator forward. On a practice round (round >= 2) roundRandom
+     ignores the stream and hands back a fresh sequence every time, which is
+     exactly the "fresh item" the resize handler promises out loud. */
   function makeItem(idx) {
+    roundRng = itemRandom(idx);
     if (idx === 0) return makeTicksItem(3);
     if (idx === 1) return makeTicksItem(5);
     return makeHatchItem(idx === 3);
@@ -1281,7 +1334,14 @@
     var res = ArtDaily.report(roundScore(itemScores));
     hudScore.textContent = String(res.score);
     hudBest.textContent = res.best === null ? '–' : String(res.best);
-    showToast((res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+    /* A first-ever round has no previous best, so isNewBest is trivially
+       true and "new best!" celebrates nothing — on the one round where the
+       number most needs saying what it IS. The SDK marks that round with
+       isFirst; where it is undefined the old wording stands. */
+    showToast(res.isFirst
+      ? 'first score ' + res.score + ' / 100 — your mark to beat'
+      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100',
+      res.isNewBest && !res.isFirst);
   }
 
   function finishRound() {

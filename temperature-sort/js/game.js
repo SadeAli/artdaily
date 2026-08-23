@@ -180,13 +180,58 @@
   var CHROMA_BY_SET = [0.12, 0.105, 0.09, 0.072];
   var STRIP_STOPS = 10; /* gradient stops on the reveal strip */
 
-  function rand(lo, hi) { return lo + Math.random() * (hi - lo); }
+  /* ---- where the four sets come from ----------------------------------
+     A SET IS A SEQUENCE OF NORMALISED DRAWS: four jittered hue gaps, the
+     warm end of the run, a base lightness, a per-chip lightness jitter,
+     and the shuffle that decides the order the row is dealt in. Round 1
+     of a sitting is dealt from ArtDaily.roundRandom(1) — seeded from
+     today and this slug — so everyone sorting today gets the same four
+     rows in the same starting order, and a score finally has a
+     denominator. Round 2 and on are practice: same generator, same
+     distribution, unshared seed.
+
+     NO CANVAS HERE. The chips are DOM elements filled with absolute
+     oklch() strings, so two players get the identical five swatches
+     rather than the same five fractions of their own sheet.
+
+     NOTHING TO CACHE: makeSet(setIdx) is called exactly once per set,
+     from startSet(), and nothing re-deals a set — there is no resize
+     handler, and render() only re-paints the set it already holds. A
+     plain rolling generator cannot walk out from under the player.
+
+     EVERY DRAW IS CONTENT, INCLUDING THE ±0.02 LIGHTNESS JITTER: matched
+     lightness is this drill's whole premise (temperature has to be the
+     only cue), and that jitter is part of a chip's colour rather than
+     anything painted over it. The SHUFFLE is content twice over — it is
+     the row the player has to fix, and its rejection loop (never deal a
+     pre-sorted row) consumes a variable number of draws, which is fine
+     because it is deterministic given the seed.
+
+     GUARDED, and the guard is load-bearing. index.html cache-busts its own
+     scripts with ?v= but every drill loads ../sdk/artdaily-sdk.js BARE, so
+     the two files cache independently: a returning visitor holding a warm
+     OLD SDK plus a cold copy of this file would call a function that does
+     not exist, inside newRound(), before the first set is ever built —
+     "Loading…" forever. Falling back to Math.random costs today's player
+     nothing but a non-comparable round, which is what they had yesterday.
+
+     ONLY THE BARE CALL FORM IS USED — rng(), never rng.range()/.shuffle()
+     — because Math.random carries no helpers, so the fallback path would
+     need a shim, and a shim is a second copy of the arithmetic that can
+     drift from the first. Both lines below are the lines they always
+     were with Math.random() swapped for rng(); shuffled() still walks
+     DOWN, one draw per step, so the draw count and order are untouched.
+     Uniform on [0,1) either way, so a seeded set is not an easier or a
+     harder set. */
+  var rng = Math.random;
+
+  function rand(lo, hi) { return lo + rng() * (hi - lo); }
 
   function shuffled(n) {
     var a = [], i, j, t;
     for (i = 0; i < n; i++) a.push(i);
     for (i = n - 1; i > 0; i--) {
-      j = Math.floor(Math.random() * (i + 1));
+      j = Math.floor(rng() * (i + 1));
       t = a[i]; a[i] = a[j]; a[j] = t;
     }
     return a;
@@ -559,6 +604,14 @@
        neutral-hunt). */
     if (phase === 'reveal' && setScores.length >= SETS_PER_ROUND) finishRound();
     round += 1;
+    /* THE ONE LINE THAT MAKES A SCORE COMPARABLE. Re-seeded per round, so
+       round 1 is today's shared four sets and every round after it is
+       practice. It sits above startSet(), which deals set 1 — the first
+       set of a round must come out of the NEW generator, never the last
+       round's. See the block above rand() for the guard. */
+    rng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round)
+      : Math.random;
     setIdx = 0;
     setScores = [];
     hudRound.textContent = String(round);
@@ -608,7 +661,14 @@
     hudScore.textContent = String(res.score);
     hudBest.textContent = res.best === null ? '–' : String(res.best);
     hint.textContent = 'round done (' + setScores.join(' · ') + ') — press “new round” to go again.';
-    showToast((res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+    /* A first-ever round has no previous best, so isNewBest is trivially
+       true and "new best!" celebrates nothing — on the one round where the
+       number most needs saying what it IS. The SDK marks that round with
+       isFirst; where it is undefined the old wording stands. */
+    showToast(res.isFirst
+      ? 'first score ' + res.score + ' / 100 — your mark to beat'
+      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100',
+      res.isNewBest && !res.isFirst);
   }
 
   var toastTimer = null;

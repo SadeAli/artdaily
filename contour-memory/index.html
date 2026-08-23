@@ -3,25 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Contour Memory — a visual memory contour drawing drill</title>
+<title>Visual Memory Practice — see it, lose it, redraw it</title>
 <meta name="description" content="A blob flashes for a couple of seconds, then hides; you redraw its outline from memory. Free browser practice for visual memory and observational drawing.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Contour Memory">
 <meta property="og:description" content="see it, lose it, redraw it — a daily art drill">
 <meta property="og:site_name" content="Art Daily · SadeAli">
 <meta property="og:url" content="https://artdaily.sadeali.com/contour-memory/">
-<!-- The page's own card, deliberately: the drills have no per-drill art, and a
-     share with no image at all renders as a grey box. 1200x630, declared so a
-     scraper can lay out the card before it has fetched the file. -->
-<meta property="og:image" content="https://artdaily.sadeali.com/og.png">
+<!-- This drill's own share card, built from its registry row by
+     tools/build-og.js. 1200x630, declared so a scraper can lay out the card
+     before it has fetched the file. -->
+<meta property="og:image" content="https://artdaily.sadeali.com/og/contour-memory.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Art Daily — tiny daily drills for artists">
+<meta property="og:image:alt" content="Contour Memory — “see it, lose it, redraw it”. An observation drill at artdaily.sadeali.com/contour-memory">
 <link rel="canonical" href="https://artdaily.sadeali.com/contour-memory/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Contour Memory">
 <meta name="twitter:description" content="see it, lose it, redraw it — a daily art drill">
-<meta name="twitter:image" content="https://artdaily.sadeali.com/og.png">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og/contour-memory.png">
 <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🫥&lt;/text&gt;&lt;/svg&gt;">
 <link rel="stylesheet" href="css/style.css">
 <script>
@@ -83,7 +83,7 @@
         <p>Studio tip: don’t try to memorize every wiggle. Pick 3 landmarks — the widest bump, the deepest dent, the sharpest corner — and keep the shape between them true.</p>
       </div>
 
-      <noscript><p class="hint">This drill needs JavaScript — nothing else, no trackers, no accounts.</p></noscript>
+      <noscript><p class="hint">This drill needs JavaScript — that is the only thing it asks for. It is free and no account is needed.</p></noscript>
     </div>
   </div>
 </main>
@@ -93,8 +93,8 @@
   <p>A smooth blob appears on the sheet for a moment, then hides, and the outline — the contour — has to go back on the sheet from memory, in as many strokes as you want, wherever they land, lifting whenever you need to. Three figures per round, each harder than the last, the exposure shrinking from about 2.8 seconds to 1.1 and the shape growing from six control points to ten with deeper dents in it. One “peek −8” per figure brings it back for a moment at exactly that price; “undo” drops your last stroke, “clear” wipes them all.</p>
   <p>Your strokes are moved and resized onto the true contour before anything is measured, so where you drew it is not being tested — only whether you held the shape. What is left to test is whether the outline survived the moment the blob went away. Banking every wiggle fails at 1.1 seconds; three landmarks — the widest bump, the deepest dent, the sharpest corner — with the shape kept true between them does not. Each figure ends with the real contour redrawn over your strokes, so the drift is visible.</p>
   <h3>Where the number comes from</h3>
-  <p>After that alignment, a symmetric chamfer distance scores the shape — each outline measured against the other, with the worse of the two directions the one that counts — and drawing far off-scale costs a gentle extra. The chamfer at which the shape score hits zero is 0.11 of the true figure's diagonal, or a pixel floor if that is larger, plus a little slop — both pixel terms eased for what you are drawing with, so a phone sheet is no stricter than a desktop one and a fingertip is not held to a nib's precision. Scores are only ever compared with your own.</p>
-  <p class="about-more">More observation drills: <a href="../proportion-eye/">Proportion Eye</a> · <a href="../negative-space/">Negative Space</a> · <a href="../anatomy-spot/">Anatomy Spot</a> · <a href="../">all 42 drills</a></p>
+  <p>After that alignment, a symmetric chamfer distance scores the shape — each outline measured against the other, with the worse of the two directions the one that counts — and drawing far off-scale costs a gentle extra. The chamfer at which the shape score hits zero is 0.11 of the true figure's diagonal, or a pixel floor if that is larger, plus a little slop — both pixel terms eased for what you are drawing with, so a phone sheet is no stricter than a desktop one and a fingertip is not held to a nib's precision. No model looks at your drawing: the blob was generated by the drill, so its true outline is known exactly, and every number above is arithmetic on the distance between that outline and your strokes. Scores are only ever compared with your own.</p>
+  <p class="about-more">More observation drills: <a href="../proportion-eye/">Proportion Eye</a> · <a href="../negative-space/">Negative Space</a> · <a href="../anatomy-spot/">Anatomy Spot</a> · <a href="../">the whole catalogue</a></p>
 </section>
 
 <footer class="footer">
@@ -106,9 +106,13 @@
     <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
     <span aria-hidden="true">·</span>
     <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/for-teachers/">For teachers</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/privacy/">Privacy</a>
     <span id="supportLinks"></span>
   </nav>
-  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no tracking</p>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no account needed</p>
 </footer>
 
 <script src="../sdk/artdaily-sdk.js"></script>

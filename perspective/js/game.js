@@ -279,7 +279,50 @@
   var reveal = null;       /* { score, points, missX, detail } after each puzzle */
   var recap = null;        /* end-of-round recap data */
 
-  function rand(lo, hi) { return lo + Math.random() * (hi - lo); }
+  /* ---- where a puzzle's numbers come from ------------------------------
+     THE ROUND'S CONTENT IS A SEQUENCE OF NORMALISED DRAWS. Round 1 of a
+     sitting comes from ArtDaily.roundRandom — seeded from today and this
+     slug — so everyone gets the same six puzzles today and a score finally
+     has a denominator; round 2 and on are practice, same distribution,
+     unshared seed.
+
+     ONE STREAM PER PUZZLE, not one rolling generator for the round, and
+     that is not tidiness. Two draws in this drill are CONDITIONAL on the
+     canvas: placeSegment only draws its elevation when the corner is loose
+     enough to have a choice (eMin <= eMax), and makePuzzleB only draws
+     vSign when the start dot could sit on either side of the horizon
+     (below && above). Both tests compare a fraction of H against the
+     absolute MARGIN, so a 390px phone can answer one of them differently
+     from a 900px desktop. On a single rolling generator that costs one
+     draw, and every remaining puzzle of the round slides one value along —
+     puzzle 3 onwards would be a different puzzle on the two devices. Asked
+     per index, a divergence inside puzzle N stays inside puzzle N.
+     Each stream is the same generator with the same uniform output, so the
+     shape of every value below is exactly what Math.random() gave it.
+
+     Nothing here needs a per-item draw cache the way the lines pilot does:
+     a resize RESCALES the live puzzle (see scalePuzzle) instead of dealing
+     it again, so a puzzle is generated exactly once. */
+  var puzzleRng = Math.random;
+
+  /* GUARDED, and the guard is load-bearing. index.html cache-busts its own
+     scripts with ?v=, but every drill loads ../sdk/artdaily-sdk.js BARE, so
+     the two files cache independently: a returning visitor with a warm old
+     SDK and a cold copy of this file would call a function that does not
+     exist, and the drill would hang on a blank canvas before the first
+     puzzle was dealt. Falling back to Math.random costs today's player
+     nothing but a non-comparable round, which is what they had yesterday. */
+  function seedPuzzleRng() {
+    puzzleRng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round, idx)
+      : Math.random;
+  }
+
+  /* Unchanged as a function — lo + u * (hi - lo) is exactly what it always
+     was, with Math.random() swapped for the round's uniform. u is uniform
+     on [0,1) either way, so every value downstream keeps precisely the
+     shape it had and a seeded puzzle is not an easier or a harder one. */
+  function rand(lo, hi) { return lo + puzzleRng() * (hi - lo); }
   function deg(r) { return r * 180 / Math.PI; }
 
   /* One edge segment on a ray out of the VP: radial span [gap, gap+len]
@@ -334,13 +377,15 @@
     var dy = (0.34 - 0.12 * bIdx + rand(-0.02, 0.02)) * H;
     var below = hy + dy <= H - MARGIN - 20;
     var above = hy - dy >= MARGIN + 20;
-    var vSign = (below && above) ? (Math.random() < 0.5 ? 1 : -1) : (below ? 1 : -1);
+    var vSign = (below && above) ? (puzzleRng() < 0.5 ? 1 : -1) : (below ? 1 : -1);
     var pX = vpX + side * rand(0.35, 0.52) * W;
     pX = Math.max(MARGIN + 10, Math.min(W - MARGIN - 10, pX));
     return { type: 'B', hy: hy, vpX: vpX, vpY: hy, pX: pX, pY: hy + vSign * dy };
   }
 
   function nextPuzzle() {
+    /* Re-seeded for THIS puzzle, before a single value is drawn. */
+    seedPuzzleRng();
     reveal = null;
     stroke = null;
     strokeId = null;
@@ -980,7 +1025,14 @@
     hudScore.textContent = String(res.score);
     hudBest.textContent = res.best === null ? '–' : String(res.best);
     hint.textContent = 'round done — press “new round” to hunt again.';
-    showToast((res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+    /* A first-ever round has no previous best, so isNewBest is trivially
+       true and "new best!" celebrates nothing — on the one round where the
+       number most needs saying what it IS. The SDK marks that round with
+       isFirst; where it is undefined the old wording stands. */
+    showToast(res.isFirst
+      ? 'first score ' + res.score + ' / 100 — your mark to beat'
+      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100',
+      res.isNewBest && !res.isFirst);
     draw();
   }
 

@@ -280,7 +280,44 @@
   var revealTimer = null, revealAt = 0;
   var confirmTimer = null, confirmNew = false;
 
-  function rand(lo, hi) { return lo + Math.random() * (hi - lo); }
+  /* ---- where a round's content comes from ------------------------------
+     THE ROUND'S CONTENT IS A SEQUENCE OF NORMALISED DRAWS, and only that.
+     Round 1 of a sitting is dealt from ArtDaily.roundRandom(1) — seeded
+     from today and this slug — so every player gets the same six suns and
+     the same six forms today, and a score is finally a number with a
+     denominator. Round 2 and on are practice: same generator, same
+     distribution, unshared seed, so five goes in an afternoon are five
+     different rounds rather than one round five times.
+
+     NOTHING HERE IS MEASURED IN PIXELS. Every draw decides an angle
+     (azimuth, elevation, a capsule's axis) or a distance in formR units,
+     which the renderer scales by R at paint time — so the whole logical
+     round is device-independent and only the size of the drawing changes
+     between a phone and a desktop. Scoring is the 3D angle between two
+     unit vectors, which has no canvas in it at all.
+
+     A plain rolling generator is safe: all six items are built ONCE, in
+     newRound(), and stored in `items`. A resize or a theme flip re-renders
+     from the stored item (the form cache is keyed and rebuilt, not
+     re-dealt), so no repaint can walk the sequence forward and change the
+     form under the player's eye.
+
+     Every draw in this file is CONTENT — the sun and the geometry of the
+     blob. There is no cosmetic random here: the shading, the rim and the
+     cast shadow are all derived from the light vector and the spheres. */
+  var roundRng = null;
+
+  /* One uniform in [0, 1). Falls back to Math.random before the first
+     newRound() and whenever the SDK is too old to answer (see the guard in
+     newRound) — the round is then simply unshared, which is what every
+     round was yesterday. */
+  function u() { return roundRng ? roundRng() : Math.random(); }
+
+  /* Unchanged as a function — lo + u * (hi - lo) is exactly what it always
+     was, with Math.random() swapped for the round's uniform. u is uniform
+     on [0,1) either way, so every value downstream keeps precisely the
+     shape it had, and a seeded round is not an easier or a harder round. */
+  function rand(lo, hi) { return lo + u() * (hi - lo); }
 
   /* forms are sphere sets in formR units (y up, z toward the viewer),
      normalized to fit the unit disc; ≥2 spheres get blended normals. */
@@ -327,7 +364,7 @@
   function makeItem(i) {
     var t = i / (ITEMS_PER_ROUND - 1);
     var el = (i >= 4)
-      ? ((Math.random() < 0.5) ? rand(15, 24) : rand(56, 65))
+      ? ((u() < 0.5) ? rand(15, 24) : rand(56, 65))
       : rand(20, 55);
     return {
       az: rand(0, 360),
@@ -854,6 +891,21 @@
     idx = 0;
     scores = [];
     items = [];
+    /* THE ONE LINE THAT MAKES A SCORE COMPARABLE. round is already 1 on the
+       first round of a sitting, so round 1 is today's shared round and every
+       "new round" after it is practice. Re-seeded HERE, per round, and above
+       the deal loop, so a replay cannot hand back the round just played.
+
+       GUARDED, and the guard is load-bearing. index.html cache-busts its own
+       scripts with ?v=, but every drill loads ../sdk/artdaily-sdk.js BARE, so
+       the two files cache INDEPENDENTLY: a returning visitor holding a warm
+       SDK from any other drill plus a cold copy of this file would call a
+       function that does not exist, throw before the six forms are dealt,
+       and sit on a blank sheet forever. Falling back to Math.random costs
+       today's player nothing but a non-comparable round. */
+    roundRng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round)
+      : Math.random;
     for (var i = 0; i < ITEMS_PER_ROUND; i++) items.push(makeItem(i));
     hudRound.textContent = String(round);
     hudScore.textContent = '–';
@@ -988,9 +1040,19 @@
     /* The hint is the drill's only spoken channel: the toast is a sticker
        (aria-hidden, like the template's), not a second voice, so the round
        score is said here or a screen-reader player never hears it. */
-    hint.textContent = (res.isNewBest ? 'new best! ' : 'round done — ') + res.score +
-      '/100. press “new round” to go again.';
-    showToast((res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+    /* A first-ever round has no previous best, so isNewBest is trivially
+       true and "new best!" celebrates nothing — on the one round where the
+       number most needs saying what it IS. The SDK marks that round with
+       isFirst; where it is undefined the old wording stands. */
+    hint.textContent = res.isFirst
+      ? 'round done — ' + res.score +
+        '/100. that is your bar now — press “new round” and beat it.'
+      : (res.isNewBest ? 'new best! ' : 'round done — ') + res.score +
+        '/100. press “new round” to go again.';
+    showToast(res.isFirst
+      ? 'first score ' + res.score + ' / 100'
+      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100',
+      res.isNewBest && !res.isFirst);
     draw();
   }
 

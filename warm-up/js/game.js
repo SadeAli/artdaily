@@ -1065,7 +1065,14 @@
     hudBest.textContent = res.best === null ? '–' : String(res.best);
     hint.textContent = 'arm’s warm — ' + res.score + '/100 across the three sets. ' +
       'warm-ups are for the arm, not the drawing: press “new round” whenever.';
-    showToast((res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+    /* A first-ever round has no previous best, so isNewBest is trivially
+       true and "new best!" celebrates nothing — on the one round where the
+       number most needs saying what it IS. The SDK marks that round with
+       isFirst; where it is undefined the old wording stands. */
+    showToast(res.isFirst
+      ? 'first score ' + res.score + ' / 100'
+      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100',
+      res.isNewBest && !res.isFirst);
   }
 
   var toastTimer = null;

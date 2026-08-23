@@ -560,8 +560,56 @@
   var KINDS = ['disc', 'block', 'bar'];
   var ARM_MIN = 0.14, ARM_MAX = 0.38;   /* the answer's distance from the pivot */
 
-  function rnd(lo, hi) { return lo + Math.random() * (hi - lo); }
-  function pick(list) { return list[Math.floor(Math.random() * list.length) % list.length]; }
+  /* ---- where a round's content comes from ----------------------------
+     THE ROUND'S CONTENT IS A SEQUENCE OF NORMALISED DRAWS. Round 1 of a
+     sitting is dealt from ArtDaily.roundRandom(1) — seeded from today and
+     this slug — so two people balancing today's Counterweight are balancing
+     the same four frames and a score finally has a denominator. Round 2 and
+     on are practice: same generator, same distribution, unshared seed.
+
+     EVERY DRAW IN THIS SECTION IS CONTENT, without exception. There is no
+     decorative jitter to leave behind: a mass's kind sets its outline and
+     therefore its extents, its area and its darkness ARE the visual weight,
+     its angle and radius place it, and k, dark and a are solved against the
+     same balanceSpot() the player is scored by. Move any one of them and the
+     answer moves. So the whole generator runs on the round's stream.
+
+     AND THE PIXELS MATCH TOO. Every number here is a FRAME FRACTION —
+     tryItem never reads W, H or a canvas rect, only FRAME, FR_ASPECT and
+     the constants above — so a phone and a desktop deal the identical
+     round, identical truth, identical validation, and lay it out at their
+     own size. The only per-device quantity in the drill is the zero-point's
+     pixel floor, which is a scoring tolerance and was always so.
+
+     THE REJECTION LOOP IS FINE WITH A ROLLING GENERATOR. tryItem() consumes
+     a variable number of draws and may bail at any of eight points, but it
+     is pure arithmetic over the stream: the same seed walks the same path
+     to the same accepted frame, every time, on every device. What it must
+     not do is re-deal an item that is already on screen — and no path does:
+     an item is built once by makeItem, stored in fractions, and a resize
+     repaints it rather than regenerating it.
+
+     rnd/pick are UNCHANGED AS FUNCTIONS — the same affine map, the same
+     floor()-and-modulo — with only the SOURCE of the uniform swapped. That
+     identity is the whole distribution argument: a seeded round is not an
+     easier or a harder round than the one that used to be dealt here.
+
+     GUARDED, AND THE GUARD IS LOAD-BEARING. index.html cache-busts its own
+     scripts with ?v=, but every drill loads ../sdk/artdaily-sdk.js BARE, so
+     the two files cache INDEPENDENTLY: a returning visitor holding a warm
+     old SDK plus a cold copy of this file would call a roundRandom that does
+     not exist, throw inside newRound() before the first frame was built, and
+     leave the drill dead with a blank sheet. Falling back to Math.random
+     costs today's player nothing but a non-comparable round — which is what
+     they had yesterday — and it self-heals when the SDK's max-age expires.
+     Only the BARE CALL FORM is used (rng(), never rng.range): Math.random
+     has no helpers on it, and a fallback that is not a true drop-in is not
+     a fallback. */
+  var roundRng = null;
+  function u01() { return roundRng ? roundRng() : Math.random(); }
+
+  function rnd(lo, hi) { return lo + u01() * (hi - lo); }
+  function pick(list) { return list[Math.floor(u01() * list.length) % list.length]; }
 
   /* A mass on the lean side of the picture, fitting inside the frame with a
      margin. `th` is the direction the whole item leans in, so several masses
@@ -586,7 +634,7 @@
     /* Frame one leans sideways at mid height on purpose: with equal weights
        the answer is the mass's mirror, which is the cleanest possible first
        reading of the rule. The ramp is inside the round, not in the scoring. */
-    var th = idx === 0 ? (Math.random() < 0.5 ? 0 : Math.PI) : rnd(0, Math.PI * 2);
+    var th = idx === 0 ? (u01() < 0.5 ? 0 : Math.PI) : rnd(0, Math.PI * 2);
     var masses = [];
     for (var i = 0; i < plan.n; i++) {
       var m = placeMass(pick(KINDS), rnd(plan.aMin, plan.aMax), th,
@@ -715,6 +763,14 @@
 
   function newRound() {
     round += 1;
+    /* THE ONE LINE THAT MAKES A SCORE COMPARABLE, and it has to stand above
+       the makeItem(0) below — the frame's first mass is the round's first
+       content draw. round is already 1 on the first round of a sitting, so
+       round 1 is today's shared round and every “new round” after it is
+       practice. Guarded: see the block by u01(). */
+    roundRng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round)
+      : Math.random;
     itemIdx = 0;
     accuracies = [];
     marks = [];

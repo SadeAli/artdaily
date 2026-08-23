@@ -51,6 +51,6 @@ The first item of every round puts the reference flat or straight up, so the
 first judgement of the day is anchored to something you already have an
 intuition for.
 
-Plain HTML/CSS/JS, no build, no trackers; reports to artdaily.sadeali.com via
+Plain HTML/CSS/JS, no build, no third-party code in the drill itself; reports to artdaily.sadeali.com via
 the repo's own SDK at `../sdk/artdaily-sdk.js` (protocol v1).
 Live: https://artdaily.sadeali.com/angle-snap/

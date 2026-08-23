@@ -319,11 +319,50 @@
 
   function planFor(idx) { return SCENE_PLANS[clamp(idx, 0, SCENE_PLANS.length - 1)]; }
 
-  function rand(lo, hi) { return lo + Math.random() * (hi - lo); }
+  /* ---- where a scene's numbers come from -------------------------------
+     THE ROUND'S CONTENT IS A SEQUENCE OF NORMALISED DRAWS, and this drill
+     is the cleanest case of it in the chapter: every coordinate the
+     generator produces is already a fraction of W or H (see the block
+     comment above), and the sheet is only multiplied in at paint time. So
+     today's five scenes are the same five scenes on a phone and on a
+     desktop — same eye level, same boxes, same posts, same walkers — and a
+     score off them is finally a number with a denominator. Round 1 of a
+     sitting is today's shared round; round 2 and on are practice: same
+     generator, same distribution, unshared seed.
 
+     ONE STREAM PER SCENE, asked for as the scene is built, which is the
+     shape the SDK documents for an item index: the five scenes are dealt
+     minutes apart and scene 4 must be scene 4 whatever scenes 1–3 spent.
+     The stream is seeded inside makeScene so BOTH callers (newRound and
+     nextScene) get it, and startGuess — which runs immediately after, at
+     both callers — carries on the same stream. */
+  var sceneRng = Math.random;
+
+  /* GUARDED, and the guard is load-bearing: index.html cache-busts its own
+     scripts with ?v=, but every drill loads ../sdk/artdaily-sdk.js BARE, so
+     the two files cache independently. A returning visitor with a warm old
+     SDK and a cold copy of this file would call a function that does not
+     exist, and newRound would throw before the first scene was built —
+     blank sheet, HUD at "–". Falling back to Math.random costs today's
+     player nothing but a non-comparable round, which is what they had
+     yesterday, and it self-heals when the SDK's max-age expires. */
+  function seedSceneRng(idx) {
+    sceneRng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round, idx)
+      : Math.random;
+  }
+
+  /* Unchanged as a function — lo + u * (hi - lo) is exactly what it always
+     was, with Math.random() swapped for the scene's uniform. u is uniform
+     on [0,1) either way, so every value downstream keeps precisely the
+     shape it had and a seeded scene is not an easier or a harder scene. */
+  function rand(lo, hi) { return lo + sceneRng() * (hi - lo); }
+
+  /* The same descending Fisher-Yates it always was, one draw per step, so
+     the permutation distribution and the draw COUNT are both untouched. */
   function shuffle(arr) {
     for (var i = arr.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
+      var j = Math.floor(sceneRng() * (i + 1));
       var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
     }
     return arr;
@@ -351,6 +390,10 @@
   }
 
   function makeScene(idx) {
+    /* Re-seeded for THIS scene, before a single value is drawn. Both
+       callers go through here, and startGuess below carries on the same
+       stream — it is called immediately after makeScene at both. */
+    seedSceneRng(idx);
     var plan = planFor(idx);
     var eye = rand(0.3, 0.7);
     var vpx = rand(0.32, 0.68);
@@ -399,7 +442,15 @@
   function startGuess(eye) {
     /* 0.10 / 0.90 parked the line hard against the canvas edge, where the
        grab knob at W-28 can sit half under the border on a narrow sheet. */
-    var pick = Math.random() < 0.5 ? 0.14 : 0.86;
+    /* SEEDED, and it is content rather than decoration: this is the state
+       the player's own line is handed to them in, so two people comparing
+       today's round should be dragging from the same place. It cannot make
+       the round easier or harder either way — both ends are ≥0.2 off every
+       eye level the generator can produce, which is the whole point of the
+       note above — so seeding it changes what is shown, never what is
+       scored. It is the LAST draw of a scene, taken from the same stream
+       makeScene just used. */
+    var pick = sceneRng() < 0.5 ? 0.14 : 0.86;
     /* if the eye range is ever widened, keep the start off the answer */
     return Math.abs(pick - eye) > 0.13 ? pick : (eye > 0.5 ? 0.14 : 0.86);
   }
@@ -584,7 +635,14 @@
     hudScore.textContent = String(res.score);
     hudBest.textContent = res.best === null ? '–' : String(res.best);
     refreshHint();
-    showToast((res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+    /* A first-ever round has no previous best, so isNewBest is trivially
+       true and "new best!" celebrates nothing — on the one round where the
+       number most needs saying what it IS. The SDK marks that round with
+       isFirst; where it is undefined the old wording stands. */
+    showToast(res.isFirst
+      ? 'first score ' + res.score + ' / 100 — your mark to beat'
+      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100',
+      res.isNewBest && !res.isFirst);
   }
 
   /* ============================================================

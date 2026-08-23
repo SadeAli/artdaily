@@ -1,4 +1,16 @@
 User-agent: *
 Allow: /
 
+# The repo is served as-is (.nojekyll), so every working document in it is a live
+# URL. These two are briefs for whoever writes the next drill or guide, not pages
+# anyone should land on from a search result — and a thin markdown file indexed
+# alongside the guides only competes with them.
+#
+# Note: this file is not the whole story. Cloudflare prepends a Managed Content
+# block ahead of everything here, and that block is where the AI-crawler rules
+# live. Read the LIVE robots.txt, not this one, before concluding anything:
+#   curl -sS https://artdaily.sadeali.com/robots.txt
+Disallow: /practice/_TEMPLATE.md
+Disallow: /game-template/
+
 Sitemap: https://artdaily.sadeali.com/sitemap.xml

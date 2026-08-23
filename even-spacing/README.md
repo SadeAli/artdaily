@@ -56,5 +56,5 @@ samples that survive); and the stylesheet suppresses the iOS long-press callout
 over the canvas, double-tap zoom on the controls, and pull-to-refresh.
 
 Part of [artdaily.sadeali.com](https://artdaily.sadeali.com/) — zero build,
-plain files, no trackers. The SDK it loads, `../sdk/artdaily-sdk.js`, is the
+plain files, no third-party code in the drill itself. The SDK it loads, `../sdk/artdaily-sdk.js`, is the
 repo's single copy shared by every drill, and is never edited from here.

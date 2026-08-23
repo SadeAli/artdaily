@@ -58,7 +58,7 @@ in progress.
 Run it: `python3 -m http.server 8080` in the repo root one level up, open
 `http://localhost:8080/sphere-shade/` — the SDK, the page chrome and the font
 come from `../`, above the root of a server started in this folder. Zero build,
-zero deps, no tracking.
+zero deps, no third-party code in the drill itself.
 
 Part of [Art Daily](https://artdaily.sadeali.com/) — tiny scored
 warmups from [sadeali.com](https://sadeali.com/).

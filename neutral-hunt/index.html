@@ -3,25 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Neutral Hunt — a colour drill for spotting grey casts</title>
+<title>Spot the Neutral — a colour drill for near-grey casts</title>
 <meta name="description" content="Nine near-greys sit at the same lightness and only one is truly neutral. Pick it out, and train your eye to catch warm and cool casts in grey.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Neutral Hunt">
 <meta property="og:description" content="spot the true neutral among the near-greys — a daily art drill">
 <meta property="og:site_name" content="Art Daily · SadeAli">
 <meta property="og:url" content="https://artdaily.sadeali.com/neutral-hunt/">
-<!-- The page's own card, deliberately: the drills have no per-drill art, and a
-     share with no image at all renders as a grey box. 1200x630, declared so a
-     scraper can lay out the card before it has fetched the file. -->
-<meta property="og:image" content="https://artdaily.sadeali.com/og.png">
+<!-- This drill's own card, built from its registry entry by tools/build-og.js:
+     name, tagline and the drill's URL, so a screenshot of the share is also
+     directions. 1200x630, declared so a scraper can lay out the card before it
+     has fetched the file. -->
+<meta property="og:image" content="https://artdaily.sadeali.com/og/neutral-hunt.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Art Daily — tiny daily drills for artists">
+<meta property="og:image:alt" content="Art Daily card: Neutral Hunt — spot the true neutral among the near-greys — artdaily.sadeali.com/neutral-hunt">
 <link rel="canonical" href="https://artdaily.sadeali.com/neutral-hunt/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Neutral Hunt">
 <meta name="twitter:description" content="spot the true neutral among the near-greys — a daily art drill">
-<meta name="twitter:image" content="https://artdaily.sadeali.com/og.png">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og/neutral-hunt.png">
 <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🕵️&lt;/text&gt;&lt;/svg&gt;">
 <link rel="stylesheet" href="css/style.css">
 <script>
@@ -82,7 +83,7 @@
         <p>Studio tip: compare neighbours, not chips in isolation — a cast only shows against its rivals.</p>
       </div>
 
-      <noscript><p class="hint">This drill needs JavaScript — nothing else, no trackers, no accounts.</p></noscript>
+      <noscript><p class="hint">This drill needs JavaScript. Nothing to install, and no account needed.</p></noscript>
     </div>
   </div>
 </main>
@@ -92,8 +93,8 @@
   <p>Nine chips arrive in a 3×3 grid, all at roughly the same lightness (L* 50–65) so brightness gives nothing away. Eight carry a temperature cast, their hues at least 25° apart; one is a true neutral, chroma under 0.5. Tap that one. Five grids make a round and the casts thin out as it goes, from around C 10–16 at the start to C 5–7 on the last. Every attempt reveals what each chip was really carrying — “warm +7”, “cool +4”, “neutral” — with violet and magenta named as themselves, since their temperature depends on what surrounds them.</p>
   <p>The eye this trains is the one that catches a cast on the palette rather than on the canvas: greys mixed from other colours rarely land neutral, and a faint warmth nobody notices in the mixing tray is a warmth that ends up in the painting. Comparing chips against their neighbours is the way through, because a cast only shows next to a rival. Screens matter here too — the drill opens with a short check about blue-light filters, and the late grids stop shrinking at 5 units because an uncalibrated laptop panel cannot show less.</p>
   <h3>What a wrong chip is still worth</h3>
-  <p>Finding the neutral scores 100. A miss keeps some credit, worked out as 100 × clamp(1 − C/Cmax, 0, 1) × 0.55, where C is the cast on the chip you chose and Cmax is the strongest cast on that grid — so falling for a chip that was nearly neutral pays better than falling for an obvious one. Grading each miss against its own grid is deliberate. Since the casts get fainter as the round goes on, one yardstick held across all five would hand out more credit for failing grid 5 than for failing grid 1. The round is the mean of five. Tapping at random settles near 19.</p>
-  <p class="about-more">More colour drills: <a href="../temperature-sort/">Temperature Sort</a> · <a href="../colour-constancy/">Colour Constancy</a> · <a href="../sun-and-sky/">Sun & Sky</a> · <a href="../">all 42 drills</a></p>
+  <p>Finding the neutral scores 100. A miss keeps some credit, worked out as 100 × clamp(1 − C/Cmax, 0, 1) × 0.55, where C is the cast on the chip you chose and Cmax is the strongest cast on that grid — so falling for a chip that was nearly neutral pays better than falling for an obvious one. Grading each miss against its own grid is deliberate. Since the casts get fainter as the round goes on, one yardstick held across all five would hand out more credit for failing grid 5 than for failing grid 1. The round is the mean of five. Tapping at random settles near 19. The chips are generated in CIELAB, so every cast is a number the drill already holds rather than something a model has to detect.</p>
+  <p class="about-more">More colour drills: <a href="../temperature-sort/">Temperature Sort</a> · <a href="../colour-constancy/">Colour Constancy</a> · <a href="../sun-and-sky/">Sun & Sky</a> · <a href="../">the whole catalogue</a></p>
 </section>
 
 <footer class="footer">
@@ -105,9 +106,13 @@
     <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
     <span aria-hidden="true">·</span>
     <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/for-teachers/">For teachers</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/privacy/">Privacy</a>
     <span id="supportLinks"></span>
   </nav>
-  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no tracking</p>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no account needed</p>
 </footer>
 
 <script src="../sdk/artdaily-sdk.js"></script>

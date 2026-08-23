@@ -666,8 +666,50 @@
   var revealing = null, revealTimer = null, roundResult = null;
   var formCache = null;
 
-  function rand(lo, hi) { return lo + Math.random() * (hi - lo); }
-  function pick(list) { return list[Math.floor(Math.random() * list.length) % list.length]; }
+  /* ---- where the round's form comes from -------------------------------
+     THE ROUND'S CONTENT IS A SEQUENCE OF DRAWS, and in this drill it is a
+     ROUND-level sequence rather than an item-level one: one form is built
+     per round and the four wraps are stations along it, so there is one
+     generator here, not one per wrap. Round 1 of a sitting comes from
+     ArtDaily.roundRandom(1) — seeded from today and this slug — so everyone
+     gets the same form today; round 2 and on are practice, same
+     distribution, unshared seed.
+
+     Every value below is in VIRTUAL units (the projection's own space) and
+     `fit` only turns them into pixels at paint time — stationAt's minSpan
+     is a fraction of the form's own widest chord, not of the sheet — so
+     this drill's round really is identical on every device, reroll loop
+     included.
+
+     WORTH KNOWING BEFORE YOU JUDGE THIS ONE BY ITS DIFF: round 1 was
+     ALREADY the same form for everyone. makeSpec(n) returns a hand-pinned
+     gentle egg for n <= 1 and newRound asks for makeSpec(round + tries), so
+     the first round of a sitting drew nothing at all from makeSpec. What
+     the seed changes on round 1 is the LIGHT (below), the reroll path if
+     the pinned form ever fails to yield four drawable wraps, and every
+     practice round after the first. */
+  var roundRng = Math.random;
+
+  /* GUARDED, and the guard is load-bearing: index.html cache-busts its own
+     scripts with ?v=, but every drill loads ../sdk/artdaily-sdk.js BARE, so
+     the two files cache independently. A returning visitor with a warm old
+     SDK and a cold copy of this file would call a function that does not
+     exist, and newRound would throw before the form was built — blank
+     sheet, HUD at "–". Falling back to Math.random costs today's player
+     nothing but a non-comparable round, which is what they had yesterday,
+     and it self-heals when the SDK's max-age expires. */
+  function seedRoundRng() {
+    roundRng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round)
+      : Math.random;
+  }
+
+  /* Both unchanged as functions — the same expressions they always were,
+     with Math.random() swapped for the round's uniform, which is uniform on
+     [0,1) just the same. So a seeded form is not a gentler or a nastier
+     form, and the % guard on pick stays exactly where it was. */
+  function rand(lo, hi) { return lo + roundRng() * (hi - lo); }
+  function pick(list) { return list[Math.floor(roundRng() * list.length) % list.length]; }
 
   /* Round one is a gentle, obviously-tilted egg: the very first screen has
      to read as a solid standing in space before anything else can be
@@ -730,6 +772,16 @@
       if (st) stations.push(st);
     }
     if (!seed || stations.length < WRAPS_PER_ROUND) return null;
+    /* SEEDED, and this is the one shading draw in the chapter that is
+       CONTENT rather than decoration. It is a real Lambert term over a
+       curved surface (see renderForm), so the terminator it puts on the
+       form is itself a curve that follows the form's turn — which is
+       exactly the thing the player is being asked to read before drawing a
+       wrap. Two players lit from different sides would be reading different
+       cues off the same solid. (Contrast vp-hunt's sunLeft, deliberately
+       left on Math.random: that is two flat alphas on flat faces, carrying
+       no curvature at all.) These are the last three draws of a scene, so
+       seeding them shifts nothing that follows. */
     var light = vnorm(v3(rand(-0.7, -0.2), rand(0.35, 0.8), rand(0.55, 0.95)));
     scene = { form: form, sil: sil, seed: seed, stations: stations, light: light, widest: widest };
     sceneId += 1;
@@ -1270,6 +1322,10 @@
        rerolled, and the last resort is the round-one spec, which is the one
        the node harness pins — so a round can never open with no form on the
        sheet and no way to finish. */
+    /* Re-seeded for THIS round, before a single value is drawn — and the
+       form cache is cleared with it below, so a new round can never repaint
+       the last one's solid. */
+    seedRoundRng();
     var built = null, tries = 0;
     while (!built && tries < 8) { built = buildScene(makeSpec(round + tries)); tries += 1; }
     if (!built) built = buildScene(makeSpec(1));

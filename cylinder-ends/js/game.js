@@ -381,20 +381,57 @@
      a real cylinder, never a dead round. */
   var FALLBACK = { slant: 54 * D2R, roll: 0.18, dist: 8.4, ox: 0.25, oy: -0.18, r: 1.0, L: 1.95 };
 
-  function rr(range) { return range[0] + Math.random() * (range[1] - range[0]); }
+  /* ---- where a cylinder's numbers come from ----------------------------
+     THE ITEM'S CONTENT IS A SEQUENCE OF DRAWS: a slant, a roll, a camera
+     distance, an offset, a radius, a length. All of them are world/image
+     quantities — the canvas is not consulted anywhere in here, and usable()
+     deliberately tests the IMAGE-SPACE box rather than the sheet (see its
+     note) — so today's four cylinders are the same four cylinders on every
+     device, and a score off them is finally a number with a denominator.
+     Round 1 of a sitting is today's shared round; round 2 and on are
+     practice: same generator, same distribution, unshared seed.
+
+     ONE STREAM PER CYLINDER, asked for as the cylinder is built. That
+     matters more here than in most of the chapter, because makeGeometry is
+     a REJECTION SAMPLER: it draws eight values per attempt and retries up
+     to 80 times, so a single rolling generator would let the number of
+     attempts spent on cylinder 1 decide where cylinder 2 starts. The
+     rejection test is canvas-free, so the attempt count is in fact the same
+     everywhere — but a per-item stream means that stays true even if a
+     future tweak to usable() reaches for W or H. */
+  var itemRng = Math.random;
+
+  /* GUARDED, and the guard is load-bearing: index.html cache-busts its own
+     scripts with ?v=, but every drill loads ../sdk/artdaily-sdk.js BARE, so
+     the two files cache independently. A returning visitor with a warm old
+     SDK and a cold copy of this file would call a function that does not
+     exist, and startItem would throw before the first barrel was built —
+     blank sheet, HUD at "–". Falling back to Math.random costs today's
+     player nothing but a non-comparable round, which is what they had
+     yesterday, and it self-heals when the SDK's max-age expires. */
+  function seedItemRng(idx) {
+    itemRng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round, idx)
+      : Math.random;
+  }
+
+  /* Unchanged as a function — lo + u * (hi - lo) is exactly what it always
+     was, with Math.random() swapped for the item's uniform, which is
+     uniform on [0,1) just the same. */
+  function rr(range) { return range[0] + itemRng() * (range[1] - range[0]); }
 
   function makeGeometry(idx) {
     var plan = PLAN[Math.max(0, Math.min(PLAN.length - 1, idx | 0))] || PLAN[0];
     for (var tries = 0; tries < 80; tries++) {
       /* which way the far end lies is a coin flip — a drill whose answer
          is always dragged to the right teaches the hand, not the eye */
-      var roll = (Math.random() < 0.5 ? 0 : Math.PI) + (Math.random() * 2 - 1) * plan.tilt;
+      var roll = (itemRng() < 0.5 ? 0 : Math.PI) + (itemRng() * 2 - 1) * plan.tilt;
       var g = buildCylinder({
         slant: rr(plan.slant) * D2R,
         roll: roll,
         dist: rr(plan.dist),
-        ox: (Math.random() * 2 - 1) * 0.9,
-        oy: (Math.random() * 2 - 1) * 0.7,
+        ox: (itemRng() * 2 - 1) * 0.9,
+        oy: (itemRng() * 2 - 1) * 0.7,
         r: rr(plan.rad),
         L: rr(plan.len),
       });
@@ -710,6 +747,8 @@
   }
 
   function startItem() {
+    /* Re-seeded for THIS cylinder, before a single value is drawn. */
+    seedItemRng(itemIdx);
     geo = makeGeometry(itemIdx);
     ratio = 0;
     phase = 'aim';

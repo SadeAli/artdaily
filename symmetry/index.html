@@ -3,25 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mirror Mirror — a freehand symmetry drawing drill</title>
+<title>Symmetry Drawing Practice — finish the other half freehand</title>
 <meta name="description" content="Draw the missing half of a figure across a mirror line, freehand. A symmetry drill that trains measuring distances instead of eyeballing them.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Mirror Mirror">
 <meta property="og:description" content="finish the other half of the figure — a daily art drill">
 <meta property="og:site_name" content="Art Daily · SadeAli">
 <meta property="og:url" content="https://artdaily.sadeali.com/symmetry/">
-<!-- The page's own card, deliberately: the drills have no per-drill art, and a
-     share with no image at all renders as a grey box. 1200x630, declared so a
-     scraper can lay out the card before it has fetched the file. -->
-<meta property="og:image" content="https://artdaily.sadeali.com/og.png">
+<!-- This drill's own card, built from the registry by tools/build-og.js: emoji,
+     category, name, tagline and the URL, so a screenshot of the share is
+     directions back here. 1200x630, declared so a scraper can lay out the card
+     before it has fetched the file. -->
+<meta property="og:image" content="https://artdaily.sadeali.com/og/symmetry.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Art Daily — tiny daily drills for artists">
+<meta property="og:image:alt" content="Mirror Mirror — finish the other half of the figure. A line &amp; hand drill at artdaily.sadeali.com/symmetry">
 <link rel="canonical" href="https://artdaily.sadeali.com/symmetry/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Mirror Mirror">
 <meta name="twitter:description" content="finish the other half of the figure — a daily art drill">
-<meta name="twitter:image" content="https://artdaily.sadeali.com/og.png">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og/symmetry.png">
 <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🦋&lt;/text&gt;&lt;/svg&gt;">
 <link rel="stylesheet" href="css/style.css">
 <script>
@@ -82,7 +83,7 @@
         <p>Studio tip: don't copy the outline line by line. Pick three or four heights, look at how far the drawn half sits from the dashed line at each one, put a short mark that far out on the right — then join your marks. Symmetry is measured, not felt.</p>
       </div>
 
-      <noscript><p class="hint">This drill needs JavaScript — nothing else, no trackers, no accounts.</p></noscript>
+      <noscript><p class="hint">This drill needs JavaScript. Nothing else to install, and no account needed.</p></noscript>
     </div>
   </div>
 </main>
@@ -92,8 +93,8 @@
   <p>A dashed vertical line splits the sheet; one smooth half-figure is already drawn against it, and the missing half is yours, freehand, in as many strokes as you like. Lifting between strokes costs nothing, undo drops the last one, clear restarts the figure, and neither is penalised. The round runs three figures, each curvier than the one before. The thin bar under the sheet is ink: redrawing the same curve over and over spends it, the first 20px of every stroke are free so marking heights is cheap, and when it runs out the drill stops inking and asks for done rather than scoring you mid-stroke.</p>
   <p>The habit being drilled is measured symmetry. Copying the given outline stroke for stroke is the slow way to be wrong; picking three or four heights, reading how far the drawn half sits from the dashed line at each of them, putting a mark that far out on the right and joining the marks is the way symmetry is actually kept — distances from the axis, not an eyeballed shape. After each figure the true mirror is laid over your attempt in lilac, with short whiskers pointing at the two or three widest misses.</p>
   <h3>The pixel band your strokes have to land in</h3>
-  <p>Your strokes are mirrored back across the line and compared with the true curve by a symmetric point-to-segment chamfer distance, then graded in a band measured in pixels. Anything inside the free zone — 0.4% of the figure's height, or 2.5px, whichever is larger — is still a clean 100. The score falls to zero at 8% of the figure's height or 16px, whichever is larger, with a further pixel allowance added for the hardware in your hand, since a mouse pivots at the wrist and cannot creep. The three figure scores are averaged into the round, and the numbers are only set against your own history.</p>
-  <p class="about-more">More line & hand drills: <a href="../angle-snap/">Angle Snap</a> · <a href="../steady-tunnel/">Steady Tunnel</a> · <a href="../even-spacing/">Even Spacing</a> · <a href="../">all 42 drills</a></p>
+  <p>Your strokes are mirrored back across the line and compared with the true curve by a symmetric point-to-segment chamfer distance, then graded in a band measured in pixels. Anything inside the free zone — 0.4% of the figure's height, or 2.5px, whichever is larger — is still a clean 100. The score falls to zero at 8% of the figure's height or 16px, whichever is larger, with a further pixel allowance added for the hardware in your hand, since a mouse pivots at the wrist and cannot creep. The three figure scores are averaged into the round, and the numbers are only set against your own history. No AI looks at the figure — your strokes are reflected across the line and compared with the true curve point by point, and the average of those distances is the score.</p>
+  <p class="about-more">More line & hand drills: <a href="../angle-snap/">Angle Snap</a> · <a href="../steady-tunnel/">Steady Tunnel</a> · <a href="../even-spacing/">Even Spacing</a> · <a href="../">the whole catalogue</a></p>
 </section>
 
 <footer class="footer">
@@ -105,9 +106,13 @@
     <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
     <span aria-hidden="true">·</span>
     <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/for-teachers/">For teachers</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/privacy/">Privacy</a>
     <span id="supportLinks"></span>
   </nav>
-  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no tracking</p>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no account needed</p>
 </footer>
 
 <script src="../sdk/artdaily-sdk.js"></script>

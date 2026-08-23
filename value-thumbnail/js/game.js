@@ -968,7 +968,35 @@
   /* ---- round flow ---- */
   function newRound() {
     round += 1;
-    spec = sceneSpec(round, 1 + Math.floor(Math.random() * 2147483000));
+    /* THE ONE LINE THAT MAKES A SCORE COMPARABLE — and in this drill it
+       really is one line, because the scene was already deterministic. Every
+       draw a scene needs comes out of the Park-Miller generator in
+       sceneSpec(); the only thing that was ever unpredictable was the SEED
+       handed to it, and that is what is dealt here instead. So the whole
+       conversion is: swap the source of ONE uniform. Nothing downstream of
+       it moves — same seed range, same generator, same scene, same ground
+       truth. round 1 of a sitting is today's shared scene (seeded from today
+       and this slug); round 2 and on are practice, freshly seeded per round,
+       so a replay cannot deal the scene just played. sceneSpec also reads
+       `round` for its difficulty ramp, so everyone's round 1 is the same
+       difficulty as well as the same scene.
+
+       Fully device-independent, unusually: the ground truth renders to a
+       fixed 360x240 offscreen buffer (TRUTH_W/TRUTH_H) and the grid is
+       always 12x8, so a phone and a desktop score the identical cells — the
+       visible canvas size only decides how big the picture is drawn.
+
+       GUARDED, and the guard is load-bearing. index.html cache-busts its own
+       scripts with ?v=, but every drill loads ../sdk/artdaily-sdk.js BARE, so
+       the two files cache INDEPENDENTLY: a returning visitor holding a warm
+       SDK from any other drill plus a cold copy of this file would call a
+       function that does not exist, throw before the scene is built, and sit
+       on a blank sheet forever. Falling back to Math.random costs today's
+       player nothing but a non-comparable round. */
+    var roundRng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round)
+      : Math.random;
+    spec = sceneSpec(round, 1 + Math.floor(roundRng() * 2147483000));
     truth = computeTruth(spec);
     cells = [];
     /* Start on MID, not on light. All-light is both the loudest wrong
@@ -1036,12 +1064,20 @@
        sticker (aria-hidden, like the template's), not a second voice — so
        the round score has to lead this line or a screen-reader player only
        ever hears the cell tally and never the number it earned. */
-    hint.textContent = (rep.isNewBest ? 'new best! ' : 'round done — ') + rep.score + '/100 · ' +
+    /* A first-ever round has no previous best, so isNewBest is trivially
+       true and "new best!" celebrates nothing — on the one round where the
+       number most needs saying what it IS. The SDK marks that round with
+       isFirst; where it is undefined the old wording stands. */
+    hint.textContent = (rep.isFirst ? 'first score, your mark to beat — '
+        : rep.isNewBest ? 'new best! ' : 'round done — ') + rep.score + '/100 · ' +
       res.exact + ' exact · ' + res.near + ' one step off · ' + res.flipped +
       ' flipped (light where dark belongs, the worst kind of miss) — marks ink the true value;' +
       ' tap the scene or the grid to compare, then press “new round”.';
     updateLegendTxt();
-    showToast((rep.isNewBest ? 'new best! ' : 'score ') + rep.score + ' / 100', rep.isNewBest);
+    showToast(rep.isFirst
+      ? 'first score ' + rep.score + ' / 100 — your mark to beat'
+      : (rep.isNewBest ? 'new best! ' : 'score ') + rep.score + ' / 100',
+      rep.isNewBest && !rep.isFirst);
   }
 
   var toastTimer = null;

@@ -360,7 +360,30 @@
      scored — finishRound() is presentation only (see scoreCurrent) */
   var roundResult = null;
 
-  function rand(lo, hi) { return lo + Math.random() * (hi - lo); }
+  /* ---- where the round's three figures come from -----------------------
+     THE ROUND'S CONTENT IS A SEQUENCE OF NORMALISED DRAWS, and only that.
+     Round 1 of a sitting is dealt from ArtDaily.roundRandom(1) — seeded off
+     today and this slug — so every player gets the same three curves today
+     and a score finally has a denominator. Round 2 and on are practice: same
+     generator, same distribution, unshared seed.
+
+     rand() is unchanged as a function — lo + u * (hi - lo), with Math.random
+     swapped for the round's uniform. u is uniform on [0,1) either way, so the
+     control points wander exactly as far as they always did: a seeded figure
+     is not a gentler or a wilder figure, only a shared one.
+
+     Every draw in this drill is CONTENT — the control points ARE the figure —
+     and every one of them is taken as a fraction of W or of the span before
+     it becomes a pixel, so a phone and a desktop get the same curve laid out
+     for their own sheet. The whiskers and the reveal carry no draws at all.
+
+     Called exactly once per figure (newRound for figure 0, the advance for
+     the rest); a resize RESCALES the reference it already has rather than
+     re-generating it, so this rolling generator is never walked forward twice
+     for the same figure — no per-item cache is needed, unlike lines. */
+  var roundRng = Math.random;
+
+  function rand(lo, hi) { return lo + roundRng() * (hi - lo); }
 
   /* difficulty ramps within the round: later figures get more control
      points and wilder in-and-out swings. Figure 1 is deliberately a
@@ -425,6 +448,22 @@
     lastWords = '';
     hudRound.textContent = String(round);
     hudScore.textContent = '–';
+    /* THE ONE LINE THAT MAKES A SCORE COMPARABLE. round is already 1 on the
+       first round of a sitting, so round 1 is today's shared round and every
+       "new round" after it is practice.
+
+       GUARDED, and the guard is load-bearing. index.html cache-busts its own
+       scripts with ?v=, but every drill loads ../sdk/artdaily-sdk.js BARE, so
+       the two files cache INDEPENDENTLY and roundRandom is new: a returning
+       visitor holding a warm SDK from another drill plus a cold copy of this
+       file would call a function that does not exist, throw inside newRound()
+       before the first figure is built, and sit on "Loading…" with a blank
+       sheet. Falling back to Math.random costs today's player nothing but a
+       non-comparable round — exactly what they had yesterday — and it
+       self-heals when the SDK's max-age expires. */
+    roundRng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round)
+      : Math.random;
     makeFigure(0);
   }
 
@@ -484,7 +523,14 @@
     if (res) {
       hudScore.textContent = String(res.score);
       hudBest.textContent = res.best === null ? '–' : String(res.best);
-      showToast((res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+      /* A first-ever round has no previous best, so isNewBest is trivially
+         true and "new best!" celebrates nothing — on the one round where the
+         number most needs saying what it IS. The SDK marks that round with
+         isFirst; where it is undefined the old wording stands. */
+      showToast(res.isFirst
+        ? 'first score ' + res.score + ' / 100 — your mark to beat'
+        : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100',
+        res.isNewBest && !res.isFirst);
     }
     hint.textContent = 'Round done — ' + (lastWords ? lastWords + ' ' : '') +
       'press “new round” to go again.';

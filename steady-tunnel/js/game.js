@@ -473,7 +473,53 @@
      tunnel that closes every round is the one nobody is told about */
   var lastWords = '';
 
-  function rand(lo, hi) { return lo + Math.random() * (hi - lo); }
+  /* ---- where the round's three corridors come from ---------------------
+     THE ROUND'S CONTENT IS A SEQUENCE OF NORMALISED DRAWS, and only that.
+     Round 1 of a sitting is dealt from ArtDaily.roundRandom(1, …) — seeded
+     off today and this slug — so every player gets the same three corridors
+     today and a score finally has a denominator. Round 2 and on are practice:
+     same generator, same distribution, unshared seed.
+
+     rand() is unchanged as a function — lo + u * (hi - lo), with Math.random
+     swapped for the round's uniform. u is uniform on [0,1) either way, so a
+     seeded corridor winds exactly as much as an unseeded one did.
+
+     ONE STREAM PER TUNNEL, not one per round, and this drill is the reason
+     the SDK offers streams at all. Two things here re-generate a tunnel that
+     is already on screen: a real width change (the resize handler rebuilds,
+     because the corridor lives in canvas pixels) and a hardware change (the
+     onInput hook rebuilds, because the corridor's width is eased per input
+     mode). A single rolling generator would be walked further along by each
+     of those and deal a DIFFERENT corridor — and every later tunnel of the
+     round with it. Asking for the stream keyed to `idx` at the moment tunnel
+     idx is built gives the same answer however often it is asked.
+
+     It also contains the OTHER hazard, which is this drill's alone:
+     makeTunnel() is a rejection sampler. It keeps drawing candidate paths
+     until one is neither tangled nor folded, and the test it must pass
+     depends on the eased wall width and on the canvas — so a pen and a
+     trackpad can accept on different attempts and burn different numbers of
+     draws. Per-tunnel streams keep that divergence INSIDE one tunnel instead
+     of desynchronising the rest of the round. See the note above makeTunnel
+     for what that does and does not buy. */
+  var roundRng = Math.random;
+
+  /* GUARDED, and the guard is load-bearing. index.html cache-busts its own
+     scripts with ?v=, but every drill loads ../sdk/artdaily-sdk.js BARE, so
+     the two files cache INDEPENDENTLY and roundRandom is new: a returning
+     visitor holding a warm SDK from another drill plus a cold copy of this
+     file would call a function that does not exist, throw before the first
+     corridor exists, and sit on "Loading…" with a blank sheet. Falling back
+     to Math.random costs today's player nothing but a non-comparable round —
+     exactly what they had yesterday — and it self-heals when the SDK's
+     max-age expires. */
+  function tunnelRandom(idx) {
+    return (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round, idx)
+      : Math.random;
+  }
+
+  function rand(lo, hi) { return lo + roundRng() * (hi - lo); }
   function now() { return Date.now(); }
 
   function tunnelLabel() { return 'tunnel ' + (tunnelIdx + 1) + ' of ' + TUNNELS_PER_ROUND; }
@@ -498,7 +544,7 @@
       if (i === 0 || i === n - 1) {
         y = cy + rand(-a * 0.5, a * 0.5);
       } else {
-        sign = (i % 2 === 0 ? 1 : -1) * (Math.random() < 0.2 ? -1 : 1);
+        sign = (i % 2 === 0 ? 1 : -1) * (roundRng() < 0.2 ? -1 : 1);
         y = cy + sign * rand(a * 0.35, a);
       }
       pts.push({ x: x, y: Math.max(padY, Math.min(H - padY, y)) });
@@ -511,6 +557,24 @@
      Widths come from halfWidth(), so they follow the canvas and the
      hardware; the traverse is capped at MAX_SPAN_PX and centred. */
   function makeTunnel(idx) {
+    /* THE LINE THAT MAKES A SCORE COMPARABLE, and it sits HERE rather than in
+       newRound() because this function is also the rebuild path: a resize or
+       a hardware change re-runs it for a tunnel already on screen. Re-asking
+       for the same stream re-deals the same corridor instead of walking a
+       rolling generator forward, so today's tunnel 2 is today's tunnel 2 even
+       on a phone that was rotated during tunnel 1. On a practice round
+       (round >= 2) roundRandom ignores the stream and hands back a fresh
+       sequence every time, which is exactly the "window resized, fresh
+       tunnel" the handler promises out loud.
+
+       WHAT THIS DOES NOT PROMISE. The loop below is a rejection sampler and
+       its accept test reads the EASED wall width and the canvas, so a pen
+       (ease 1) and a trackpad (ease 2) can accept different attempts off the
+       same uniforms — and amp is eased outright, one line down. Two players
+       on different hardware are playing the same DRILL from the same seed,
+       not the same pixels; per-tunnel streams keep that inside one tunnel
+       rather than letting it desynchronise the two that follow. */
+    roundRng = tunnelRandom(idx);
     var spec = TUNNEL_SPECS[idx];
     var easeMul = ArtDaily.ease(1);
     var w0 = halfWidth(spec.w0, H, easeMul);
@@ -1046,7 +1110,14 @@
     hudBest.textContent = res.best === null ? '–' : String(res.best);
     hint.textContent = 'round done — ' + (lastWords ? lastWords + ' ' : '') +
       'press "new round" to go again.';
-    showToast((res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+    /* A first-ever round has no previous best, so isNewBest is trivially
+       true and "new best!" celebrates nothing — on the one round where the
+       number most needs saying what it IS. The SDK marks that round with
+       isFirst; where it is undefined the old wording stands. */
+    showToast(res.isFirst
+      ? 'first score ' + res.score + ' / 100 — your mark to beat'
+      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100',
+      res.isNewBest && !res.isFirst);
   }
 
   var toastTimer = null;

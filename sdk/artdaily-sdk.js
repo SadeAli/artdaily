@@ -12,8 +12,10 @@
      ArtDaily.init({ slug: 'lines' })      once, on load
      ArtDaily.report(score)                0–100, per finished drill
      ArtDaily.onTheme(fn)                  redraw hook (canvas games)
+     ArtDaily.roundRandom(round)           the round's content generator
    Everything else — embed detection, theme sync with the parent
-   page, personal bests — is handled here.
+   page, personal bests, and the seeded day that makes two players'
+   scores mean the same thing — is handled here.
 
    Wire format (postMessage, non-sensitive data only, so '*'
    target origins are fine; listeners validate source + shape):
@@ -371,6 +373,52 @@ window.ArtDaily = (function () {
     } catch (e) {}
   }
 
+  /* The daily note: one quiet line under the hand-off bar, once per
+     sitting, saying out loud the thing the seeded-content section built
+     and nothing player-facing ever mentioned — round 1 of a sitting is
+     today's shared round, and tomorrow deals a fresh one. That fact is the
+     site's honest reason to come back, and a search visitor landing on a
+     drill page had no way to learn it.
+
+     Four deliberate limits:
+     - Only when dailyDealt is true, so the three unseeded drills never
+       carry a claim that is false for them (the truth rule).
+     - Present tense about the MECHANIC ("round 1 is today's round"), not
+       about the round just played — a player who pressed "new round"
+       before finishing round 1 reports off a practice round, and "that
+       was today's round" would be a lie there.
+     - NO "same for everyone" claim, though it is the tempting half. The
+       seed is keyed to LOCAL midnight (see the seeded-content block), so
+       two players either side of Greenwich on the same calendar date hold
+       seeds one apart — "everyone playing today gets the same one" is
+       false across an ocean. "a fresh one lands at midnight" is true
+       everywhere, because midnight here IS the local one. If the seed
+       ever moves to UTC, the stronger sentence becomes honest — earn it
+       then.
+     - A plain <p>, never a live region. The drill's #hint is the one
+       spoken channel (GAME_GUIDE's rule), and this line is ambient chrome
+       a browse-mode reader still reaches.
+
+     Styled from here, not from the 44 vendored per-drill stylesheets —
+     they have drifted into more than a dozen variants and only tokens can
+     be assumed. Colours are tokens, so both themes come for free. */
+  var dailyNoteDone = false;
+
+  function showDailyNote(bar) {
+    if (dailyNoteDone || !dailyDealt || !bar || !bar.parentNode) return;
+    dailyNoteDone = true;
+    if (!document.getElementById('artdailyDailyNoteCss')) {
+      var css = document.createElement('style');
+      css.id = 'artdailyDailyNoteCss';
+      css.textContent = '.daily-note{margin:8px 0 0;font-size:0.78rem;color:var(--muted);}';
+      (document.head || document.documentElement).appendChild(css);
+    }
+    var note = document.createElement('p');
+    note.className = 'daily-note';
+    note.textContent = 'round 1 is today’s round — a fresh one lands at midnight.';
+    bar.parentNode.insertBefore(note, bar.nextSibling);
+  }
+
   /* A decorative glyph, hidden from assistive tech. "→" and "✓" are read
      out as "rightwards arrow" and "check mark", so the one sentence a
      standalone screen-reader player hears after a round used to end in a
@@ -415,6 +463,11 @@ window.ArtDaily = (function () {
        which the toast in the template was already fixed to obey.) */
     if (announced) bar.removeAttribute('role');
     announced = true;
+    /* After the bar, so the first thing under the controls is still the
+       route home; sits outside the bar so the sweep of the bar's leading
+       children can never eat it. Once per sitting, and only on a drill
+       that really dealt from the day. */
+    showDailyNote(bar);
     if (delivered) {
       /* The rule the paint below already obeys, finally applied to the ONE
          branch that still broke it: removing the focused element drops focus
@@ -518,6 +571,222 @@ window.ArtDaily = (function () {
     try { v = parseInt(localStorage.getItem(bestKey()), 10); } catch (e) {}
     if (isNaN(v)) return memBest;   /* nothing stored, or no store to read */
     return Math.max(0, Math.min(100, v));
+  }
+
+  /* ============================================================
+     SEEDED CONTENT (protocol v1, additive)
+
+     THE PROBLEM. 39 of the 42 drills call Math.random() for their own
+     items, so two people playing the same drill on the same day are not
+     playing the same drill. A score off that is a number with no
+     denominator: nothing to share, nothing to rank, nothing to argue
+     with. This section gives a drill a generator whose output is a pure
+     function of (today, this drill), so "84 on Steady Lines today" means
+     one thing everywhere.
+
+     NOTHING ON THE WIRE MOVES, so VERSION stays 1. The four message
+     shapes are unchanged — ready, result, theme, logged — and this adds
+     no fifth. That is not merely tidy: js/app.js drops any inbound
+     message whose `version !== 1`, so bumping the number here would stop
+     every standalone score being recorded, sitewide, for nothing.
+
+     TWO GENERATORS, NAMED FOR WHAT THEY ARE FOR:
+
+       ArtDaily.dailyRandom(stream)     today's ROUND — same for everyone
+       ArtDaily.practiceRandom()        a REPLAY — fresh every time
+
+     They are two names rather than one function with a flag because a
+     flag is a thing you get wrong once and never notice. A player who
+     presses "new round" five times must not be handed the same five
+     items five times; a player comparing a score with a friend must be
+     handed exactly the same ones. Both are true at once, and which one a
+     line of code wants is visible in the line of code.
+
+     ArtDaily.roundRandom(round, stream) spells the usual rule once so 39
+     drills do not each re-decide it: round 1 is the day's round, round 2
+     and on are practice.
+
+     Each returns a callable rng() in [0, 1) — a drop-in for
+     Math.random() — carrying the four helpers the drills hand-rolled 26
+     different times (range, int, pick, chance, shuffle), each written to
+     consume draws in exactly the order the hand-rolled version did, so a
+     conversion cannot silently reshuffle a round.
+     ============================================================ */
+
+  /* --- the day, derived exactly as js/app.js derives it -------------
+     MIRRORED, NOT SHARED: a drill loads this file, and never loads
+     js/app.js, so there is no import to make. DAY_RE, dateKey() and
+     seedForKey() below are line-for-line the ones at js/app.js ~99, ~279
+     and ~461. THEY MAY NOT DRIFT APART. The page uses that integer to
+     decide which three drills a day asks for and to replay past days in
+     the practice record; the drill now uses it to decide what is inside
+     one. Two derivations of "which day is it" would eventually disagree
+     and the record would replay a day that was never played.
+
+     LOCAL MIDNIGHT, NOT UTC — deliberately, and it is a real limit.
+     seedForKey() parses local Y/M/D, so a player at UTC+3 crosses into
+     the new day three hours before Greenwich and nine before New York.
+     Two people comparing scores "today" may be on seeds one apart, and
+     each is internally consistent — nobody sees a broken day, they see a
+     different one. This is left exactly as app.js has it: moving the
+     drills to a UTC boundary while the page stays local would be worse
+     than either (the drill and its own daily pick would disagree), and
+     moving BOTH rewrites which drills every past day asked for, which is
+     a migration of the stored record, not a tweak. Flagged here so
+     whoever ships the leaderboard decides it on purpose. */
+  var DAY_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
+
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  function dateKey(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+
+  function seedForKey(k) {
+    var p = DAY_RE.exec(String(k));
+    if (!p) return null;
+    return Math.floor(new Date(+p[1], +p[2] - 1, +p[3]).getTime() / 86400000);
+  }
+
+  /* Mixes a string into a 32-bit seed — js/app.js ~469, unchanged, so a
+     future leaderboard can recompute a player's round from the two
+     published functions alone. Used twice: day × slug, then × stream. */
+  function mixString(seed, str) {
+    var h = seed ^ 0x9e3779b9;
+    str = String(str);
+    for (var i = 0; i < str.length; i++) h = Math.imul(h ^ str.charCodeAt(i), 2654435761);
+    return h >>> 0;
+  }
+
+  /* mulberry32. Chosen over sfc32 and xorshift128+ for one reason that
+     matters more here than raw quality: it holds ONE 32-bit word of
+     state, which is exactly the shape mixString() already hands over, so
+     there is no seed-expansion step to get subtly wrong or to have to
+     re-specify server-side later. Its period is 2^32 and it clears
+     PractRand well past any load a drill puts on it — a round draws
+     tens of values, not billions — and its output avalanches hard enough
+     that consecutive seeds (which is literally what consecutive days
+     are) give unrelated streams. sfc32 is the better generator in the
+     abstract; it needs four seed words and buys nothing a drawing drill
+     can measure.
+
+     DETERMINISTIC ACROSS EVERY ENGINE, which is the whole point. Every
+     step is exact 32-bit integer arithmetic: Math.imul is specified as a
+     true 32-bit multiply, |0 is ToInt32, >>> is exact, and there is no
+     accumulation that could round differently anywhere. The single
+     floating-point operation is the last one, and it is exact too: both
+     a uint32 and 2^32 are representable in a double, and the quotient is
+     a dyadic rational needing at most 32 mantissa bits. No Date, no
+     performance.now, no locale, no canvas — nothing a device gets to
+     have an opinion about. */
+  function makeRng(a, seeded) {
+    a = a | 0;
+
+    var rng = function () {
+      a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+
+    /* True for the day's round, false for a replay. Read it to label a
+       score — only a `seeded` round is comparable with anyone else's. */
+    rng.seeded = !!seeded;
+
+    /* rng.range(lo, hi) IS the `rand(lo, hi)` helper 26 drills already
+       carry, to the character: lo + u * (hi - lo). Keeping the affine
+       map identical is what makes a conversion provably distribution-
+       preserving — u is uniform on [0,1) either way, so every value
+       downstream of it keeps exactly the shape it had. */
+    rng.range = function (lo, hi) {
+      var a0 = finite(lo, 0), b0 = finite(hi, 0);
+      return a0 + rng() * (b0 - a0);
+    };
+
+    /* Inclusive at BOTH ends — the shape of randInt() in colors and
+       rotate-place. Clamped, so a reversed or junk range still returns
+       something inside it rather than a NaN index. */
+    rng.int = function (lo, hi) {
+      var a0 = Math.floor(finite(lo, 0)), b0 = Math.floor(finite(hi, 0));
+      if (b0 < a0) { var t = a0; a0 = b0; b0 = t; }
+      var v = a0 + Math.floor(rng() * (b0 - a0 + 1));
+      return v > b0 ? b0 : v;
+    };
+
+    /* list[floor(u * len)], with the same % guard counterweight,
+       cross-contour and sun-and-sky wrote by hand. undefined for an
+       empty or missing list, which is what those already returned. */
+    rng.pick = function (list) {
+      if (!list || !list.length) return undefined;
+      return list[Math.floor(rng() * list.length) % list.length];
+    };
+
+    /* rng.chance(0.5) is `Math.random() < 0.5`, which is the single most
+       common draw in the catalogue. p <= 0 never fires, p >= 1 always
+       does, junk never does. */
+    rng.chance = function (p) { return rng() < finite(p, 0); };
+
+    /* Fisher-Yates, walking DOWN, one draw per step — the exact loop in
+       values, temperature-sort, neutral-hunt, horizon-read, crop-it and
+       sun-and-sky, so the draw count and order are unchanged by the
+       swap. Shuffles IN PLACE and returns the same array: pass
+       arr.slice() where the hand-rolled version copied first. */
+    rng.shuffle = function (list) {
+      if (!list || !list.length) return list;
+      for (var i = list.length - 1; i > 0; i--) {
+        var j = Math.floor(rng() * (i + 1));
+        var t = list[i]; list[i] = list[j]; list[j] = t;
+      }
+      return list;
+    };
+
+    return rng;
+  }
+
+  /* Which drill's content this is. init() sets `slug`; the fallback
+     covers a drill that asks before init() has run and a file:// open
+     with no page around it, where the folder name is still the truth
+     (…/lines/ and …/lines/index.html both answer 'lines'). */
+  function contentSlug() {
+    if (slug) return slug;
+    try {
+      var parts = String(location.pathname).split('/').filter(Boolean);
+      var last = parts[parts.length - 1] || '';
+      if (/\.html?$/i.test(last)) last = parts[parts.length - 2] || '';
+      return last;
+    } catch (e) { return ''; }
+  }
+
+  function todaySeed() {
+    var s = seedForKey(dateKey(new Date()));
+    /* A clock so broken that dateKey() cannot be parsed back still has to
+       yield a playable round rather than a NaN one. */
+    return (s === null || !isFinite(s)) ? 0 : s;
+  }
+
+  /* Has this sitting been dealt the day's shared round? True the moment a
+     drill asks dailyRandom for content (nearly all do it at boot, for round
+     1), and read by the hand-off bar to decide whether the daily note below
+     may be shown at all — a drill that never deals from the day (warm-up,
+     hatch-ramp, box-check) must never be described as daily. */
+  var dailyDealt = false;
+
+  function dailyRandom(stream) {
+    dailyDealt = true;
+    var h = mixString(todaySeed() | 0, contentSlug());
+    if (stream !== undefined && stream !== null) h = mixString(h | 0, stream);
+    return makeRng(h, true);
+  }
+
+  /* A replay must not be the same round again — but it must also not be a
+     DIFFERENT KIND of round, or "I only got 60 on my second go" stops
+     meaning anything. So practice runs the same generator off a throwaway
+     seed rather than sitting on Math.random() directly: identical
+     distribution, identical helpers, identical everything except that
+     nobody can predict it. The counter is there so two generators asked
+     for in the same tick are still independent. */
+  var practiceNonce = 0;
+  function practiceRandom() {
+    practiceNonce = (practiceNonce + 1) | 0;
+    var s = Math.imul((Math.random() * 4294967296) | 0, 2654435761);
+    return makeRng((s ^ Math.imul(practiceNonce, 0x9e3779b9)) | 0, false);
   }
 
   return {
@@ -716,5 +985,64 @@ window.ArtDaily = (function () {
     /* Fires when the hardware changes mid-session (a laptop user plugs
        in a tablet, an iPad user picks up the pencil). */
     onInput: function (fn) { if (typeof fn === 'function') modeListeners.push(fn); },
+
+    /* ---- seeded content (see the block above) ---- */
+
+    /* TODAY'S ROUND. Same day + same drill ⇒ the same sequence, on every
+       device, in every browser, for every player in this timezone:
+
+         var rng = ArtDaily.dailyRandom();
+         var angle = rng.range(-12, 12);
+         if (rng.chance(0.5)) flip();
+
+       `stream` (optional, any string or number) forks an INDEPENDENT
+       sequence off the same day. Use it, and this is the trap worth
+       reading twice: a drill that regenerates an item — on resize, on a
+       theme change, when the hardware profile moves — walks a single
+       rolling generator further along and hands the player a different
+       item than the one that was on screen a frame ago. Ask for
+       dailyRandom(itemIndex) at the moment you build item N and the
+       answer is the same every time you ask, however often you ask.
+
+       What is identical between two players is the SEQUENCE OF
+       NORMALISED DRAWS, not the pixels. A drill lays those draws out
+       against its own canvas, and a phone's canvas is not a desktop's,
+       so multiply by W and H as LATE as possible: keep the shared thing
+       a fraction and let the sheet decide where the fraction lands. A
+       value that goes through Math.random() * W is a value nobody else
+       can reproduce. */
+    dailyRandom: dailyRandom,
+
+    /* A REPLAY. Unpredictable, and a fresh sequence on every call, so
+       five goes in one afternoon are five different rounds. Same
+       generator and same helpers as dailyRandom, so a practice round is
+       drawn from exactly the same distribution as the scored one — it is
+       not an easier or a harder version of the drill, only an unshared
+       one. */
+    practiceRandom: practiceRandom,
+
+    /* The rule, written once instead of 39 times: the first round of a
+       sitting is the day's shared round, everything after it is
+       practice. Drills already count rounds from 1.
+
+         function newRound() {
+           round += 1;
+           rng = ArtDaily.roundRandom(round);   // 1 → daily, 2+ → practice
+           …
+         }
+
+       Check rng.seeded before you claim a score is comparable. */
+    roundRandom: function (round, stream) {
+      return finite(round, 1) <= 1 ? dailyRandom(stream) : practiceRandom();
+    },
+
+    /* 'YYYY-MM-DD' for the local day the seed above is keyed to, and the
+       integer it becomes. Exposed for share cards and for whatever files
+       a score later: two scores are only comparable if they carry the
+       same daySeed, and near a midnight — or across a timezone — they
+       will not. Do not re-derive either of these from a Date somewhere
+       else; ask here, so there is one answer. */
+    dayKey: function () { return dateKey(new Date()); },
+    daySeed: todaySeed,
   };
 })();

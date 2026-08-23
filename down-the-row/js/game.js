@@ -521,6 +521,40 @@
       : s;
   }
 
+  /* ---- where a fence's numbers come from -------------------------------
+     THE ITEM'S CONTENT IS A SEQUENCE OF DRAWS, and pickScene was already
+     built to take that sequence as an argument ("deterministic given its
+     random source, so a test can drive it") — so seeding this drill is
+     nothing but handing it a different source. Round 1 of a sitting gets
+     ArtDaily.roundRandom, seeded from today and this slug, so every player
+     gets the same four fences today and a score finally has a denominator;
+     round 2 and on are practice — same generator, same distribution,
+     unshared seed.
+
+     ONE SOURCE PER ITEM, which matters here because pickScene is a
+     REJECTION SAMPLER: it draws seven or eight values per attempt and
+     retries up to 40 times against sceneFaults. On a single rolling
+     generator the attempts spent on fence 1 would decide where fence 2
+     begins. Asked per index, a divergence inside item N stays inside item
+     N — though in this drill there is nothing to diverge on: every value
+     the generator produces is a fraction, sceneFaults judges fractions
+     against the constant ASPECT, and scenePx only multiplies by W and H at
+     paint time. This one really is the same round on every device.
+
+     GUARDED, and the guard is load-bearing: index.html cache-busts its own
+     scripts with ?v=, but every drill loads ../sdk/artdaily-sdk.js BARE, so
+     the two files cache independently. A returning visitor with a warm old
+     SDK and a cold copy of this file would call a function that does not
+     exist, and newRound would throw before the first fence was built —
+     blank sheet, HUD at "–". Falling back to Math.random is exactly the
+     source this drill passed before, so today's player loses nothing but a
+     comparable round, and it self-heals when the SDK's max-age expires. */
+  function itemRandom(idx) {
+    return (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round, idx)
+      : Math.random;
+  }
+
   function newRound() {
     round += 1;
     itemIdx = 0;
@@ -530,7 +564,7 @@
     lastScore = null;
     cancelStroke();
     clearReveal();          /* a queued advance from the abandoned round must not fire */
-    item = pickScene(Math.random, 0);
+    item = pickScene(itemRandom(0), 0);
     hudRound.textContent = String(round);
     hudScore.textContent = '–';
     hideToast();            /* the last round's score must not hang over this one */
@@ -542,7 +576,7 @@
     revealTimer = null;
     if (!playing) return;   /* the round was abandoned while the reveal was up */
     reveal = null;
-    item = pickScene(Math.random, itemIdx);
+    item = pickScene(itemRandom(itemIdx), itemIdx);
     hint.textContent = itemHint(itemIdx, false);
     draw();
   }

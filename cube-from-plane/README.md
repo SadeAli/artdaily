@@ -55,7 +55,7 @@ off the truth, so pressing done without moving anything can never clear
 **Run it**: `python3 -m http.server 8080` in the repo root above this
 folder, then open `/cube-from-plane/` — the sdk, the shared chrome and the
 font all sit above here, so a server rooted in this folder serves the drill
-without any of them. Plain HTML/CSS/JS, zero build, zero deps, no tracking.
+without any of them. Plain HTML/CSS/JS, zero build, zero deps, no third-party code in the drill itself.
 
 Part of [Art Daily](https://artdaily.sadeali.com/), a sketchbook of tiny
 scored drills, from [sadeali.com](https://sadeali.com/).

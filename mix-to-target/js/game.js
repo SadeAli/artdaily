@@ -138,7 +138,49 @@
   /* ============================================================
      generation — random bases + hidden weights, target computed
      through mixPigments so it is always exactly reachable
+
+     WHERE THE FOUR ITEMS COME FROM. An item is nothing but a sequence of
+     normalised draws: the base pigments' hue/saturation/lightness, the
+     hidden weights behind the target, and the opening slider positions.
+     Round 1 of a sitting is dealt from ArtDaily.roundRandom(1) — seeded
+     from today and this slug — so everyone mixing this drill today gets
+     the same four pigment sets and the same four targets, and a score
+     finally has a denominator. Round 2 and on are practice: same
+     generator, same distribution, unshared seed.
+
+     THIS DRILL HAS NO CANVAS, which makes it the cleanest case in the
+     chapter: nothing is scaled by W or H, so two players do not merely
+     get the same fractions, they get the identical byte triples. Nor is
+     there anything to cache — buildItem() calls makeItem(itemIdx) exactly
+     once per item and no resize or theme change re-deals it (onTheme only
+     re-renders what is already there), so a plain rolling generator can
+     never walk out from under the player.
+
+     EVERY DRAW HERE IS CONTENT. There is no decoration in this drill to
+     leave loose: the pigments, the hidden ratio and the opening blend are
+     the item, and makeStart's darts are content too — they decide how far
+     from the target the player begins, which is the difficulty of the
+     item as surely as the pigments are.
+
+     GUARDED, and the guard is load-bearing. index.html cache-busts its own
+     scripts with ?v= but every drill loads ../sdk/artdaily-sdk.js BARE, so
+     the two files cache independently: a returning visitor holding a warm
+     OLD SDK plus a cold copy of this file would call a function that does
+     not exist, inside newRound(), before the first item is ever built —
+     "Loading…" forever. Falling back to Math.random costs today's player
+     nothing but a non-comparable round, which is what they had yesterday.
+
+     ONLY THE BARE CALL FORM IS USED — rng(), never rng.range() — because
+     Math.random carries no helpers, so the fallback would need a shim of
+     its own, and a shim is a second copy of the arithmetic that can drift
+     from the first. Every line below is the line it always was with
+     Math.random() swapped for rng(), in the same place in the same
+     expression, so the draw ORDER is untouched as well as the ranges:
+     both are uniform on [0,1), so every value downstream keeps precisely
+     the shape it had and a seeded round is not an easier or a harder one.
      ============================================================ */
+
+  var rng = Math.random;
 
   function hslToRgb(h, s, l) {
     h = ((h % 360) + 360) % 360;
@@ -160,7 +202,7 @@
      100 round — is always reachable. */
   function makeWeights(n) {
     var i, raw = [], sum = 0;
-    for (i = 0; i < n; i++) { raw.push(-Math.log(Math.max(Math.random(), 1e-9))); sum += raw[i]; }
+    for (i = 0; i < n; i++) { raw.push(-Math.log(Math.max(rng(), 1e-9))); sum += raw[i]; }
     var R = 100 - 15 * n, t = [], rem = [], used = 0;
     for (i = 0; i < n; i++) {
       var exact = R * raw[i] / sum, fl = Math.floor(exact);
@@ -203,7 +245,7 @@
     /* random darts first — a varied opening beats a formulaic one */
     for (k = 0; k < 24; k++) {
       s = [];
-      for (i = 0; i < bases.length; i++) s.push(20 + Math.floor(Math.random() * 81));
+      for (i = 0; i < bases.length; i++) s.push(20 + Math.floor(rng() * 81));
       if (consider(s) >= START_MIN_DE) return s;
     }
 
@@ -221,36 +263,36 @@
   }
 
   function makeItem(idx) {
-    var h = Math.random() * 360;
-    function sat() { return 0.45 + Math.random() * 0.25; }
-    function lit() { return 0.38 + Math.random() * 0.24; }
+    var h = rng() * 360;
+    function sat() { return 0.45 + rng() * 0.25; }
+    function lit() { return 0.38 + rng() * 0.24; }
     var bases;
     if (idx === 0) {
       /* two contrasting bases — the warm-up */
       bases = [
         hslToRgb(h, sat(), lit()),
-        hslToRgb(h + 150 + Math.random() * 60, sat(), lit()),
+        hslToRgb(h + 150 + rng() * 60, sat(), lit()),
       ];
     } else if (idx === 1) {
       /* two bases, closer hues, split by value */
       bases = [
-        hslToRgb(h, sat(), 0.32 + Math.random() * 0.1),
-        hslToRgb(h + 90 + Math.random() * 60, sat(), 0.55 + Math.random() * 0.12),
+        hslToRgb(h, sat(), 0.32 + rng() * 0.1),
+        hslToRgb(h + 90 + rng() * 60, sat(), 0.55 + rng() * 0.12),
       ];
     } else if (idx === 2) {
       /* three bases, hues spread around the wheel */
       bases = [
         hslToRgb(h, sat(), lit()),
-        hslToRgb(h + 105 + Math.random() * 30, sat(), lit()),
-        hslToRgb(h + 225 + Math.random() * 30, sat(), lit()),
+        hslToRgb(h + 105 + rng() * 30, sat(), lit()),
+        hslToRgb(h + 225 + rng() * 30, sat(), lit()),
       ];
     } else {
       /* three bases with a near-duplicate hue pair (a/b differ mostly
          by value) — forces reading the subtle one */
       bases = [
-        hslToRgb(h, sat(), 0.34 + Math.random() * 0.06),
-        hslToRgb(h + 12 + Math.random() * 14, sat(), 0.58 + Math.random() * 0.08),
-        hslToRgb(h + 160 + Math.random() * 50, sat(), lit()),
+        hslToRgb(h, sat(), 0.34 + rng() * 0.06),
+        hslToRgb(h + 12 + rng() * 14, sat(), 0.58 + rng() * 0.08),
+        hslToRgb(h + 160 + rng() * 50, sat(), lit()),
       ];
     }
     var tw = makeWeights(bases.length);
@@ -585,11 +627,26 @@
     hudScore.textContent = String(res.score);
     hudBest.textContent = res.best === null ? '–' : String(res.best);
     hint.textContent = 'round done — same button starts the next one.';
-    showToast((res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+    /* A first-ever round has no previous best, so isNewBest is trivially
+       true and "new best!" celebrates nothing — on the one round where the
+       number most needs saying what it IS. The SDK marks that round with
+       isFirst; where it is undefined the old wording stands. */
+    showToast(res.isFirst
+      ? 'first score ' + res.score + ' / 100 — your mark to beat'
+      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100',
+      res.isNewBest && !res.isFirst);
   }
 
   function newRound() {
     round += 1;
+    /* THE ONE LINE THAT MAKES A SCORE COMPARABLE. Re-seeded per round, so
+       round 1 is today's shared four colours and everything after it is
+       practice. Nothing is cached alongside it — buildItem() rebuilds the
+       whole item — so there is no stale deal to clear. See the block above
+       makeWeights() for the guard and why it is load-bearing. */
+    rng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round)
+      : Math.random;
     itemIdx = 0;
     itemScores = [];
     hudRound.textContent = String(round);

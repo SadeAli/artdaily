@@ -3,25 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Line Weight — a thick-and-thin line control drill</title>
+<title>Line Weight Practice — control a stroke's thick and thin</title>
 <meta name="description" content="The ribbon at the top swells and tapers. Redraw it on the guide with the thicks and thins in the same places — line weight practice, five a round.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Line Weight">
 <meta property="og:description" content="Thick where it lands, thin where it whispers — a daily art drill">
 <meta property="og:site_name" content="Art Daily · SadeAli">
 <meta property="og:url" content="https://artdaily.sadeali.com/line-weight/">
-<!-- The page's own card, deliberately: the drills have no per-drill art, and a
-     share with no image at all renders as a grey box. 1200x630, declared so a
-     scraper can lay out the card before it has fetched the file. -->
-<meta property="og:image" content="https://artdaily.sadeali.com/og.png">
+<!-- This drill's own card, built from the registry by tools/build-og.js: emoji,
+     category, name, tagline and the URL, so a screenshot of the share is
+     directions back here. 1200x630, declared so a scraper can lay out the card
+     before it has fetched the file. -->
+<meta property="og:image" content="https://artdaily.sadeali.com/og/line-weight.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Art Daily — tiny daily drills for artists">
+<meta property="og:image:alt" content="Line Weight — redraw the stroke’s taper on purpose. A line &amp; hand drill at artdaily.sadeali.com/line-weight">
 <link rel="canonical" href="https://artdaily.sadeali.com/line-weight/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Line Weight">
 <meta name="twitter:description" content="Thick where it lands, thin where it whispers — a daily art drill">
-<meta name="twitter:image" content="https://artdaily.sadeali.com/og.png">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og/line-weight.png">
 <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🖋️&lt;/text&gt;&lt;/svg&gt;">
 <link rel="stylesheet" href="css/style.css">
 <script>
@@ -82,7 +83,7 @@
         <p>Studio tip: weight is a decision. Pick where the stroke whispers and where it lands before you start pulling it.</p>
       </div>
 
-      <noscript><p class="hint">This drill needs JavaScript — nothing else, no trackers, no accounts.</p></noscript>
+      <noscript><p class="hint">This drill needs JavaScript. Nothing else to install, and no account needed.</p></noscript>
     </div>
   </div>
 </main>
@@ -92,8 +93,8 @@
   <p>The ribbon along the top of the sheet is one stroke that swells and tapers as it goes: thick to thin, thin to thick, thin-thick-thin, two bumps, freehand. Below it sits a dashed guide, and the task is to lay that stroke down again with the thicks and the thins in the same places. Five strokes a round. How you ask for width depends on what is in your hand: a pen that reports pressure uses pressure, while a mouse, trackpad or finger uses height — ride the dashes for a hairline, climb into the shaded band above them to lay weight on.</p>
   <p>The habit the drill goes after is the stroke of one unvarying weight, and it charges 20% for it. What replaces that is a decision taken before the pull: which stretch of the line lands and which whispers. Height carries width instead of speed because speed cannot be aimed — a drag is naturally slow-fast-slow, the inverse of nearly every target shape. Lifting is free as well, since your place is horizontal progress across the guide rather than distance travelled: press again anywhere and carry on until the guide is inked end to end.</p>
   <h3>How the two profiles are compared</h3>
-  <p>Your width profile and the target's are sampled at 64 evenly spaced positions and min-max normalised, so what is graded is the shape of the thick-and-thin and not its absolute size — drawing the whole thing finer than the ribbon costs nothing. The two are then compared by RMS difference. The RMS at which the score reaches zero is eased per input mode and capped at 0.50, a measured cap rather than a taste: a stroke of one unvarying weight measures about 0.34 RMS and pure noise about 0.42, so putting the zero point beyond 0.5 would start handing marks to the very mistake the drill exists to correct. A pen keeps 0.34, mouse and trackpad and finger get 0.50, and the HUD says which it scored.</p>
-  <p class="about-more">More line & hand drills: <a href="../warm-up/">Warm Up</a> · <a href="../superimposed/">Superimposed Lines</a> · <a href="../lines/">Steady Lines</a> · <a href="../">all 42 drills</a></p>
+  <p>Your width profile and the target's are sampled at 64 evenly spaced positions and min-max normalised, so what is graded is the shape of the thick-and-thin and not its absolute size — drawing the whole thing finer than the ribbon costs nothing. The two are then compared by RMS difference. The RMS at which the score reaches zero is eased per input mode and capped at 0.50, a measured cap rather than a taste: a stroke of one unvarying weight measures about 0.34 RMS and pure noise about 0.42, so putting the zero point beyond 0.5 would start handing marks to the very mistake the drill exists to correct. A pen keeps 0.34, mouse and trackpad and finger get 0.50, and the HUD says which it scored. No AI is reading the stroke — both profiles are 64 numbers, and the score is the RMS difference between them.</p>
+  <p class="about-more">More line & hand drills: <a href="../warm-up/">Warm Up</a> · <a href="../superimposed/">Superimposed Lines</a> · <a href="../lines/">Steady Lines</a> · <a href="../">the whole catalogue</a></p>
 </section>
 
 <footer class="footer">
@@ -105,9 +106,13 @@
     <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
     <span aria-hidden="true">·</span>
     <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/for-teachers/">For teachers</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/privacy/">Privacy</a>
     <span id="supportLinks"></span>
   </nav>
-  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no tracking</p>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no account needed</p>
 </footer>
 
 <script src="../sdk/artdaily-sdk.js"></script>

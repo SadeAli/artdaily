@@ -3,7 +3,7 @@
 > the gaps close up — draw the next post
 
 A drill for [artdaily.sadeali.com](https://artdaily.sadeali.com/). Zero
-build step, zero dependencies, no trackers, no accounts.
+build step, zero dependencies, no third-party code in the drill itself, no account needed.
 
 A fence runs away from you and two of its posts are drawn. Draw the
 next: press at its foot, pull up to its top. Four fences, then a score.

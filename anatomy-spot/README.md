@@ -20,7 +20,7 @@ item the true canon is ghost-overlaid with a head-unit ruler, so each
 miss still teaches.
 
 Part of [artdaily.sadeali.com](https://artdaily.sadeali.com/) —
-plain HTML/CSS/JS, no build step, no trackers.
+plain HTML/CSS/JS, no build step, no third-party code in the drill itself.
 
 ## What changed in the input-fairness pass
 

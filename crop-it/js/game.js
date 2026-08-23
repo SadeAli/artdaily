@@ -248,17 +248,70 @@
      stored, so redraws (theme flips, resizes) are stable.
      ============================================================ */
 
-  function rand(lo, hi) { return lo + Math.random() * (hi - lo); }
-  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+  /* ---- where a round's content comes from ----------------------------
+     THE ROUND'S CONTENT IS A SEQUENCE OF NORMALISED DRAWS. Round 1 of a
+     sitting is dealt from ArtDaily.roundRandom(1) — seeded from today and
+     this slug — so two people cutting today's Crop It are cutting the same
+     three scenes, and a score finally has a denominator. Round 2 and on are
+     practice: same generator, same distribution, unshared seed, so five
+     goes in an afternoon are five different rounds rather than one round
+     five times.
+
+     HERE THE SAME DRAWS REALLY ARE THE SAME PICTURE, which is rarer than it
+     sounds. Every number below lives in the 240×100 SCENE space and the
+     canvas transform maps it to px at the very end, so nothing generated in
+     this file is a function of the device. Unlike a drill that multiplies a
+     draw by W, this one deals a round that is identical on a phone and on a
+     desktop — geometry, search, verdicts and score alike. Only the size the
+     picture is printed at moves.
+
+     A ROLLING GENERATOR IS SAFE HERE, so there is nothing to cache: a scene
+     is built once by makeScene and stored (see the note above this block),
+     and a resize or a theme flip repaints the stored scene rather than
+     re-dealing it. The one thing that must not happen is a re-deal under
+     the player's hand, and no path does one.
+
+     rand/pick/shuffle are UNCHANGED AS FUNCTIONS — the same affine map, the
+     same floor() over a uniform in [0,1) — with only the SOURCE of the
+     uniform swapped. That identity is the whole distribution argument: a
+     seeded round is not an easier or a harder round than the one that used
+     to be dealt here.
+
+     GUARDED, AND THE GUARD IS LOAD-BEARING. index.html cache-busts its own
+     scripts with ?v=, but every drill loads ../sdk/artdaily-sdk.js BARE, so
+     the two files cache INDEPENDENTLY: a returning visitor holding a warm
+     old SDK plus a cold copy of this file would call a roundRandom that
+     does not exist, throw inside newRound() before the first scene was
+     built, and sit on “Loading…” with a blank canvas. Falling back to
+     Math.random costs today's player nothing but a non-comparable round —
+     which is exactly what they had yesterday — and it self-heals as soon as
+     the SDK's max-age expires. Only the BARE CALL FORM is used below
+     (rng(), never rng.range), because Math.random has no helpers on it and
+     a fallback that is not a true drop-in is not a fallback. */
+  var roundRng = null;
+  function u01() { return roundRng ? roundRng() : Math.random(); }
+
+  function rand(lo, hi) { return lo + u01() * (hi - lo); }
+  function pick(arr) { return arr[Math.floor(u01() * arr.length)]; }
 
   function shuffle(a) {
     var i, j, t;
     for (i = a.length - 1; i > 0; i--) {
-      j = Math.floor(Math.random() * (i + 1));
+      j = Math.floor(u01() * (i + 1));
       t = a[i]; a[i] = a[j]; a[j] = t;
     }
     return a;
   }
+
+  /* THE COSMETIC DRAWS STAY ON Math.random, DELIBERATELY. The clouds and
+     the waves are painted at 0.3–0.5 alpha and not one of the four rules
+     reads them: scoreScene sees the subject, the horizon and the secondary,
+     and nothing else — which is why they live in scene.deco and not in the
+     scene proper. Spending the round's seed on ~40 wave marks would buy two
+     players matching ripples and pay for it by walking the generator on
+     before the next scene's geometry, so the weather is local and the
+     GEOMETRY is the shared round. */
+  function crand(lo, hi) { return lo + Math.random() * (hi - lo); }
 
   function placeAway(cx, minDist, lo, hi) {
     var x, tries = 0;
@@ -317,7 +370,9 @@
     var sub = scene.subject, hz = scene.horizonY, kind, x, y, lo, hi;
     if (idx === 0) {
       /* scene 1: empty sky, at most a far speck of birds */
-      if (Math.random() < 0.45) return null;
+      /* content, not decoration: whether a secondary exists at all is what
+         scoreBreathing looks for in the lead room */
+      if (u01() < 0.45) return null;
       kind = 'birds';
       x = placeAway(sub.cx, 80, 20, SW - 20);
     } else if (idx === 1) {
@@ -335,19 +390,29 @@
       : hz;
     return {
       kind: kind, x: x, y: y, r: SEC_R[kind], label: SEC_LABEL[kind],
+      /* COSMETIC — left on Math.random on purpose. `facing` reaches exactly
+         one place, paintSecondary's f2, where it flips the little pennant on
+         the far sail. Nothing scores it: scoreBreathing measures the
+         secondary by x, the fixed SEC_R half-width and y. The obstacle two
+         players are judged against is identical; its flag may point the
+         other way. */
       facing: Math.random() < 0.5 ? 1 : -1,
     };
   }
 
+  /* EVERY DRAW IN HERE IS DECORATION and stays on Math.random — see the
+     note by crand(). The clouds and waves are scenery for the eye; the
+     scored picture is subject + horizon + secondary, and this function
+     touches none of the three. */
   function makeDeco(scene) {
     var d = { clouds: [], waves: [] }, i, n;
     n = 3 + Math.floor(Math.random() * 3);
     for (i = 0; i < n; i++) {
-      d.clouds.push({ x: rand(10, SW - 44), y: rand(8, Math.max(12, scene.horizonY - 14)), len: rand(14, 34) });
+      d.clouds.push({ x: crand(10, SW - 44), y: crand(8, Math.max(12, scene.horizonY - 14)), len: crand(14, 34) });
     }
     n = 8 + Math.floor(Math.random() * 6);
     for (i = 0; i < n; i++) {
-      d.waves.push({ x: rand(6, SW - 30), y: rand(scene.horizonY + 4, SH - 5), len: rand(8, 24) });
+      d.waves.push({ x: crand(6, SW - 30), y: crand(scene.horizonY + 4, SH - 5), len: crand(8, 24) });
     }
     return d;
   }
@@ -356,8 +421,8 @@
     var horizonY, span, cx, facing, scene;
     if (idx === 0) horizonY = rand(55, 65);
     else if (idx === 1) horizonY = rand(45, 70);
-    else horizonY = Math.random() < 0.5 ? rand(26, 36) : rand(68, 78);
-    facing = Math.random() < 0.5 ? 1 : -1;
+    else horizonY = u01() < 0.5 ? rand(26, 36) : rand(68, 78);
+    facing = u01() < 0.5 ? 1 : -1;
     span = idx === 0 ? [80, 130] : idx === 1 ? [55, 140] : [40, 150];
     cx = rand(span[0], span[1]);
     if (facing < 0) cx = SW - cx; /* keep ≥ ~90 units of lead room */
@@ -1160,11 +1225,20 @@
          is a sticker now and the verdict panel is read on demand (the
          canvas's own label points at it), so this line carries the two
          numbers that are actually news. */
+      /* A first-ever round has no previous best, so isNewBest is trivially
+         true and "new best!" celebrates nothing — on the one round where the
+         number most needs saying what it IS. The SDK marks that round with
+         isFirst; where it is undefined the old wording stands. */
       hint.textContent = 'scene ' + SCENES_PER_ROUND + ': ' + res.total + '/100 — ' +
-        (rep.isNewBest ? 'new best! round ' : 'round ') + rep.score +
-        '/100, the mean of all three. the verdicts are listed under the picture —' +
+        (rep.isFirst ? 'first round ' : rep.isNewBest ? 'new best! round ' : 'round ') + rep.score +
+        '/100, the mean of all three' +
+        (rep.isFirst ? ' — that is your bar now' : '') +
+        '. the verdicts are listed under the picture —' +
         ' study the delta, then go again.';
-      showToast((rep.isNewBest ? 'new best! ' : 'round ') + rep.score + ' / 100', rep.isNewBest);
+      showToast(rep.isFirst
+        ? 'first score ' + rep.score + ' / 100'
+        : (rep.isNewBest ? 'new best! ' : 'round ') + rep.score + ' / 100',
+        rep.isNewBest && !rep.isFirst);
       setBtnLabel(btnCut, 'go again', '↻');
     } else {
       hint.textContent = 'scene ' + (sceneIdx + 1) + ': ' + res.total +
@@ -1212,6 +1286,14 @@
   function newRound() {
     clearDiscard();
     round += 1;
+    /* THE ONE LINE THAT MAKES A SCORE COMPARABLE, and it has to run BEFORE
+       the shuffle below — which subject shows up in which scene is the
+       round's first content draw. round is already 1 on the first round of
+       a sitting, so round 1 is today's shared round and every “new round”
+       after it is practice. Guarded: see the block by u01(). */
+    roundRng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round)
+      : Math.random;
     sceneIdx = 0;
     sceneScores = [];
     kinds = shuffle(['lighthouse', 'tree', 'boat']);

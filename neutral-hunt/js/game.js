@@ -117,9 +117,53 @@
     return [Math.round(gam(rl) * 255), Math.round(gam(gl) * 255), Math.round(gam(bl) * 255)];
   }
 
-  /* ---- generation ---- */
+  /* ---- generation -----------------------------------------------------
+     WHERE THE FIVE GRIDS COME FROM. An item is a sequence of normalised
+     draws: the shared base L*, the eight cast hues, each cast's chroma,
+     the per-chip L* jitter, and the shuffle that decides which of the
+     nine cells holds the neutral. Round 1 of a sitting is dealt from
+     ArtDaily.roundRandom(1) — seeded from today and this slug — so
+     everyone hunting today gets the same five grids, with the neutral in
+     the same cell, and a score finally has a denominator. Round 2 and on
+     are practice: same generator, same distribution, unshared seed.
 
-  function rand(lo, hi) { return lo + Math.random() * (hi - lo); }
+     NO CANVAS HERE. The chips are DOM buttons filled with absolute sRGB
+     converted out of exact Lab, so two players do not merely get the same
+     fractions of their own sheet — they get the identical nine greys.
+
+     NOTHING TO CACHE: makeItem(itemIdx) is called exactly once per grid,
+     from startItem(), and there is no resize handler at all (see the note
+     at the foot of this file). A plain rolling generator cannot walk out
+     from under the player.
+
+     EVERY DRAW IS CONTENT, AND THE ±1 L* JITTER IS THE ONE WORTH ARGUING
+     ABOUT. Its comment calls it a look — "keeps the sheet from looking
+     machine-flat" — which sounds cosmetic, but it is not painted on top
+     of a chip, it IS part of that chip's colour, and its job is to stop
+     the neutral being findable by lightness instead of by cast. That is
+     the drill's own defence against a shortcut, so it is dealt from the
+     round's generator with everything else. Nothing here is decoration
+     and nothing is drawn per frame.
+
+     GUARDED, and the guard is load-bearing. index.html cache-busts its own
+     scripts with ?v= but every drill loads ../sdk/artdaily-sdk.js BARE, so
+     the two files cache independently: a returning visitor holding a warm
+     OLD SDK plus a cold copy of this file would call a function that does
+     not exist, inside newRound(), before the first grid is ever built —
+     "Loading…" forever. Falling back to Math.random costs today's player
+     nothing but a non-comparable round, which is what they had yesterday.
+
+     ONLY THE BARE CALL FORM IS USED — rng(), never rng.range()/.shuffle()
+     — because Math.random carries no helpers, so the fallback path would
+     need a shim, and a shim is a second copy of the arithmetic that can
+     drift from the first. Every line below is the line it always was with
+     Math.random() swapped for rng(), the shuffle included: it still walks
+     DOWN, one draw per step, so the draw count and order are untouched.
+     Uniform on [0,1) either way, so a seeded grid is not an easier or a
+     harder grid. */
+  var rng = Math.random;
+
+  function rand(lo, hi) { return lo + rng() * (hi - lo); }
 
   /* n hues on the circle with every pair — including the wrap —
      at least minGap degrees apart: hand out the mandatory gaps,
@@ -127,9 +171,9 @@
   function pickHues(n, minGap) {
     var slack = 360 - n * minGap;
     var weights = [], sum = 0, i;
-    for (i = 0; i < n; i++) { weights.push(Math.random()); sum += weights[i]; }
+    for (i = 0; i < n; i++) { weights.push(rng()); sum += weights[i]; }
     if (!sum) sum = 1;
-    var hues = [], acc = Math.random() * 360;
+    var hues = [], acc = rng() * 360;
     for (i = 0; i < n; i++) {
       hues.push(acc % 360);
       acc += minGap + slack * (weights[i] / sum);
@@ -139,7 +183,7 @@
 
   function shuffle(arr) {
     for (var i = arr.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
+      var j = Math.floor(rng() * (i + 1));
       var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
     }
     return arr;
@@ -271,6 +315,14 @@
        double-report. */
     if (playing && scores.length >= ITEMS_PER_ROUND) finishRound();
     round += 1;
+    /* THE ONE LINE THAT MAKES A SCORE COMPARABLE. Re-seeded per round, so
+       round 1 is today's shared five grids and every round after it is
+       practice. It sits above startItem(), which deals grid 1 — the first
+       grid of a round must come out of the NEW generator, never the last
+       round's. See the block above rand() for the guard. */
+    rng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round)
+      : Math.random;
     itemIdx = 0;
     scores = [];
     playing = true;
@@ -375,7 +427,14 @@
     hint.textContent = 'round done (' + scores.join(' · ') + ') — press “new round” to hunt again.';
     /* hand keyboard focus to the one live control instead */
     if (hadFocus && focusLost()) btnRound.focus();
-    showToast((res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+    /* A first-ever round has no previous best, so isNewBest is trivially
+       true and "new best!" celebrates nothing — on the one round where the
+       number most needs saying what it IS. The SDK marks that round with
+       isFirst; where it is undefined the old wording stands. */
+    showToast(res.isFirst
+      ? 'first score ' + res.score + ' / 100 — your mark to beat'
+      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100',
+      res.isNewBest && !res.isFirst);
   }
 
   var toastTimer = null;

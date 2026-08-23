@@ -42,7 +42,41 @@ const entries = [
     }
     return { loc: g.url || BASE + g.slug + '/', lastmod: dir ? lastCommit(dir) : null };
   }),
+  ...practicePages(),
+  ...standalonePages(),
 ];
+
+/* Pages that are neither a drill nor a guide. /privacy/ belongs in the index: it is
+   the page a school IT reviewer looks for by name, and the one a "no account needed"
+   claim has to be able to point at. Listed by existence rather than hard-coded so a
+   future /for-teachers/ or /about/ is one folder. */
+function standalonePages() {
+  return ['privacy', 'for-teachers', 'about']
+    .filter(d => fs.existsSync(`${d}/index.html`))
+    .map(d => ({ loc: `${BASE}${d}/`, lastmod: lastCommit(d) }));
+}
+
+/* The chapter guides under practice/ are the one part of the site the registry does
+   not describe: they are prose, not drills, so there is nothing to give them a
+   registry entry. They are still the pages most worth being found — a drill page can
+   win "ellipse practice", but only a guide reaches "perspective practice exercises",
+   where page one is all long-form teaching. Leaving them out of the sitemap would
+   hide exactly the content written to be found.
+
+   Discovered from the filesystem rather than listed here, so writing a seventh guide
+   is one folder and no edit to this script. _-prefixed files are skipped: they are
+   briefs, not pages (the repo has .nojekyll, so anything here really is served). */
+function practicePages() {
+  if (!fs.existsSync('practice/index.html')) return [];
+  const out = [{ loc: BASE + 'practice/', lastmod: lastCommit('practice/index.html') }];
+  for (const name of fs.readdirSync('practice').sort()) {
+    if (name.startsWith('_') || name.startsWith('.')) continue;
+    const page = `practice/${name}/index.html`;
+    if (!fs.statSync(`practice/${name}`).isDirectory() || !fs.existsSync(page)) continue;
+    out.push({ loc: `${BASE}practice/${name}/`, lastmod: lastCommit(`practice/${name}`) });
+  }
+  return out;
+}
 
 const xml = [
   '<?xml version="1.0" encoding="UTF-8"?>',
@@ -55,4 +89,4 @@ const xml = [
 ].join('\n');
 
 fs.writeFileSync('sitemap.xml', xml);
-console.log(`sitemap.xml: ${entries.length} URLs (1 page + ${live.length} drills)`);
+console.log(`sitemap.xml: ${entries.length} URLs (1 page + ${live.length} drills + ${entries.length - 1 - live.length} guides & pages)`);

@@ -3,7 +3,7 @@
 > draw the line that wraps around the form
 
 A drill for [artdaily.sadeali.com](https://artdaily.sadeali.com/). Zero
-build step, zero dependencies, no trackers, no accounts.
+build step, zero dependencies, no third-party code in the drill itself, no account needed.
 
 A solid stands on the sheet with one line already drawn around it. Draw
 four more at other heights: press the dot on one edge, pull a single

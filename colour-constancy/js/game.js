@@ -591,11 +591,20 @@
        number again. The toast is a sticker now (aria-hidden, like the
        template's), which means the number has to be said HERE or not at
        all. Lead with it, the way the sibling reveal line already does. */
-    hint.textContent = (res.isNewBest ? 'New best! ' : 'Round done — ') + res.score +
-      '/100. The bias line under the chips is your eye’s average lean.' +
+    /* A first-ever round has no previous best, so isNewBest is trivially
+       true and "new best!" celebrates nothing — on the one round where the
+       number most needs saying what it IS. The SDK marks that round with
+       isFirst; where it is undefined the old wording stands. */
+    hint.textContent = (res.isFirst
+        ? 'Round done — ' + res.score + '/100. That is your bar now.'
+        : (res.isNewBest ? 'New best! ' : 'Round done — ') + res.score + '/100.') +
+      ' The bias line under the chips is your eye’s average lean.' +
       ' Press “new round” to go again.';
     btnRound.classList.add('btn-primary');
-    showToast((res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+    showToast(res.isFirst
+      ? 'first score ' + res.score + ' / 100 — your mark to beat'
+      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100',
+      res.isNewBest && !res.isFirst);
     paint();
   }
 
@@ -606,8 +615,51 @@
     roundDeltas = [];
     roundBias = null;
     items = [];
+    /* WHERE THE FOUR ITEMS COME FROM, AND THE ONE LINE THAT MAKES A SCORE
+       COMPARABLE. genItem() was already written to take its generator as
+       an argument — every draw in it goes through `rnd`, and there is no
+       Math.random anywhere else in this file — so the whole conversion is
+       handing it a different function. Round 1 of a sitting gets
+       ArtDaily.roundRandom(1), seeded from today and this slug, so
+       everyone playing Colour Constancy today discounts the same four
+       lights over the same four surfaces and a score finally has a
+       denominator. Round 2 and on are practice: same generator, same
+       distribution, unshared seed.
+
+       DEALT PER ROUND, HERE, and the whole deal is rebuilt with it — the
+       four items are generated up front and `items` is emptied one line
+       above, so a new round can never replay the last one's. Nothing
+       re-deals mid-round: there is no canvas and no resize handler, the
+       fields are DOM elements painted with absolute rgb(), so two players
+       get the identical colours rather than the same fractions of their
+       own sheet.
+
+       EVERY DRAW IS CONTENT. genItem deals the true surface colour, the
+       light's hue and strength, the ground and the three anchors — all of
+       it is the thing being read, and none of it is decoration. Its
+       re-deal loop (CAST_TRIES, for a light that would barely bite)
+       consumes a variable number of draws, which is fine: variable is
+       still deterministic given the seed.
+
+       GUARDED, and the guard is load-bearing. index.html cache-busts its
+       own scripts with ?v= but every drill loads ../sdk/artdaily-sdk.js
+       BARE, so the two files cache independently: a returning visitor
+       holding a warm OLD SDK plus a cold copy of this file would call a
+       function that does not exist, right here, before the first item
+       exists — "Loading…" forever. Falling back to Math.random costs
+       today's player nothing but a non-comparable round, which is exactly
+       what they had yesterday.
+
+       ONLY THE BARE CALL FORM IS USED: genItem asks its generator for
+       rnd() and nothing else, so it cannot trip over a fallback that has
+       no .range/.chance on it. Uniform on [0,1) either way, so every
+       value downstream keeps precisely the shape it had and a seeded
+       round is not an easier or a harder round. */
+    var rng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round)
+      : Math.random;
     for (var i = 0; i < ITEMS_PER_ROUND; i++) {
-      items.push(genItem(i / (ITEMS_PER_ROUND - 1), Math.random));
+      items.push(genItem(i / (ITEMS_PER_ROUND - 1), rng));
     }
     hudRound.textContent = String(round);
     hudScore.textContent = '–';

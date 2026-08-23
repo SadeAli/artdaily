@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Observational Drawing Exercises — how to draw what you see</title>
+<meta name="description" content="Why your eye hands you a symbol instead of a shape, and how negative space, gesture and memory exercises catch it out. Free, no account needed.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Observational Drawing Exercises">
+<meta property="og:description" content="Negative space, gesture and memory: why the classic observation exercises work, and what each one actually measures.">
+<meta property="og:site_name" content="Art Daily · SadeAli">
+<meta property="og:url" content="https://artdaily.sadeali.com/practice/observation/">
+<!-- The site card. The guides have no art of their own; tools/build-og.js
+     builds per-drill cards from the registry and has no guide template yet. -->
+<meta property="og:image" content="https://artdaily.sadeali.com/og/practice-observation.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Art Daily — the observation practice guide">
+<link rel="canonical" href="https://artdaily.sadeali.com/practice/observation/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Observational Drawing Exercises">
+<meta name="twitter:description" content="Negative space, gesture and memory: why the classic observation exercises work, and what each one actually measures.">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og/practice-observation.png">
+<link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;👁️&lt;/text&gt;&lt;/svg&gt;">
+<link rel="preload" href="../../fonts/caveat-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../css/style.css">
+<style>
+/* ---- /practice/ prose ----
+   NOT in css/style.css on purpose: that file is the shared sketchbook theme
+   every one of the 42 drills loads too, and these seven pages are the only
+   long-form copy on the site. Tokens only, so both themes come free.
+   This block is byte-identical on every page in the section — see
+   /practice/_TEMPLATE.md. Change it there and here together, or the six
+   guides stop looking like one section. */
+.guide { width: 100%; max-width: 44rem; margin: 0 auto; padding: 6px 20px 4px; overflow-wrap: break-word; }
+.guide h1 {
+  margin: 4px 0 8px;
+  font-family: var(--hand);
+  font-size: clamp(2rem, 7vw, 2.9rem);
+  font-weight: 700;
+  line-height: 1.05;
+  text-decoration: underline wavy var(--accent, var(--sunny)) 2px;
+  text-underline-offset: 9px;
+}
+.guide h2 { margin: 34px 0 6px; font-family: var(--hand); font-size: clamp(1.55rem, 5vw, 1.95rem); font-weight: 700; line-height: 1.12; }
+.guide h3 { margin: 22px 0 4px; font-family: var(--hand); font-size: 1.3rem; font-weight: 700; line-height: 1.15; }
+.guide p, .guide li { font-size: 0.95rem; line-height: 1.7; }
+.guide p { margin: 0 0 12px; }
+.guide ul, .guide ol { margin: 0 0 14px; padding-left: 1.35em; }
+.guide li { margin: 0 0 7px; }
+.guide a { color: var(--link); font-weight: 700; }
+.guide code { font-size: 0.86rem; padding: 1px 5px; border-radius: 4px; background: color-mix(in srgb, var(--ink) 8%, transparent); }
+.guide .lede { margin: 0 0 18px; font-family: var(--hand); font-size: 1.35rem; line-height: 1.35; color: var(--muted); }
+/* the one thing no other article about these subjects can print: the real
+   constant, lifted out of the drill's own scoring function */
+.guide .measured {
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+  border-left: 3px solid color-mix(in srgb, var(--accent, var(--sunny)) 60%, transparent);
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
+  border-radius: 0 8px 8px 0;
+}
+.guide .measured b { font-family: var(--hand); font-size: 1.1rem; font-weight: 700; display: block; }
+.guide .guide-more { margin-top: 20px; padding-top: 12px; border-top: 1px dashed var(--line); font-size: 0.86rem; color: var(--muted); }
+/* .section is 1080px wide for a 42-card catalogue. Narrow it to the prose
+   column so a page of guide text and a block of cards share one left edge. */
+.section.guide-cards { max-width: 44rem; }
+</style>
+<script>
+(function(){var q=null,t=null;try{q=new URLSearchParams(location.search).get('theme');}catch(e){}try{t=localStorage.getItem('sadeali-theme');}catch(e){}var v=(q==='light'||q==='dark')?q:t;document.documentElement.dataset.theme=(v==='dark')?'dark':'light';})();
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Art Daily", "item": "https://artdaily.sadeali.com/"}, {"@type": "ListItem", "position": 2, "name": "Practice", "item": "https://artdaily.sadeali.com/practice/"}, {"@type": "ListItem", "position": 3, "name": "Observation", "item": "https://artdaily.sadeali.com/practice/observation/"}]}
+</script>
+</head>
+<body>
+<div class="topbar">
+  <a class="backlink" href="../" aria-label="practice">← practice</a>
+  <div class="topbar-spacer"></div>
+  <button class="iconbtn" id="themeToggle" aria-label="Toggle light or dark theme" title="Toggle theme" hidden>
+    <svg class="ic-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/></svg>
+    <svg class="ic-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+  </button>
+</div>
+
+<main>
+
+<section class="guide accent-lilac">
+  <h1>Drawing what is actually there</h1>
+  <p class="lede">Your eye reports a name. The paper needs a shape. This chapter is about the distance between the two.</p>
+  <p>Look at a mug for two seconds, then draw it without looking again. What lands on the paper is usually not that mug but a mug in general — ellipse for the rim, straight sides, a D of a handle. The substitution happens before the pencil moves, and it does not feel like one. It feels like looking.</p>
+  <p>Every observation exercise takes the name away. Turn the photograph upside down and a face becomes a set of angles. Draw the paper trapped between two objects and the trapped shape has nothing stored to swap in. None of them ask you to look harder; that is what you were already doing.</p>
+  <p>Five drills here test the seeing rather than the hand. Three measure your marks against a shape the drill generated itself, gesture is only sixty per cent measured, and Anatomy Spot asks for two taps and no drawing at all.</p>
+</section>
+
+<section class="guide accent-lilac">
+  <h2>The symbol arrives before the shape does</h2>
+  <p>Recognition is a compression: the visual system answers <em>what is that</em> as fast as it can and then stops looking, so most of the detail is discarded — reasonably, for the purpose of identifying a mug. Drawing asks for exactly that discarded detail, and because the object has a name the hand can take its instructions from the stored diagram instead. Retrieval is fast, confident and indistinguishable from seeing.</p>
+  <p>The errors that follow are systematic, pulling toward the canonical version — ellipses get rounder, foreshortened arms get longer — and checking does not catch them, because the schema that made the drawing is also doing the checking.</p>
+</section>
+
+<section class="guide accent-lilac">
+  <h2>First, find out how little you looked</h2>
+  <p>The cheapest measurement of your own eye is memory. <a href="../../contour-memory/">Contour Memory</a> shows a smooth closed blob, hides it, and asks for the outline back — 2.8 seconds of exposure, then 1.8, then 1.1. That is less artificial than it sounds: every mark made from life is made from memory, since your eye is on the subject, then on the paper, and the hand moves during the second half.</p>
+  <p class="measured"><b>What Contour Memory measures</b>A symmetric chamfer distance between your ink and the true outline, the <em>worse</em> of the two directions counting, so neither scribbling over the figure nor tracing one easy arc pays. Zero is <code>max(11% × diagonal, ease × 16px) + ease × 6px</code> (<code>SHAPE_FALLOFF</code>, <code>SHAPE_FLOOR_PX</code>, <code>HAND_SLOP_PX</code>): on a figure 250px corner to corner, an average miss of 33.5px with a pen, 44px with a mouse. Size is charged separately — nothing between 0.84 and 1.20 of true size, the full 10-point penalty only at half or double scale.</p>
+  <p>Your strokes are shifted and rescaled onto the true contour before anything is measured, so where on the sheet you drew it counts for nothing. And a 33px budget means the wobble along an edge is nearly free while the big relationship is not: spend the two seconds on relationships, not detail.</p>
+</section>
+
+<section class="guide accent-lilac">
+  <h2>Negative space: the shape that has no name</h2>
+  <p>Draw the gaps instead of the objects. There are three reasons and they stack. <strong>The gap has no schema</strong> — you have drawn a chair a thousand times and never once the air between its back legs. <strong>The gap's edge is the object's edge</strong> — one line belonging to both, so drawing the air accurately draws the chair accurately, as a by-product of copying something you cannot name. <strong>An error in a nameless shape is visible</strong> — a leg ten per cent too thick hides inside a lifetime of chair expectations; in a paper shape it has nothing to hide behind.</p>
+  <p><a href="../../negative-space/">Negative Space</a> makes that answer exact: the gap polygon is generated first and the silhouettes are assembled around it and punched through — a mug with a hole in its handle, a pierced arch, a sliver between leaning slabs.</p>
+  <p class="measured"><b>What Negative Space measures</b>The same two-way chamfer, against 220 samples of the true boundary. Zero is <code>max(9% × gap diagonal, ease × 12px) + ease × 6px</code> (<code>FALLOFF</code>, <code>FLOOR_PX</code>, <code>HAND_SLOP_PX</code>), less the first 0.4% of the diagonal as sampling noise. On a gap 200px across that is 24px of average error to zero with a pen — and the <em>clean</em> verdict at 85 points needs your line inside about 4px of the true edge. Lifts shorter than <code>max(6% × diagonal, ease × 12px)</code> are joined up, so a trackpad is not charged for repositioning.</p>
+  <p>The two directions are different mistakes. Truth-to-ink more than 1.25 times ink-to-truth is <em>missed</em>: accurate as far as it went, and it did not go all the way round. The reverse is <em>strayed</em> — the whole loop traced, drifting onto the object you expected. Go further, or follow the real edge. Not the same fix.</p>
+</section>
+
+<section class="guide accent-lilac">
+  <h2>Halves are cheap, thirds are not</h2>
+  <p>The eye is a comparator, not a ruler: good at <em>which of these two is longer</em>, poor at <em>how long is this</em>. Halving can be checked by comparison — mark a guess, see whether the left piece beats the right, adjust. Thirds cannot, without holding two ratios at once, which is why it is faster to find the half and halve again. <a href="../../proportion-eye/">Proportion Eye</a> makes you answer with a drawn tick.</p>
+  <p class="measured"><b>What Proportion Eye measures</b>The distance from your tick to the true division, as a share of the length divided. Inside <code>max(1% × length, ease × 3px)</code> is a flat 100, falling linearly to zero over a further <code>max(10% × length, ease × 20px)</code> (<code>PERFECT_ZONE</code>, <code>ZERO_AT</code>, two pixel floors) — a miss of 11% of the length scores nothing. On a 450px segment with a pen: full marks inside 4.5px, zero at 49.5px. On a 200px segment with a mouse the floors take over — 6px free, zero at 46px.</p>
+  <p>Half the height of a standing adult is not the waist. On the 7.5-head canon it is 3.75 heads down, at the hips: mark it at the navel, three heads, and you are three quarters of a head too high — which is how a figure gets a long torso and short legs.</p>
+</section>
+
+<section class="guide accent-lilac">
+  <h2>Proof-reading is a separate skill from drawing</h2>
+  <p>Finding an error is not the same act as avoiding it. The studio tricks work by making your own drawing unfamiliar — mirror it, step back, leave it until tomorrow. <a href="../../anatomy-spot/">Anatomy Spot</a> drills a fourth way that needs neither: check against a landmark rather than an impression. Its canon reads on any figure in seconds — 7.5 heads tall, shoulders two head-lengths, navel at 3 and the halfway point at 3.75, knees at 5.5, elbows at the waist, wrists at the crotch.</p>
+  <p class="measured"><b>What Anatomy Spot measures</b>Two taps at two mannequins, one carrying a single mis-scaled part; nothing is drawn. Naming the flawed figure pays 35, or 10 after a wrong first guess — with two figures that tap is near a coin flip, so finding the part carries the other 65 (<code>PICK_PTS</code>, <code>LOC_PTS</code>). Locating pays in full anywhere inside the part's own capsule plus a tap allowance sized for the device — 12px on a trackpad, 20px on a pen tablet, because a hand holding a stylus hides the target, fading to nothing 1.2 head-units further out. The error shrinks through the round: ±30%, then ±25%, then ±20%.</p>
+  <p>A 20% error is a different size depending on what it is 20% of. The torso is 2.35 heads long, so 20% shifts the hips by nearly half a head; the forearm is 0.95 heads, so the same 20% moves it 0.19 of a head. Proportional errors hide in small parts, which is what elbow-at-the-waist and wrist-at-the-crotch are for: they turn an invisible limb error into a visible relationship.</p>
+</section>
+
+<section class="guide accent-lilac">
+  <h2>Gesture is a feeling, and only 60% of it can be measured</h2>
+  <p>The line of action is the single curve the pose hangs off — one sweep, a C or an S, from the head down through ribcage and hips and out along the limb carrying the movement. Not the spine, and not an outline. The quickest way to find it is to ask which way the figure would fall if it toppled.</p>
+  <p>Its value is speed and commitment rather than accuracy: a slow, perfect tracing of the action line is a worse gesture drawing than a fast rough one, because what is trained is the decision. Measure accuracy alone and you teach people to trace, which is the failure mode.</p>
+  <p><a href="../../gesture-capture/">Gesture Capture</a> answers that by scoring two things and saying so. The mannequin is generated <em>outwards</em> from a known action line — spline first, ribcage and limbs hung on after — so the answer is what the pose was built from, not something inferred from it. Thirty seconds for the first pose, twenty for the second.</p>
+  <p class="measured"><b>What Gesture Capture measures</b><code>0.6 × fit + 0.4 × (20 × stars)</code>. The fit is the two-way chamfer between all your strokes and the true sweep: <code>max(1.2% × pose size, ease × 3px)</code> is free, then the score ramps to zero over a further <code>max(14.8% × pose size, ease × 40px)</code> (<code>FREE_FRAC</code>, <code>SPAN_FRAC</code>, two pixel floors). On a 400px pose with a pen: full marks inside 4.8px of the line, nothing left at 64px. The other 40 points are the star you click yourself, one for stiff to five for flowing — and an empty sheet scores 0 and is never offered the stars.</p>
+  <p>Forty per cent of a score being your own opinion is unusual to admit, and it is the honest option: flow is a real property of a stroke, it is not proximity to a curve, and a formula invented for it would only have produced a confident wrong number. It is also why the drill is marked <em>curated</em>: five hand-written pose definitions are the answer key.</p>
+  <p>The measured 60% still separates two failures. Line-to-ink beating ink-to-line by more than a quarter is <em>short</em>: you stopped at the hips instead of carrying on out through the leading leg. The reverse is <em>wandered</em> — you drew around the body, not through it. If the stroke is the problem rather than the reading, that belongs to <a href="../line/">the line chapter</a>.</p>
+</section>
+
+<section class="guide accent-lilac">
+  <h2>What a browser cannot teach you</h2>
+  <p>None of this touches pressure, materials, or how a soft pencil behaves on the grain of the paper, and none of it works at scale — an observation drawing on A2 is made from the shoulder. Nor is any of it drawing from life: a figure on a screen has already been flattened for you, and that projection from three dimensions to two is the hardest part of observation.</p>
+  <p>What they are good for is narrow and real: fast repetition with an honest measurement attached. One caution on it — every motor-skill tolerance here is multiplied by an ease factor, 1.0 pen, 1.5 finger, 2.0 mouse or trackpad, so a score set on one device is not comparable with one set on another.</p>
+</section>
+
+<section class="guide accent-lilac">
+  <h2>How to practise this week</h2>
+  <p>Four sessions, three or four minutes each. The first two take the name away, the last two check the result.</p>
+  <ul>
+    <li><a href="../../negative-space/">Trace the trapped paper</a>. Read the verdict, not the number: <em>missed</em> means go all the way round, <em>strayed</em> means you followed the object, not the edge.</li>
+    <li><a href="../../gesture-capture/">Catch the line of action</a>. Go faster than feels safe, and rate the stroke honestly — the star is 40% of the score, so lying to yourself corrupts your own record.</li>
+    <li><a href="../../proportion-eye/">Divide by eye</a>. If halves are strong and thirds weak, stop estimating thirds and halve twice instead.</li>
+    <li><a href="../../contour-memory/">Redraw from memory</a>, then <a href="../../anatomy-spot/">proofread a figure</a>. One says how much of a shape you carry, the other whether you can find an error already on the page.</li>
+  </ul>
+  <p>A rising memory score on same-sized shapes means you are holding more of the outline, not drawing more neatly — position is not scored and size is capped at 10. When a score stops moving for a week, go and draw something real that is in front of you.</p>
+  <p class="guide-more">Next: <a href="../line/">line &amp; hand</a> for the stroke itself · <a href="../value/">value &amp; light</a> for tone · <a href="../composition/">composition</a> for the frame · <a href="../">all six chapters</a> · <a href="../../">the catalogue</a></p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <nav class="footnav" aria-label="Site links">
+    <a href="https://artdaily.sadeali.com/">More drills</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://sadeali.com/">More experiments</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
+    <span aria-hidden="true">·</span>
+    <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span id="supportLinks"></span>
+  </nav>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no account needed</p>
+</footer>
+
+<script src="../../js/support-config.js"></script>
+<script src="../../js/main.js"></script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 > a small shape far out holds up a big one near the middle
 
 A drill for [artdaily.sadeali.com](https://artdaily.sadeali.com/). Zero
-build step, zero dependencies, no trackers, no accounts.
+build step, zero dependencies, no third-party code in the drill itself, no account needed.
 
 A picture frame already holds one to three flat masses, all leaning it
 one way. One more shape waits in the tray underneath: press inside the

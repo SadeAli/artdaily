@@ -521,9 +521,28 @@
      obviously reachable — a corner-spawned first item reads as the drill
      being unfair before they have any idea what fair looks like here.
      From the second on, anywhere: difficulty ramps WITHIN the round. */
+  /* today's generator for this round — assigned in newRound() */
+  var roundRng = Math.random;
+
+  /* THE PATTERN EVERY DRILL FOLLOWS — copy it, do not reinvent it.
+
+     `roundRng` is set once per round in newRound() below, from the SDK's
+     day-seeded generator, so ROUND 1 of a sitting is the same round for
+     everyone playing today and a score finally has a denominator. Round 2
+     and on are practice: same distribution, unshared seed.
+
+     Draw CONTENT from roundRng(). Leave DECORATION on Math.random() —
+     clouds, grain, the wobble on a hand-drawn-looking line. Seeding
+     cosmetics gains nothing and consumes draws, which shifts every content
+     draw that follows it. Getting that boundary right is real work; say
+     which is which in a comment, the way crop-it does.
+
+     Only the bare call form. `Math.random` is the fallback (see newRound)
+     and it has no .range/.int/.pick helpers on it, so reaching for one
+     would throw on exactly the visitors the fallback exists to protect. */
   function nextTarget(idx) {
-    target = idx ? { fx: Math.random(), fy: Math.random() }
-                 : { fx: 0.4 + Math.random() * 0.2, fy: 0.4 + Math.random() * 0.2 };
+    target = idx ? { fx: roundRng(), fy: roundRng() }
+                 : { fx: 0.4 + roundRng() * 0.2, fy: 0.4 + roundRng() * 0.2 };
   }
 
   /* Says the verb and the goal in the words for the thing actually drawn,
@@ -541,6 +560,21 @@
 
   function newRound() {
     round += 1;
+    /* GUARDED, and the guard is load-bearing — do not drop it when you copy
+       this file. index.html cache-busts its own scripts, but every drill
+       loads ../sdk/artdaily-sdk.js BARE (versioning it from a drill would
+       mean bumping ?v= inside 40-odd folders on every deploy). The two files
+       therefore cache INDEPENDENTLY: a returning visitor holding a warm old
+       SDK and a cold copy of this file would call a function that does not
+       exist yet and the drill would hang on "Loading…" with a blank canvas,
+       before the first item is dealt. Reproduced, not theorised.
+       Falling back costs that visitor nothing but a non-comparable round —
+       what they had yesterday — and it self-heals when the SDK's cache
+       expires. round is already 1 on the first round of a sitting, so
+       round 1 is today's shared round and every round after it is practice. */
+    roundRng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round)
+      : Math.random;
     targetIdx = 0;
     accuracies = [];
     marks = [];

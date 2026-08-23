@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Composition Exercises — beyond the rule of thirds</title>
+<meta name="description" content="What the rule of thirds decides, what it does not, and why balance is leverage. Three scored composition exercises, with the numbers quoted.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Composition Exercises for Drawing">
+<meta property="og:description" content="Where to put the subject, where to put the horizon, and why a small shape far out holds up a big one.">
+<meta property="og:site_name" content="Art Daily · SadeAli">
+<meta property="og:url" content="https://artdaily.sadeali.com/practice/composition/">
+<!-- The site card. The guides have no art of their own; tools/build-og.js
+     builds per-drill cards from the registry and has no guide template yet. -->
+<meta property="og:image" content="https://artdaily.sadeali.com/og/practice-composition.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Art Daily — the composition practice guide">
+<link rel="canonical" href="https://artdaily.sadeali.com/practice/composition/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Composition Exercises for Drawing">
+<meta name="twitter:description" content="Where to put the subject, where to put the horizon, and why a small shape far out holds up a big one.">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og/practice-composition.png">
+<link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🖼️&lt;/text&gt;&lt;/svg&gt;">
+<link rel="preload" href="../../fonts/caveat-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../css/style.css">
+<style>
+/* ---- /practice/ prose ----
+   NOT in css/style.css on purpose: that file is the shared sketchbook theme
+   every one of the 42 drills loads too, and these seven pages are the only
+   long-form copy on the site. Tokens only, so both themes come free.
+   This block is byte-identical on every page in the section — see
+   /practice/_TEMPLATE.md. Change it there and here together, or the six
+   guides stop looking like one section. */
+.guide { width: 100%; max-width: 44rem; margin: 0 auto; padding: 6px 20px 4px; overflow-wrap: break-word; }
+.guide h1 {
+  margin: 4px 0 8px;
+  font-family: var(--hand);
+  font-size: clamp(2rem, 7vw, 2.9rem);
+  font-weight: 700;
+  line-height: 1.05;
+  text-decoration: underline wavy var(--accent, var(--sunny)) 2px;
+  text-underline-offset: 9px;
+}
+.guide h2 { margin: 34px 0 6px; font-family: var(--hand); font-size: clamp(1.55rem, 5vw, 1.95rem); font-weight: 700; line-height: 1.12; }
+.guide h3 { margin: 22px 0 4px; font-family: var(--hand); font-size: 1.3rem; font-weight: 700; line-height: 1.15; }
+.guide p, .guide li { font-size: 0.95rem; line-height: 1.7; }
+.guide p { margin: 0 0 12px; }
+.guide ul, .guide ol { margin: 0 0 14px; padding-left: 1.35em; }
+.guide li { margin: 0 0 7px; }
+.guide a { color: var(--link); font-weight: 700; }
+.guide code { font-size: 0.86rem; padding: 1px 5px; border-radius: 4px; background: color-mix(in srgb, var(--ink) 8%, transparent); }
+.guide .lede { margin: 0 0 18px; font-family: var(--hand); font-size: 1.35rem; line-height: 1.35; color: var(--muted); }
+/* the one thing no other article about these subjects can print: the real
+   constant, lifted out of the drill's own scoring function */
+.guide .measured {
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+  border-left: 3px solid color-mix(in srgb, var(--accent, var(--sunny)) 60%, transparent);
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
+  border-radius: 0 8px 8px 0;
+}
+.guide .measured b { font-family: var(--hand); font-size: 1.1rem; font-weight: 700; display: block; }
+.guide .guide-more { margin-top: 20px; padding-top: 12px; border-top: 1px dashed var(--line); font-size: 0.86rem; color: var(--muted); }
+/* .section is 1080px wide for a 42-card catalogue. Narrow it to the prose
+   column so a page of guide text and a block of cards share one left edge. */
+.section.guide-cards { max-width: 44rem; }
+</style>
+<script>
+(function(){var q=null,t=null;try{q=new URLSearchParams(location.search).get('theme');}catch(e){}try{t=localStorage.getItem('sadeali-theme');}catch(e){}var v=(q==='light'||q==='dark')?q:t;document.documentElement.dataset.theme=(v==='dark')?'dark':'light';})();
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Art Daily", "item": "https://artdaily.sadeali.com/"}, {"@type": "ListItem", "position": 2, "name": "Practice", "item": "https://artdaily.sadeali.com/practice/"}, {"@type": "ListItem", "position": 3, "name": "Composition", "item": "https://artdaily.sadeali.com/practice/composition/"}]}
+</script>
+</head>
+<body>
+<div class="topbar">
+  <a class="backlink" href="../" aria-label="practice">← practice</a>
+  <div class="topbar-spacer"></div>
+  <button class="iconbtn" id="themeToggle" aria-label="Toggle light or dark theme" title="Toggle theme" hidden>
+    <svg class="ic-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/></svg>
+    <svg class="ic-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+  </button>
+</div>
+
+<main>
+
+<section class="guide accent-bubblegum">
+  <h1>Composition, and where the subject actually goes</h1>
+  <p class="lede">Three drills that judge a picture rather than measure a mark — and how much of that judgement is really arithmetic.</p>
+  <p>Composition is what you settle before the first mark: how much of the world the frame takes in, and where things sit inside it. It is the part of a drawing that survives being drawn badly. A clumsy lighthouse in the right place reads as a picture; a beautifully rendered one dead centre, horizon halving the frame, reads as a snapshot of a lighthouse.</p>
+  <p>It is the smallest chapter here — <a href="../../crop-it/">choosing the crop</a>, <a href="../../focal-place/">placing the subject</a>, <a href="../../counterweight/">stopping the frame from leaning</a> — and the one where received wisdom is thinnest. Everybody is taught the rule of thirds; almost nobody is told what it does not decide, which is the interesting part.</p>
+  <p>One thing before the numbers. Composition is judged, not calculated, and two of these drills say so on their cards: <a href="../../crop-it/">Crop It</a> and <a href="../../focal-place/">Focal Placement</a> are marked <em>curated</em>, meaning their rules were written by a person rather than derived. <a href="../../counterweight/">Counterweight</a> is the exception, because balance — unlike taste — has a formula. Every number below comes out of those scoring functions.</p>
+</section>
+
+<section class="guide accent-bubblegum">
+  <h2>The rule of thirds, and exactly what it is worth</h2>
+  <p>The rule: divide the frame in three across and three down, then put whatever matters near one of the four crossings. It is a reasonable default asked to explain more than it can. <a href="../../crop-it/">Crop It</a> marks a cut out of 100 across four rules, the largest of which — 40 points — is placement.</p>
+  <p class="measured"><b>Placement: 40 of 100</b>The distance from the subject's centre to the nearest of the four crossings, divided by the crop's diagonal, is <code>norm</code>. Points are <code>round(40 × clamp01((0.23 − norm) / 0.13))</code> — a full 40 inside 0.10 of the diagonal, nothing past 0.23. On the fixed 3:2 crop, that band is a disc of radius 12% of the frame's width around each crossing.</p>
+  <p>Twelve per cent of the width, four times over, covers a great deal of frame: the thirds is a broad target, not a pinpoint — only the corners and outer edges score a flat zero.</p>
+  <p>Now the part it gets wrong. Put the subject exactly in the middle and its distance to the nearest crossing is exactly one sixth of the diagonal — centre and crossing sit half a third apart on each axis, so this is arithmetic, not approximation. A <code>norm</code> of 0.1667 scores <strong>19 of the 40</strong>.</p>
+  <p>Which is the whole argument in one number: the gap between the most-taught rule in composition and the placement it is taught against comes to <strong>21 points out of 100</strong>. Centring is not an error. It is the weakest of the strong options — roughly how seriously the rule deserves to be taken.</p>
+</section>
+
+<section class="guide accent-bubblegum">
+  <h2>Which crossing? The question the thirds never answers</h2>
+  <p>Four crossings, ranked equally by the rule, and choosing between them matters more than using one at all. What decides is usually the direction the subject faces — the space in front of it, which painters call <em>lead room</em>. A figure heading for the right edge with a centimetre in front of it reads as trapped, whatever crossing it stands on.</p>
+  <p class="measured"><b>Lead room: 20 of 100</b><code>frac</code> is the clear width in front of the subject's gaze as a share of the crop's width — the frame edge ends it, and so does a second object parked in the way. Points are <code>round(20 × clamp01((frac − 0.2) / 0.3))</code>: full at half the frame or more, nothing at a fifth or less.</p>
+  <p>A subject on a crossing has two thirds of the frame on one side and one third on the other. Facing the long way, <code>frac</code> is 0.667 and it takes the whole 20. Facing the short way — same crossing, same 40 placement points, a picture most people would call correctly composed — it is 0.333 and takes <strong>9</strong>. <a href="../../focal-place/">Focal Placement</a> scores the rule out of 30, full at half the frame and zero at 0.18 of it, and the two come out 30 and 14.4: a clean frame scores 100 one way round and 84 the other.</p>
+  <p>So the thirds is worth 21 points and the facing 11 to 16 — same order of magnitude, and only one of them gets taught.</p>
+</section>
+
+<section class="guide accent-bubblegum">
+  <h2>The horizon is a decision, not a default</h2>
+  <p>Where the horizon crosses the frame decides how much is sky and how much is ground — what the picture is about, before the subject gets a vote. It is also the cheapest mistake to fix: everybody's first answer is the worst one available.</p>
+  <p class="measured"><b>Horizon: 25 of 100</b><code>t</code> is how far down the crop the horizon falls, and <code>e</code> its distance from the nearer horizontal third, <code>min(|t − 1/3|, |t − 2/3|)</code>. Points are <code>round(25 × clamp01((0.17 − e) / 0.11))</code> — full inside 0.06, gone by 0.17. A horizon cropped out of the frame altogether takes a flat 15.</p>
+  <p>The full-credit band runs 0.273 to 0.393 down the frame, or 0.607 to 0.727 — about 12% of its height, so "on the third" is a zone and not a line. A horizon that halves the frame sits 0.167 from either third and scores <strong>1 point out of 25</strong>.</p>
+  <p>Set that against the flat 15 for no horizon at all: the drill would rather you cropped it out than ran it through the middle, by fourteen points. A central horizon splits a picture into two arguing halves. Sky or ground — pick the one you care about and give it two thirds.</p>
+</section>
+
+<section class="guide accent-bubblegum">
+  <h2>Balance is leverage, not symmetry</h2>
+  <p>Here the wisdom is not thin, it is missing: people are told a composition should be "balanced" and left to work out what that means. Two things decide how hard a shape pulls — its <strong>weight</strong>, size multiplied by how strongly it reads against the paper, and its <strong>arm</strong>, how far out from the middle it sits. Pull is weight times arm, as on a see-saw: a small dark shape near the edge can hold up a large pale one near the centre, and symmetry is only one way of many to balance a picture.</p>
+  <p class="measured"><b>Where the shape has to go</b>Weight is <code>area × min(1, darkness)</code>. With the pivot <code>C</code> at the centre of the frame, the picture stops leaning where the moments — each weight times its own arm — cancel: <code>Σ wᵢ(pᵢ − C) + w(p − C) = 0</code>. That has exactly one solution, <code>p = C − Σ wᵢ(pᵢ − C) / w</code>, and <a href="../../counterweight/">Counterweight</a> generates its frames with the same function it marks them with.</p>
+  <p>Beginners count the weight and forget the arm. That is the habit the drill was built to catch, and it says so at the end of a round when it sees one — a mean miss of at least 0.15 of the tolerance, all of it short of the arm, with not one placement going the other way.</p>
+  <p>Weight's two halves vary independently, which stops the lesson collapsing into "bigger is heavier". Areas run 0.006 to 0.028 of the frame width squared and darkness 0.40 to 1.0, so the biggest palest shape weighs 0.028 × 0.40 = 0.0112, while one of under half that area at full darkness weighs 0.012 × 1.0 = 0.0120 — more. The last frame of a round inverts it again: your shape is the heavy one, so its arm has to be <em>shorter</em>.</p>
+  <p class="measured"><b>How far off you may be</b>The score is linear in the distance from that solved spot, <code>(1 − dist / zero) × 100</code>, with <code>zero</code> set at <code>REL_TOL = 0.26</code> of the frame's width. Landing 2% of the frame width out scores 92, 5% scores 81, 10% scores 62, 20% scores 23, and 26% scores nothing. A pixel floor sits underneath — the larger of the two hardware allowances, 48px with a pen, 56px with a mouse or trackpad, 45px with a finger — so above roughly 215px of frame width the fraction of the picture rules, not your screen size.</p>
+</section>
+
+<section class="guide accent-bubblegum">
+  <h2>What "curated" on a card actually means</h2>
+  <p>The arithmetic in <a href="../../crop-it/">Crop It</a> and <a href="../../focal-place/">Focal Placement</a> is exact — the same crop always scores the same number, and nothing on this site is marked by a model. What is not exact is the choice of what to measure. Somebody decided a crop is worth 40 for placement, 25 for the horizon, 20 for lead room and 15 for keeping the subject whole; somebody decided a placement splits 50, 30, 20. The line under a Focal Placement frame — <em>it's staring at the edge</em>, <em>too cozy with the rock</em> — is a five-branch decision about which rule you lost most to. An opinion, precisely delivered.</p>
+  <p>That precision is the point, not a disclaimer: you can disagree with "40 points for the thirds" in a way you cannot disagree with "make it interesting". <a href="../../counterweight/">Counterweight</a> carries a different word because it is different in kind — its spot is where the moments cancel, not a view about where a shape looks best.</p>
+</section>
+
+<section class="guide accent-bubblegum">
+  <h2>What none of this can teach you</h2>
+  <ul>
+    <li><strong>You never make a mark.</strong> You drag a rectangle, tap a spot, drop a shape. On paper, composition is entangled with the drawing — you find a better crop halfway through rendering.</li>
+    <li><strong>The shape of the frame is fixed.</strong> The crop is locked to 3:2; you choose only how much scene it takes, between a quarter and five eighths of the width. Choosing the proportions of the paper is a real decision these drills never offer.</li>
+    <li><strong>Height is not read as height.</strong> None of <a href="../../focal-place/">the placement drill</a>'s three rules tells a top crossing from a bottom one, so top-left and bottom-left score identically. To the eye they are not the same picture.</li>
+    <li><strong>Weight is area and darkness, nothing else.</strong> A saturated red pulls harder than its lightness predicts, and so do a face, a hard edge, a scrap of text. The balance drill knows nothing about interest, and interest is heavy.</li>
+    <li><strong>Scale is missing.</strong> A composition that works at thumbnail size can come apart at A2, where the eye travels the picture instead of taking it in at once.</li>
+  </ul>
+  <p>The nearest thing here to the habit that fixes compositions is <a href="../../value-thumbnail/">the three-value thumbnail drill</a> in <a href="../value/">the value chapter</a>: squint a scene down to three tones and see whether the shapes still hold.</p>
+</section>
+
+<section class="guide accent-bubblegum">
+  <h2>How to practise this week</h2>
+  <p>Seven minutes end to end. The point is finding out which of these rules you personally ignore.</p>
+  <ol>
+    <li><strong>Days one and two — <a href="../../crop-it/">the cropping drill</a>, three minutes.</strong> Four bars under the picture answer to your frame as you drag it. Watch the bars, not the total: 19 is what dead centre pays for placement, and a horizon bar under 5 means the horizon is halving the frame or hugging an edge.</li>
+    <li><strong>Days three and four — <a href="../../focal-place/">the placement drill</a>, two minutes.</strong> One question after each reveal: was I on the crossing behind the subject's gaze, or in front of it? The last frame narrows the full-credit disc from 6% of the diagonal to 3.5% — on a 900px frame, 65px down to 38px — so a drop on the fourth is the drill tightening, not you slipping.</li>
+    <li><strong>Days five and six — <a href="../../counterweight/">the balance drill</a>, two minutes.</strong> Ignore the per-frame numbers. The line worth acting on is the one at the end of a round, and only when it fires: if it says the shapes landed too near the middle, the correction is bigger than you think — the answer always sits 14% to 38% of the frame's width out from the centre.</li>
+    <li><strong>Day seven — paper.</strong> Six matchbox thumbnails of one subject, two minutes each: move the horizon in three of them and the subject in the other three. The drills exist so that you notice, on day seven, that you have run the horizon through the middle again.</li>
+  </ol>
+  <p>Each score is compared against your own past rounds and nothing else, and here more than anywhere a low one is an invitation to disagree. If you can say why your crop beats the one the drill preferred, you have had the point of the chapter.</p>
+  <p class="guide-more">Next: <a href="../value/">value &amp; light</a>, where the three-value thumbnail lives · <a href="../observation/">observation</a>, for negative space and proportion · <a href="../">all six guides</a> · <a href="../../">the catalogue, 42 drills</a></p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <nav class="footnav" aria-label="Site links">
+    <a href="https://artdaily.sadeali.com/">More drills</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://sadeali.com/">More experiments</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
+    <span aria-hidden="true">·</span>
+    <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span id="supportLinks"></span>
+  </nav>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no account needed</p>
+</footer>
+
+<script src="../../js/support-config.js"></script>
+<script src="../../js/main.js"></script>
+</body>
+</html>

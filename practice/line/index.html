@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Line Drawing Exercises — how to draw a straight line</title>
+<meta name="description" content="Why your lines bow, and the mechanics that fix it: draw from the shoulder, commit instead of steering, ghost the stroke first. Free, no account needed.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Line Drawing Exercises">
+<meta property="og:description" content="Why lines bow, what to change, and what ten scored drills measure about your hand — with the real numbers.">
+<meta property="og:site_name" content="Art Daily · SadeAli">
+<meta property="og:url" content="https://artdaily.sadeali.com/practice/line/">
+<!-- The site card. The guides have no art of their own; tools/build-og.js
+     builds per-drill cards from the registry and has no guide template yet. -->
+<meta property="og:image" content="https://artdaily.sadeali.com/og/practice-line.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Art Daily — the line practice guide">
+<link rel="canonical" href="https://artdaily.sadeali.com/practice/line/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Line Drawing Exercises">
+<meta name="twitter:description" content="Why lines bow, what to change, and what ten scored drills measure about your hand — with the real numbers.">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og/practice-line.png">
+<link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;✏️&lt;/text&gt;&lt;/svg&gt;">
+<link rel="preload" href="../../fonts/caveat-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../css/style.css">
+<style>
+/* ---- /practice/ prose ----
+   NOT in css/style.css on purpose: that file is the shared sketchbook theme
+   every one of the 42 drills loads too, and these seven pages are the only
+   long-form copy on the site. Tokens only, so both themes come free.
+   This block is byte-identical on every page in the section — see
+   /practice/_TEMPLATE.md. Change it there and here together, or the six
+   guides stop looking like one section. */
+.guide { width: 100%; max-width: 44rem; margin: 0 auto; padding: 6px 20px 4px; overflow-wrap: break-word; }
+.guide h1 {
+  margin: 4px 0 8px;
+  font-family: var(--hand);
+  font-size: clamp(2rem, 7vw, 2.9rem);
+  font-weight: 700;
+  line-height: 1.05;
+  text-decoration: underline wavy var(--accent, var(--sunny)) 2px;
+  text-underline-offset: 9px;
+}
+.guide h2 { margin: 34px 0 6px; font-family: var(--hand); font-size: clamp(1.55rem, 5vw, 1.95rem); font-weight: 700; line-height: 1.12; }
+.guide h3 { margin: 22px 0 4px; font-family: var(--hand); font-size: 1.3rem; font-weight: 700; line-height: 1.15; }
+.guide p, .guide li { font-size: 0.95rem; line-height: 1.7; }
+.guide p { margin: 0 0 12px; }
+.guide ul, .guide ol { margin: 0 0 14px; padding-left: 1.35em; }
+.guide li { margin: 0 0 7px; }
+.guide a { color: var(--link); font-weight: 700; }
+.guide code { font-size: 0.86rem; padding: 1px 5px; border-radius: 4px; background: color-mix(in srgb, var(--ink) 8%, transparent); }
+.guide .lede { margin: 0 0 18px; font-family: var(--hand); font-size: 1.35rem; line-height: 1.35; color: var(--muted); }
+/* the one thing no other article about these subjects can print: the real
+   constant, lifted out of the drill's own scoring function */
+.guide .measured {
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+  border-left: 3px solid color-mix(in srgb, var(--accent, var(--sunny)) 60%, transparent);
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
+  border-radius: 0 8px 8px 0;
+}
+.guide .measured b { font-family: var(--hand); font-size: 1.1rem; font-weight: 700; display: block; }
+.guide .guide-more { margin-top: 20px; padding-top: 12px; border-top: 1px dashed var(--line); font-size: 0.86rem; color: var(--muted); }
+/* .section is 1080px wide for a 42-card catalogue. Narrow it to the prose
+   column so a page of guide text and a block of cards share one left edge. */
+.section.guide-cards { max-width: 44rem; }
+</style>
+<script>
+(function(){var q=null,t=null;try{q=new URLSearchParams(location.search).get('theme');}catch(e){}try{t=localStorage.getItem('sadeali-theme');}catch(e){}var v=(q==='light'||q==='dark')?q:t;document.documentElement.dataset.theme=(v==='dark')?'dark':'light';})();
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Art Daily", "item": "https://artdaily.sadeali.com/"}, {"@type": "ListItem", "position": 2, "name": "Practice", "item": "https://artdaily.sadeali.com/practice/"}, {"@type": "ListItem", "position": 3, "name": "Line & hand", "item": "https://artdaily.sadeali.com/practice/line/"}]}
+</script>
+</head>
+<body>
+<div class="topbar">
+  <a class="backlink" href="../" aria-label="practice">← practice</a>
+  <div class="topbar-spacer"></div>
+  <button class="iconbtn" id="themeToggle" aria-label="Toggle light or dark theme" title="Toggle theme" hidden>
+    <svg class="ic-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/></svg>
+    <svg class="ic-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+  </button>
+</div>
+
+<main>
+
+<section class="guide accent-mint">
+  <h1>Why you can't draw a straight line</h1>
+  <p class="lede">The wobble is mechanical, and so is the fix.</p>
+  <p>A line drawn from the wrist is drawn by a hinge sitting a hand's width behind the nib, and a hinge sweeps an arc. Pull six lines that way and they do not scatter at random: they all bow the same direction, because they were all made by the same joint turning the same way. That is the most useful fact in this chapter. What people call an unsteady hand is usually not unsteady at all — it is a consistent curve produced by the wrong pivot, and a consistent error is a fixable one.</p>
+  <p>Three changes follow from it, and they are the whole of line practice. Draw from the shoulder, so the arc is long enough to read as straight across a page. Commit to the stroke instead of steering it, because steering is a stream of small corrections and a correction is what makes a line look shaky. Look at where the line is going instead of at the nib, for the same reason you look at the corner rather than the bonnet when you are driving.</p>
+  <p>Below, each of those is explained and then measured. The site has ten drills for this chapter, and because the scoring runs here in the page, this guide can say what "too curved" costs in pixels and degrees rather than asking you to take its word for it. Every figure quoted comes out of the drill's own <code>js/game.js</code>.</p>
+</section>
+
+<section class="guide accent-mint">
+  <h2>Draw from the shoulder, not the wrist</h2>
+  <p>There are four hinges available and they draw four different lengths of line. Fingers write; they are for lettering and for marks the size of a letter. The wrist hatches and does short curves. The elbow carries a line across most of a sketchbook page. The shoulder, with the elbow locked and the whole forearm swinging, carries a line across anything larger — and it is the only hinge that will take a long curve in one go instead of building it out of segments.</p>
+  <p>Beginners default to the wrist because handwriting trained them to, and handwriting is the one graphic skill nobody has to learn twice. The cost is invisible until somebody measures it, which is exactly what <a href="../../lines/">the straight-line drill</a> does: six pulls between two dots, then a sentence at the end of the round about the shape your six lines had in common.</p>
+  <p class="measured"><b>What Steady Lines measures</b>The RMS perpendicular drift of your stroke away from the straight path between the dots. Under <code>max(0.4% × |AB|, 3px)</code> it is a flat 100; the score reaches zero at <code>ease × max(5.5% × |AB|, 16px)</code>. Note what the 3px floor does: on any pull shorter than 750px the free zone is a flat 3px no matter how long the line is, so a longer stroke buys you a wider zero point but never an easier perfect. A further 20 points are available to lose on the combined miss at the two ends, once it passes <code>ease × 24px</code>.</p>
+  <p class="measured"><b>The lean it names out loud</b>At the end of a round the drill takes each stroke's mean signed offset from the ideal path as a fraction of the line's length. If more than <code>0.006</code> of them lean the same way on four of the six strokes, it prints <em>"every line arcs the same way — that is the wrist pivoting"</em>. On a 300px pull, <code>0.006</code> is 1.8px of average lean. That is a bow you cannot see and the drill can, which is the only reason the sentence is worth anything.</p>
+  <h3>Why a mouse is allowed twice the wobble</h3>
+  <p>Every motor tolerance on this site is multiplied by an ease factor before it is applied: <code>1.0</code> for a pen or stylus, <code>1.5</code> for a finger, <code>2.0</code> for a mouse or trackpad. That is not a courtesy. It is the same fact about pivots, stated from the other side. A mouse is moved by a hand rocking on the heel of the palm, and a wrist rocking through a short arc physically cannot creep along a curve the way a nib on paper can — the error it makes is a different error, of a different size, so grading it against the pen's number would only tell trackpad owners they are bad at drawing.</p>
+  <p>The consequence is worth knowing before you compare anything: a best score set with a pen tablet and one set with a trackpad are two different measurements. Each drill prints which hardware it is scoring for. Switch, and expect the old number to be sitting under a differently sized allowance.</p>
+</section>
+
+<section class="guide accent-mint">
+  <h2>Ghost it, then commit</h2>
+  <p>Ghosting is the habit that separates a drawn line from a traced one. You rehearse the stroke in the air above the paper two or three times at the speed you intend to draw it, watching the end point rather than the pen, and then you put the pen down and repeat the movement once without slowing to check. The rehearsal is where the aiming happens. The stroke itself is not aimed at all — it is executed, and the reason it comes out straight is that the arm has already done it three times.</p>
+  <p>The hard part is not learning that. It is believing it, because a fast line is wrong in an obvious way and a slow line is wrong in a way you can pretend not to see. <a href="../../superimposed/">The superimposed-lines warm-up</a> is the exercise that makes the trade legible: one faint guide, drawn four times from the same dot, each repeat in darker ink so the fan your own hand made is sitting there to look at. Crucially, you are not scored against the guide. You are scored against the average of your own four attempts.</p>
+  <p class="measured"><b>What Superimposed Lines measures</b><code>(55 × fray + 30 × commitment) × cover + 15 × start</code>. Fraying is the RMS perpendicular spread of the four repeats about their own mean path, as a fraction of the line's length: the first <code>0.5%</code> is free and it reaches zero at <code>6%</code>, eased — so on a 400px guide, a fan spread of 2px still scores full marks and 24px scores none with a pen, 48px with a trackpad. Commitment is the RMS turning angle along the stroke <em>with the mean turn subtracted</em>, so an intended curve costs nothing and only the corrections show: free below <code>0.012</code> radians and zero at <code>0.095</code>, eased like everything motor here — about 5.4° of scatter between one step of the stroke and the next, on a pen.</p>
+  <p>Four confident copies of a slightly wrong line beat four timid different ones, and the arithmetic says so: fraying is 55 points and hugging the guide is worth nothing at all. If your fan is tight and your score is still middling, the missing points are commitment, and the fix is counter-intuitive — go faster and stop correcting. <a href="../../lines/">Steady Lines</a> reads the same thing as a coaching note it deliberately keeps out of the score: it takes the coefficient of variation of your stroke's speed and calls anything at or under <code>0.45</code> one confident pull, anything at or over <code>1.6</code> stop-start hesitation. It is printed and never charged for, because a slow line that lands is still a line that landed.</p>
+  <h3>The one drill where steering is the point</h3>
+  <p>Committing is not the same as not looking. <a href="../../steady-tunnel/">Steady Tunnel</a> is the deliberate counter-case: a corridor that winds across the sheet and narrows as it goes, which you have to steer down while the room for error closes. It rewards the habit the other line drills cannot teach — reading the path ahead of your own nib. Staying between the walls is worth <code>0.75</code> of the score and running down the middle of them <code>0.25</code>, so touching a wall costs three times what drifting off-centre does. The last tunnel's exit half-width is <code>1.9%</code> of the canvas height and never under <code>12px</code> before easing, and on any ordinary screen that floor is what bites: the gap you are steering through at the flag is 24px wide with a pen and 48px with a trackpad. Easing widens the corridor, but it also widens the wiggle, so an easier lane still has to be steered rather than crossed.</p>
+</section>
+
+<section class="guide accent-mint">
+  <h2>A warm-up is range of motion, not accuracy</h2>
+  <p>Ten minutes of careful hatching is not a warm-up. What warming up does is give the shoulder and elbow their full travel back before you ask them for anything precise, and precision is the thing you specifically do not want during it. Loose overlapping circles, long diagonal sweeps corner to corner, big lazy figure eights — drawn fast, drawn ugly, drawn much larger than the drawing you are about to make.</p>
+  <p>That is a hard thing to make yourself do when a number is watching, so <a href="../../warm-up/">the warm-up drill</a> is scored to reward the right thing: 60 of its 100 points are for how much ink you moved and only 40 for a loose shape check. The distance target is four diagonals of the box, whatever size the box came out on your screen, which is about 25 seconds of unhurried scribbling. The shape half is then scaled by how far you got, all the way up to a quarter of that target, so a hand trembling in one spot collects next to nothing for accidentally drawing something round.</p>
+  <p class="measured"><b>How loose is loose enough</b>Diagonal sweeps hold full marks while their directions agree within <code>22°</code> on a pen — <code>44°</code> on a mouse — and fall to zero at twice that, with a sweep and its return counted as one axis rather than two. Loose circles count as round if the loop's 5th-to-95th-percentile radius band stays inside <code>0.35</code> of its own mean radius on a pen, <code>0.70</code> on a mouse — at <code>0.35</code> a 1.5:1 oval is thrown out, at <code>0.70</code> more or less anything loop-shaped counts. Nothing here is asking for a good drawing.</p>
+  <p>The drill also converts what you drew into distance, at roughly 3780px to the metre — 96 CSS pixels being about an inch — and tells you how far your hand travelled. It is a small thing, but it reframes the exercise correctly: a warm-up is a quantity of movement, and the only failure available is not moving.</p>
+</section>
+
+<section class="guide accent-mint">
+  <h2>Ellipses are circles seen at an angle</h2>
+  <p>An ellipse is not a shape to memorise. It is a circle rotated away from you, and the amount it has rotated is the only thing that changes: tilt a circle by an angle of <code>acos(minor ÷ major)</code> and its outline <em>is</em> that ellipse. Artists call how far it has turned the ellipse's <em>degree</em>. <a href="../../ellipses/">Ellipse Orbit</a> shows this literally rather than asserting it — after each attempt a real circle rotates in 3D until its projection lands on the target you were given.</p>
+  <p>Knowing that changes what you are aiming at. A wheel drawn on a car is not a squashed oval you invented; it is a circle sitting in a plane, and the plane decides the squash. That is also why this chapter and <a href="../perspective/">the perspective chapter</a> overlap — once you can draw an ellipse, <a href="../../ellipse-in-plane/">laying it into a plane you have constructed</a> is the next step, and it belongs over there.</p>
+  <p class="measured"><b>What Ellipse Orbit measures</b>Mean distance, in pixels, from every resampled point of your loop to the true curve. The score reaches zero at <code>max(18% × the box's mean radius, 14px)</code> times the hardware ease, and the first <code>9%</code> of that band is free — so on a box of mean radius 100px a pen has to hold the loop inside an average 1.6px of the true curve for a flat 100 and scores nothing at 18px, while a trackpad gets 3.2px and 36px. Two more gates: under <code>75%</code> of the way round nothing is scored at all (the loop simply waits for you), and an unclosed loop whose ends miss each other by more than <code>12%</code> of the perimeter costs up to 10 points, in full by <code>24%</code>.</p>
+  <p>Accuracy is only half of it, though, and it is the half most people practise. The other half is repeatability, which is what "draw through your ellipses" has always meant: go round two or three times without stopping, so the second and third laps land on the first. <a href="../../draw-through/">Draw Through</a> is the drill that actually checks whether they did. It unwraps your stroke into an angle around the centre, cuts it into laps, reads every lap at the same 64 fixed directions, and compares them with each other.</p>
+  <p class="measured"><b>What Draw Through measures</b><code>75</code> points for how tightly the three laps stack and only <code>25</code> for drawing the ellipse that was asked for. Agreement is the mean spread of those 64 radii about the laps' own average, reaching zero at <code>13px</code> × ease × a weak size factor clamped between <code>0.85</code> and <code>1.25</code>. It also tracks <em>drift</em> — the last lap minus the first — and when the mean lean clears a tenth of the tolerance on at least 60% of the round's loops, it names the habit: <em>"every loop grew as it went round"</em>. That outward spiral is the standard beginner ellipse, and it is the reason the third lap is worth drawing.</p>
+</section>
+
+<section class="guide accent-mint">
+  <h2>What is the eye's fault, and what is the hand's</h2>
+  <p>Some line errors are motor and some are judgement, and it is worth being able to tell which one you are having, because the fixes have nothing to do with each other. A motor error gets better with repetition and warming up. A judgement error gets better by measuring — by holding your pencil up, comparing, and marking before you commit.</p>
+  <p><a href="../../angle-snap/">Angle Snap</a> isolates the judgement half. It asks for a stroke at a named angle from a reference line and fits the direction across every sample of your pull by least squares, which means smoothness drops out of the maths entirely: a shaky mouse line and a ruler-straight tablet line with the same principal axis score identically. The design decision underneath is the one worth carrying to any drill on this site — the hardware allowance is spent on what the hardware does and never on what the eye does.</p>
+  <p class="measured"><b>What Angle Snap eases, and what it does not</b>Past the free zone, the score falls linearly to zero at <code>25°</code> of angular error, and that <code>25°</code> is <em>not</em> eased for hardware, because it grades a judgement and no pointer judges better than another. The free zone is eased, because it exists to absorb pointing jitter: <code>min(8°, 2° + atan(ease × 2.5px ÷ pull length))</code>. Jitter of 2.5px is 3.6° across a 40px pull and 1.2° across a 120px one, which is why the zone shrinks as you pull further — and why a short stroke is a worse way to judge an angle than a long one.</p>
+  <p><a href="../../symmetry/">Mirror Mirror</a> puts the same idea to work on a shape. Half a figure is drawn against a mirror line and you freehand the other half. Copying the given outline stroke for stroke is the slow way to be wrong; the method that works is to pick three or four heights, read how far the drawn half sits from the axis at each of them, mark that distance out on your side, and only then join the marks. The scoring band reflects the split explicitly: the hardware allowance is <em>added</em> to the tolerance rather than compared with it — <code>+16px</code> for a mouse, <code>+8px</code> for a finger, on top of <code>max(8% × the figure's height, 16px)</code> — because judging where the mirror is costs the same on every device, and only landing the mark you judged is a pixel count.</p>
+</section>
+
+<section class="guide accent-mint">
+  <h2>Spacing and weight are line skills too</h2>
+  <p>Most of the marks in a finished drawing are not single confident lines. They are groups: hatching, contour bands, a row of pickets, the repeated ticks along an axis. What makes a group read well is almost never the straightness of its members — it is the evenness of the gaps between them, which is a placement problem wearing a line problem's coat.</p>
+  <p><a href="../../even-spacing/">Even Spacing</a> is that skill on its own. Cross a baseline with three evenly spaced ticks, then five, then fill two boxes with parallel strokes. Its tick tolerance is generous in a way that is itself instructive: the free zone is <code>max(4% of one gap, 3px)</code> and the score runs out at <code>max(40% of a gap, ease × 16px)</code>. On a 600px baseline split into four, that is 6px for a perfect and 60px before you score nothing — you are allowed to be almost half a gap out. Dividing by eye is harder than it looks, and the band is set where honest attempts land.</p>
+  <p>The fills are weighted the other way and it is the most opinionated number in the chapter: <code>65%</code> of a fill's score is rhythm — how far the gaps between your strokes wander from their own average, against <code>max(42% of the mean gap, ease × 5px)</code> — and only <code>35%</code> is parallelism, which runs out at <code>ease × 14°</code> of angular spread. Hatching that is perfectly parallel and unevenly spaced looks worse than the reverse, and the weights say so. (If you are hatching to build tone rather than texture, <a href="../value/">the value chapter</a> is where that continues.)</p>
+  <p>Then there is weight itself. A drawing made entirely of one unvarying line thickness reads as flat and traced, and <a href="../../line-weight/">Line Weight</a> exists to charge for it. You redraw a target stroke's thick-and-thin along a dashed guide; both width profiles are sampled at 64 positions, normalised, and compared by RMS difference.</p>
+  <p class="measured"><b>Why a flat stroke scores zero, by measurement</b>The RMS at which the score dies is <code>0.34</code> on a pen. That constant is not taste — a stroke of one constant weight measures about <code>0.34</code> RMS against these targets and random noise about <code>0.42</code>, so the zero point is set precisely where the mistake the drill exists to correct lands. It is eased for other hardware but capped at <code>0.50</code>, so "one flat weight fails" stays true in every input mode, and a stroke using less than <code>20%</code> of the available width range takes a further <code>×0.8</code>.</p>
+  <p>Two more sit at the edges of this chapter. <a href="../../circle/">A freehand circle</a> is the purest test of the shoulder pivot there is — the score is RMS radial deviation from a least-squares circle fitted to your own stroke, divided by that circle's radius, so a small circle and a big one are judged identically. And <a href="../../cross-contour/">the line that wraps a form</a> takes straight-line control into three dimensions, which is a perspective problem rather than a hand one.</p>
+</section>
+
+<section class="guide accent-mint">
+  <h2>What a browser drill cannot teach you</h2>
+  <p>It is worth being clear about the boundary, because a page that only lists its own strengths is not much use to a teacher deciding whether to send it.</p>
+  <ul>
+    <li><strong>Pressure.</strong> Only a stylus that reports real pressure uses it. For a mouse, trackpad or finger, <a href="../../line-weight/">Line Weight</a> maps width to height above the guide instead, because height is aimable and pointer speed is not. So it drills <em>where</em> the weight goes, which is the decision part — not how to produce it with a graphite pencil, which is your arm and the paper.</li>
+    <li><strong>Materials.</strong> There is no tooth, no drag, no nib catching on a fibre, no smudge, no difference between a 2B and an HB. Those are real variables that change how a line has to be pulled and none of them exist here.</li>
+    <li><strong>Working large.</strong> A canvas is a screen's worth of pixels. Genuine shoulder drawing needs a sheet bigger than a laptop, and the drills can score the habit without ever giving you the range of motion. Do the <a href="../../warm-up/">warm-up sets</a> on paper too, as big as the paper allows.</li>
+    <li><strong>Drawing from life.</strong> Nothing in this chapter asks you to look at an actual object. Judging a line against something in front of you is a separate skill, and it is <a href="../observation/">the observation chapter</a>.</li>
+    <li><strong>Meaning.</strong> A 95 on <a href="../../lines/">Steady Lines</a> says your strokes do not bow. It says nothing about whether you can decide where a line ought to go, which is harder and is most of drawing.</li>
+  </ul>
+  <p>And one thing about the scores themselves: they are compared with your own past rounds and nothing else. No model marks anything on this site. Six of this chapter's drills are pure closed-form geometry and four compare your marks against a reference the drill computed; none of them uses a curated answer key, and every number above can be checked by opening the file it came from.</p>
+</section>
+
+<section class="guide accent-mint">
+  <h2>How to practise this week</h2>
+  <p>Ten to twelve minutes a day, and the order matters more than the total.</p>
+  <ol>
+    <li><strong>Every day, two minutes:</strong> <a href="../../warm-up/">the warm-up sets</a>, drawn deliberately too big and too fast. Ignore the shape half of the score entirely for the first week; watch only that you are filling the ring.</li>
+    <li><strong>Monday and Thursday:</strong> <a href="../../superimposed/">superimposed lines</a>. Do not read the total. Read the verdict sentence — if it says the lines wobble, your problem is commitment, and the instruction is to pull faster and never correct mid-stroke.</li>
+    <li><strong>Tuesday and Friday:</strong> <a href="../../lines/">straight-line practice</a>. The number to watch is not the score, it is whether the round-end sentence names a lean. That sentence appearing means four of your six lines bowed the same way, which is a pivot you can change today.</li>
+    <li><strong>Wednesday:</strong> <a href="../../draw-through/">three laps of an ellipse</a>. If the drill tells you every loop grew as it went round, slow the first lap and let the second and third ride on it rather than outside it.</li>
+    <li><strong>Saturday:</strong> whichever of <a href="../../angle-snap/">judging angles</a>, <a href="../../even-spacing/">dividing by eye</a> or <a href="../../line-weight/">weight control</a> came back lowest. These three are judgement, so they improve in steps rather than smoothly.</li>
+  </ol>
+  <p>On reading the numbers: a five-point week is noise. The signal to watch for is categorical — the day the lean sentence stops appearing at the end of a <a href="../../lines/">Steady Lines</a> round, or the day <a href="../../draw-through/">Draw Through</a> stops calling your loops a spiral. Those are statements about a habit rather than a measurement of one attempt, and they are what actually changed.</p>
+  <p class="guide-more">Next: <a href="../perspective/">perspective</a> — where these lines start having to agree with each other · <a href="../observation/">observation</a> — judging what is in front of you · <a href="../">all six practice guides</a> · <a href="../../">the catalogue, 42 drills</a></p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <nav class="footnav" aria-label="Site links">
+    <a href="https://artdaily.sadeali.com/">More drills</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://sadeali.com/">More experiments</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
+    <span aria-hidden="true">·</span>
+    <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span id="supportLinks"></span>
+  </nav>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no account needed</p>
+</footer>
+
+<script src="../../js/support-config.js"></script>
+<script src="../../js/main.js"></script>
+</body>
+</html>

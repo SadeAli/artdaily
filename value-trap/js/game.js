@@ -131,8 +131,51 @@
     return isFinite(mean) ? clamp(mean, 0, 100) : 0;
   }
 
-  /* ---- item generation (pure given Math.random) ---- */
-  function rand(lo, hi) { return lo + Math.random() * (hi - lo); }
+  /* ---- item generation (pure given the round's generator) --------------
+     WHERE THE SIX ITEMS COME FROM. An item is a sequence of normalised
+     draws — the grey's L*, the base hue, which slot holds the match, and
+     then per chip a hue jitter, a saturation and (for the five wrong
+     ones) a distance and a side. Round 1 of a sitting is dealt from
+     ArtDaily.roundRandom(1) — seeded from today and this slug — so
+     everyone playing Value Trap today gets the same six boards, right
+     down to which chip is the match, and a score finally has a
+     denominator. Round 2 and on are practice: same generator, same
+     distribution, unshared seed.
+
+     NO CANVAS HERE, so this is one of the exact cases: the chips are DOM
+     elements filled with absolute rgb() triples, not fractions of a
+     sheet, so two players see the identical six colours rather than the
+     same six proportions of their own screen.
+
+     NOTHING TO CACHE either — makeItem(idx) is called exactly once per
+     item, from newRound() and from advance(), and no resize or theme
+     change re-deals it (draw() only re-paints the item it already has).
+     A plain rolling generator can never walk out from under the player.
+
+     EVERY DRAW IS CONTENT. There is no decoration in this drill: each
+     value below is either the answer, a distractor's distance from it, or
+     the hue that disguises the two — the chip jitter included, since a
+     hue that lands 9° either way is the camouflage the drill is made of,
+     not a wobble drawn on top of it.
+
+     GUARDED, and the guard is load-bearing. index.html cache-busts its own
+     scripts with ?v= but every drill loads ../sdk/artdaily-sdk.js BARE, so
+     the two files cache independently: a returning visitor holding a warm
+     OLD SDK plus a cold copy of this file would call a function that does
+     not exist, inside newRound(), before the first board is ever built —
+     "Loading…" forever. Falling back to Math.random costs today's player
+     nothing but a non-comparable round, which is what they had yesterday.
+
+     ONLY THE BARE CALL FORM IS USED — rng(), never rng.range()/.chance() —
+     because Math.random carries no helpers, so the fallback path would
+     need a shim, and a shim is a second copy of the arithmetic that can
+     drift from the first. Both lines below are the lines they always
+     were with Math.random() swapped for rng(): uniform on [0,1) either
+     way, so every value downstream keeps precisely the shape it had and a
+     seeded round is not an easier or a harder round. */
+  var rng = Math.random;
+
+  function rand(lo, hi) { return lo + rng() * (hi - lo); }
 
   function makeItem(idx) {
     var wantL = rand(30, 75);
@@ -153,7 +196,7 @@
       } else {
         /* +0.6 pad so 8-bit rounding can never eat the margin */
         d = margin + 0.6 + rand(0, 9);
-        L = targetL + (Math.random() < 0.5 ? -d : d);
+        L = targetL + (rng() < 0.5 ? -d : d);
         if (L < 12 || L > 93) L = targetL * 2 - L; /* flip to the roomy side */
       }
       rgb = rgbForLstar(hue, sat, L);
@@ -265,6 +308,14 @@
        dropped, so flush it first (finishRound reports exactly once). */
     if (!reported && scores.length === ITEMS_PER_ROUND) finishRound();
     round += 1;
+    /* THE ONE LINE THAT MAKES A SCORE COMPARABLE. Re-seeded per round, so
+       round 1 is today's shared six boards and every round after it is
+       practice. It sits ABOVE the makeItem(0) call below, which is the
+       whole point — the first item of the round must come out of the new
+       generator, not the last round's. See the block above rand(). */
+    rng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round)
+      : Math.random;
     itemIdx = 0;
     scores = [];
     revealing = false;
@@ -349,7 +400,14 @@
     hint.textContent = 'Round done — the squint view stays up. “new round” when ready.';
     /* hand keyboard focus to the one live control instead of <body> */
     if (keepFocus) btnRound.focus();
-    showToast((res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+    /* A first-ever round has no previous best, so isNewBest is trivially
+       true and "new best!" celebrates nothing — on the one round where the
+       number most needs saying what it IS. The SDK marks that round with
+       isFirst; where it is undefined the old wording stands. */
+    showToast(res.isFirst
+      ? 'first score ' + res.score + ' / 100 — your mark to beat'
+      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100',
+      res.isNewBest && !res.isFirst);
   }
 
   var toastTimer = null;

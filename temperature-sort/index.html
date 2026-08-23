@@ -3,25 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Temperature Sort — a warm and cool colour drill</title>
+<title>Warm and Cool Colours — order the swatches by temperature</title>
 <meta name="description" content="Drag five swatches into warm-to-cool order. A colour temperature exercise that trains hue judgement when lightness and saturation give nothing away.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Temperature Sort">
 <meta property="og:description" content="order the swatches warm to cool — a daily art drill">
 <meta property="og:site_name" content="Art Daily · SadeAli">
 <meta property="og:url" content="https://artdaily.sadeali.com/temperature-sort/">
-<!-- The page's own card, deliberately: the drills have no per-drill art, and a
-     share with no image at all renders as a grey box. 1200x630, declared so a
-     scraper can lay out the card before it has fetched the file. -->
-<meta property="og:image" content="https://artdaily.sadeali.com/og.png">
+<!-- This drill's own card, built from its registry entry by tools/build-og.js:
+     name, tagline and the drill's URL, so a screenshot of the share is also
+     directions. 1200x630, declared so a scraper can lay out the card before it
+     has fetched the file. -->
+<meta property="og:image" content="https://artdaily.sadeali.com/og/temperature-sort.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Art Daily — tiny daily drills for artists">
+<meta property="og:image:alt" content="Art Daily card: Temperature Sort — order the swatches warm to cool — artdaily.sadeali.com/temperature-sort">
 <link rel="canonical" href="https://artdaily.sadeali.com/temperature-sort/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Temperature Sort">
 <meta name="twitter:description" content="order the swatches warm to cool — a daily art drill">
-<meta name="twitter:image" content="https://artdaily.sadeali.com/og.png">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og/temperature-sort.png">
 <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🌡️&lt;/text&gt;&lt;/svg&gt;">
 <link rel="stylesheet" href="css/style.css">
 <script>
@@ -89,7 +90,7 @@
         <p>Studio tip: temperature is relative — find the two extremes first, then bracket the middle.</p>
       </div>
 
-      <noscript><p class="hint">This drill needs JavaScript — nothing else, no trackers, no accounts.</p></noscript>
+      <noscript><p class="hint">This drill needs JavaScript. Nothing to install, and no account needed.</p></noscript>
     </div>
   </div>
 </main>
@@ -99,8 +100,8 @@
   <p>Five colour chips arrive in a row, shuffled. You order them warmest on the left to coolest on the right &mdash; drag a chip into a new slot, or tap one chip and then another to swap the two, which is the path that works from a keyboard or an assistive device. Then press &ldquo;done sorting&rdquo;. A round is four sets, and they tighten as you go: hue gaps start near 45&deg; and close to roughly 16&deg; by set four, whose swatches sit almost on top of each other on purpose.</p>
   <p>Every swatch in a set carries the same lightness and the same chroma, generated in OKLCH and fitted back into the screen&rsquo;s gamut, which removes the two cues people lean on without noticing: the lighter chip is not the warmer one here, and neither is the more saturated one. Hue is the only honest evidence left. The swatches stay on the orange&ndash;yellow&ndash;green&ndash;blue arc, since magenta and purple read warm or cool depending on what sits beside them. The habit the reveal keeps rewarding is that temperature is relative &mdash; find the two extremes first, then bracket the middle against them.</p>
   <h3>Counting pairs, not positions</h3>
-  <p>Five chips make ten possible pairs, and each pair is judged on its own: in the right relative order it earns, reversed it costs. That count is Kendall&rsquo;s tau rescaled onto 0&ndash;100, with the zero point set below a shuffle rather than at it. A perfect row is 100, one swapped pair 83, two 67, half the pairs right 17, and an untouched shuffle averages about a fifth of the scale, where raw concordance would have paid it 50. The four set scores are averaged for the round, and every reveal puts the swatches back in their true places on a warm&rarr;cool strip.</p>
-  <p class="about-more">More colour drills: <a href="../colour-constancy/">Colour Constancy</a> · <a href="../sun-and-sky/">Sun & Sky</a> · <a href="../colors/">Color Mixer</a> · <a href="../">all 42 drills</a></p>
+  <p>Five chips make ten possible pairs, and each pair is judged on its own: in the right relative order it earns, reversed it costs. That count is Kendall&rsquo;s tau rescaled onto 0&ndash;100, with the zero point set below a shuffle rather than at it. Nothing judges the row but that count &mdash; your order compared against the true one, arithmetic rather than a model. A perfect row is 100, one swapped pair 83, two 67, half the pairs right 17, and an untouched shuffle averages about a fifth of the scale, where raw concordance would have paid it 50. The four set scores are averaged for the round, and every reveal puts the swatches back in their true places on a warm&rarr;cool strip.</p>
+  <p class="about-more">More colour drills: <a href="../colour-constancy/">Colour Constancy</a> · <a href="../sun-and-sky/">Sun & Sky</a> · <a href="../colors/">Color Mixer</a> · <a href="../">the whole catalogue</a></p>
 </section>
 
 <footer class="footer">
@@ -112,9 +113,13 @@
     <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
     <span aria-hidden="true">·</span>
     <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/for-teachers/">For teachers</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/privacy/">Privacy</a>
     <span id="supportLinks"></span>
   </nav>
-  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no tracking</p>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no account needed</p>
 </footer>
 
 <script src="../sdk/artdaily-sdk.js"></script>

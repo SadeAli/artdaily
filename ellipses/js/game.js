@@ -388,7 +388,37 @@
   var beginnerRamp = true; /* refreshed per round from the personal best */
   var lastWords = '';    /* the last scored box, in words, for the round-done line */
 
-  function rand(lo, hi) { return lo + Math.random() * (hi - lo); }
+  /* ---- where the round's five boxes come from --------------------------
+     THE ROUND'S CONTENT IS A SEQUENCE OF NORMALISED DRAWS, and only that.
+     Round 1 of a sitting is dealt from ArtDaily.roundRandom(1) — seeded off
+     today and this slug — so every player gets the same five boxes today and
+     a score finally has a denominator. Round 2 and on are practice: same
+     generator, same distribution, unshared seed, so five goes in an afternoon
+     are five different rounds rather than one round five times.
+
+     rand() is unchanged as a function — lo + u * (hi - lo), with Math.random
+     swapped for the round's uniform. u is uniform on [0,1) either way, so
+     every value downstream keeps exactly the shape it had: a seeded box is
+     not a rounder or a slimmer box, only a shared one.
+
+     NO PER-ITEM CACHE IS NEEDED, unlike lines. makeItem() is called exactly
+     once per box (newRound for box 0, nextItem for the rest) — a resize
+     RESCALES the plane it already has rather than re-planning it, see the
+     resize handler — so this rolling generator is never walked forward twice
+     for the same box.
+
+     TWO THINGS THE SEED DOES NOT MAKE IDENTICAL, both of them older than it:
+       · the draws are normalised, the pixels are not. maxR is a fraction of
+         H and the centre is drawn into whatever room is left, so what is
+         shared is WHERE IN THAT ROOM the box sits, not its pixel size.
+       · beginnerRamp (below) widens thinLo/thinHi for a player who has no
+         personal best yet. Same draws, different aspect range — so a first-
+         ever round is deliberately rounder than a veteran's on the same day.
+         That is a fairness branch that predates seeding and a seed neither
+         can nor should paper over it. */
+  var roundRng = Math.random;
+
+  function rand(lo, hi) { return lo + roundRng() * (hi - lo); }
   function lerp(a, b, t) { return a + (b - a) * t; }
 
   /* The box's aspect (its "degree") ramps within the round: near-circles
@@ -409,7 +439,7 @@
     var major = idx === 0 ? rand(maxR * 0.78, maxR) : rand(maxR * 0.68, maxR);
     var minor = Math.max(major * aspect, Math.min(minorFloor, major));
     var rx = major, ry = minor;
-    if (Math.random() < 0.5) { rx = minor; ry = major; } /* upright box */
+    if (roundRng() < 0.5) { rx = minor; ry = major; } /* upright box */
     /* Placed with room for the REVEAL, not just for the box. The reveal
        starts as the un-tilted circle — radius `major` along BOTH axes —
        and only narrows into the target ellipse as theta grows. Leaving
@@ -452,6 +482,22 @@
     itemScores = [];
     playing = true;
     beginnerRamp = ArtDaily.best() === null;
+    /* THE ONE LINE THAT MAKES A SCORE COMPARABLE. round is already 1 on the
+       first round of a sitting, so round 1 is today's shared round and every
+       "new round" after it is practice.
+
+       GUARDED, and the guard is load-bearing. index.html cache-busts its own
+       scripts with ?v=, but every drill loads ../sdk/artdaily-sdk.js BARE, so
+       the two files cache INDEPENDENTLY and roundRandom is new: a returning
+       visitor holding a warm SDK from another drill plus a cold copy of this
+       file would call a function that does not exist, throw inside newRound()
+       before the first box is made, and sit on "Loading…" with a blank sheet.
+       Falling back to Math.random costs today's player nothing but a
+       non-comparable round — exactly what they had yesterday — and it
+       self-heals when the SDK's max-age expires. */
+    roundRng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round)
+      : Math.random;
     ell = makeItem(0);
     hudRound.textContent = String(round);
     hudScore.textContent = '–';
@@ -830,7 +876,14 @@
     hint.textContent = 'Round done — ' + (lastWords ? lastWords + ' ' : '') +
       'The last box stays up (a circle tilted ' + deg +
       '°, its degree). Press “new round” to go again.';
-    showToast((res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+    /* A first-ever round has no previous best, so isNewBest is trivially
+       true and "new best!" celebrates nothing — on the one round where the
+       number most needs saying what it IS. The SDK marks that round with
+       isFirst; where it is undefined the old wording stands. */
+    showToast(res.isFirst
+      ? 'first score ' + res.score + ' / 100 — your mark to beat'
+      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100',
+      res.isNewBest && !res.isFirst);
   }
 
   var toastTimer = null;

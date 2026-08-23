@@ -3,25 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Value Squint — sort values, match grays by eye</title>
+<title>Value Study Practice — sort values and match greys by eye</title>
 <meta name="description" content="Sort gray ladders light to dark, then build a gray that matches a color's value with a slider or by hatching. A value drill of about 45 seconds.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Value Squint">
 <meta property="og:description" content="sort values and match grays like a squinting painter — a daily art drill">
 <meta property="og:site_name" content="Art Daily · SadeAli">
 <meta property="og:url" content="https://artdaily.sadeali.com/values/">
-<!-- The page's own card, deliberately: the drills have no per-drill art, and a
-     share with no image at all renders as a grey box. 1200x630, declared so a
-     scraper can lay out the card before it has fetched the file. -->
-<meta property="og:image" content="https://artdaily.sadeali.com/og.png">
+<!-- This drill's own card, built by tools/build-og.js from the registry entry
+     (icon, category, name, tagline, URL). 1200x630, declared so a scraper can
+     lay out the card before it has fetched the file. -->
+<meta property="og:image" content="https://artdaily.sadeali.com/og/values.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Art Daily — tiny daily drills for artists">
+<meta property="og:image:alt" content="Value Squint — sort values and match greys like a squinting painter — artdaily.sadeali.com/values">
 <link rel="canonical" href="https://artdaily.sadeali.com/values/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Value Squint">
 <meta name="twitter:description" content="sort values and match grays like a squinting painter — a daily art drill">
-<meta name="twitter:image" content="https://artdaily.sadeali.com/og.png">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og/values.png">
 <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🌗&lt;/text&gt;&lt;/svg&gt;">
 <link rel="stylesheet" href="css/style.css">
 <script>
@@ -80,7 +80,7 @@
         <p>Studio tip: half-shut your eyes — detail drops away and only the light-and-dark pattern remains; that pattern is what makes a drawing read.</p>
       </div>
 
-      <noscript><p class="hint">This drill needs JavaScript — nothing else, no trackers, no accounts.</p></noscript>
+      <noscript><p class="hint">This drill needs JavaScript — nothing else. Free, no ads, no account needed.</p></noscript>
     </div>
   </div>
 </main>
@@ -90,8 +90,8 @@
   <p>A round is six items and takes about 45 seconds. Three of them are gray ladders dealt out of order: tap two chips to swap them until the run reads light to dark, and the ranges narrow as you go. The other three show a colored swatch and ask for a gray of exactly its value &mdash; set it on the slider, or move to the hatch pad and lay strokes on white paper until the density of the marks carries the same tone. Saturation falls across those three, so the near-grays come last. Every item reveals the ideal answer over your attempt and then waits; nothing advances on its own.</p>
   <p>The two halves of the round split the skill: sorting is reading lightness with nothing else in the frame, and matching is reading it while a colour sits next to it arguing. Sorting and matching with the color deliberately set aside is how an eye learns to read lightness by itself. The hatch pad matters for a second reason: judging a value and producing it with marks are separate skills, and both are measured here against the same ruler.</p>
   <h3>How a ladder and a match are marked</h3>
-  <p>Ladders score on Kendall tau across the 15 chip pairs &mdash; 100 &middot; max(0, 2 &middot; ordered / 15 &minus; 1) &mdash; so a perfect run is 100, a reversed one 0, and the deal you start from is worth roughly nothing. Matches convert both swatches to CIE L* through relative luminance, the hatch pad averaging its pixels in linear light the way squinting really blurs them, and then score 100 &middot; (1 &minus; &Delta;L* / 22), with the first 1 L* forgiven for slider granularity. Hatching is a drawn mark, so its window is eased per hardware &mdash; 22 on a pen, 27 on a finger, 32 on a trackpad &mdash; while the slider, pure eye, reads the same everywhere. The round is the mean of the six.</p>
-  <p class="about-more">More value & light drills: <a href="../sphere-shade/">Shade a Sphere</a> · <a href="../value-thumbnail/">Value Thumbnail</a> · <a href="../hatch-ramp/">Hatch a Ramp</a> · <a href="../">all 42 drills</a></p>
+  <p>Ladders score on Kendall tau across the 15 chip pairs &mdash; 100 &middot; max(0, 2 &middot; ordered / 15 &minus; 1) &mdash; so a perfect run is 100, a reversed one 0, and the deal you start from is worth roughly nothing. Matches convert both swatches to CIE L* through relative luminance, the hatch pad averaging its pixels in linear light the way squinting really blurs them, and then score 100 &middot; (1 &minus; &Delta;L* / 22), with the first 1 L* forgiven for slider granularity. Hatching is a drawn mark, so its window is eased per hardware &mdash; 22 on a pen, 27 on a finger, 32 on a trackpad &mdash; while the slider, pure eye, reads the same everywhere. The round is the mean of the six. Both halves are closed-form arithmetic run here in the page &mdash; no model marks your work, and either number can be checked by hand.</p>
+  <p class="about-more">More value & light drills: <a href="../sphere-shade/">Shade a Sphere</a> · <a href="../value-thumbnail/">Value Thumbnail</a> · <a href="../hatch-ramp/">Hatch a Ramp</a> · <a href="../">the whole catalogue</a></p>
 </section>
 
 <footer class="footer">
@@ -103,9 +103,13 @@
     <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
     <span aria-hidden="true">·</span>
     <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/for-teachers/">For teachers</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/privacy/">Privacy</a>
     <span id="supportLinks"></span>
   </nav>
-  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no tracking</p>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no account needed</p>
 </footer>
 
 <script src="../sdk/artdaily-sdk.js"></script>

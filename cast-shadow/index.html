@@ -3,25 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cast Shadow — a daily shadow construction drill</title>
+<title>Cast Shadow Practice — construct the shadow the light demands</title>
 <meta name="description" content="Run one light ray per corner and land the shadow the sun demands, measuring against a gnomon stick. Practice constructing cast shadows by projection.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Cast Shadow">
 <meta property="og:description" content="construct the shadow the light demands — a daily art drill">
 <meta property="og:site_name" content="Art Daily · SadeAli">
 <meta property="og:url" content="https://artdaily.sadeali.com/cast-shadow/">
-<!-- The page's own card, deliberately: the drills have no per-drill art, and a
-     share with no image at all renders as a grey box. 1200x630, declared so a
-     scraper can lay out the card before it has fetched the file. -->
-<meta property="og:image" content="https://artdaily.sadeali.com/og.png">
+<!-- This drill's own share card, built from the registry by tools/build-og.js:
+     its name, tagline, category and address. 1200x630, declared so a scraper
+     can lay out the card before it has fetched the file. -->
+<meta property="og:image" content="https://artdaily.sadeali.com/og/cast-shadow.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Art Daily — tiny daily drills for artists">
+<meta property="og:image:alt" content="Cast Shadow — construct the shadow the light demands. A form &amp; perspective drill at artdaily.sadeali.com/cast-shadow">
 <link rel="canonical" href="https://artdaily.sadeali.com/cast-shadow/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Cast Shadow">
 <meta name="twitter:description" content="construct the shadow the light demands — a daily art drill">
-<meta name="twitter:image" content="https://artdaily.sadeali.com/og.png">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og/cast-shadow.png">
 <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🕯️&lt;/text&gt;&lt;/svg&gt;">
 <link rel="stylesheet" href="css/style.css">
 <script>
@@ -79,7 +79,7 @@
         <p>Scored on how close each landing sits to its true one. What is forgiven before the score starts falling is set for the hardware you are on — the HUD says which (pen, mouse or trackpad, finger) — and it never falls below a few real pixels, so a small phone sheet is not judged more harshly than a desktop one. Studio tip: a cast shadow is not a smudge — it is where each corner's light ray hits the floor, so run the rays first and connect the landings after.</p>
       </div>
 
-      <noscript><p class="hint">This drill needs JavaScript — nothing else, no trackers, no accounts.</p></noscript>
+      <noscript><p class="hint">This drill needs JavaScript — nothing else, and no account needed.</p></noscript>
     </div>
   </div>
 </main>
@@ -89,8 +89,8 @@
   <p>A form stands on a ground grid under a directional sun — parallel arrows at the frame edge, no disc for rays to converge on. Beside it a gnomon stick one unit tall throws its true shadow, and that stick is the given: which way the light throws, and how far one stick-height of shadow reaches. Press a numbered top corner, pull its ray down to where you think the shadow lands, release; four rays, then done. The true shadow inks itself in amber over yours, a dotted hop running from each landing to where it should have been.</p>
   <p>The drill asks for projection, not a smudge around the base: a corner twice the stick's height throws its shadow twice as far, so you count in stick-heights rather than copying the stick's length. Your rays are never cleared away: they are the construction, not working-out to be tidied up. The geometry is real: the light direction is built from azimuth and altitude, each corner projected onto the ground exactly, so the drawn rays are genuinely parallel. Item 1 is a flat-topped box under a high sun; from item 2 the top slopes, so the corners sit at four heights and each ray has its own length.</p>
   <h3>What separates your landings from the true ones</h3>
-  <p>An item scores the mean distance between your landings and the true ones, normalized by the true shadow's bounding diagonal: 100 · clamp(1 − meanErr / 0.28, 0, 1). A dead zone is forgiven first, so a construction as accurate as the hand allows reads 100: 0.012 diagonals for a pen, doubled for a mouse or trackpad, floored in real pixels, because 0.012 of a diagonal comes to under one pixel on a phone — finer than any pointer's own noise. The 0.28 ramp is identical on every device: what is measured is the proportional rule, not steadiness. The round is the mean of its items.</p>
-  <p class="about-more">More form & perspective drills: <a href="../horizon-read/">Horizon Read</a> · <a href="../cross-contour/">Wrap the Form</a> · <a href="../down-the-row/">Down the Row</a> · <a href="../">all 42 drills</a></p>
+  <p>An item scores the mean distance between your landings and the true ones, normalized by the true shadow's bounding diagonal: 100 · clamp(1 − meanErr / 0.28, 0, 1). A dead zone is forgiven first, so a construction as accurate as the hand allows reads 100: 0.012 diagonals for a pen, doubled for a mouse or trackpad, floored in real pixels, because 0.012 of a diagonal comes to under one pixel on a phone — finer than any pointer's own noise. The 0.28 ramp is identical on every device: what is measured is the proportional rule, not steadiness. The round is the mean of its items. No model is watching the sheet: the score is those four distances, measured against landings the light direction fixes exactly.</p>
+  <p class="about-more">More form & perspective drills: <a href="../horizon-read/">Horizon Read</a> · <a href="../cross-contour/">Wrap the Form</a> · <a href="../down-the-row/">Down the Row</a> · <a href="../">the whole catalogue</a></p>
 </section>
 
 <footer class="footer">
@@ -102,9 +102,13 @@
     <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
     <span aria-hidden="true">·</span>
     <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/for-teachers/">For teachers</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/privacy/">Privacy</a>
     <span id="supportLinks"></span>
   </nav>
-  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no tracking</p>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no account needed</p>
 </footer>
 
 <script src="../sdk/artdaily-sdk.js"></script>

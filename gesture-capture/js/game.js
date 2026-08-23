@@ -306,9 +306,57 @@
     return { x: v.x * c - v.y * s, y: v.x * s + v.y * c };
   }
 
+  /* ---- where the two poses come from -----------------------------------
+     THE ROUND'S CONTENT IS A SEQUENCE OF NORMALISED DRAWS. Round 1 of a
+     sitting is dealt from ArtDaily.roundRandom(1) — seeded from today and
+     this slug — so every player catches the same two lines of action
+     today: the same vocabulary word, the same mirroring, and the same
+     jittered anchors. Round 2 and on are practice: same generator, same
+     distribution, unshared seed.
+
+     NO PER-POSE CACHE IS NEEDED HERE, unlike lines. buildPose() is called
+     exactly once per pose (startPose, from newRound and from the hand-off
+     beat), and a resize RESCALES the pose, the strokes and the clock
+     rather than rebuilding them — deliberately, and it predates this. So a
+     plain rolling generator can never swap the pose mid-clock.
+
+     THE JITTER IS CONTENT, NOT DECORATION — this is the judgement the
+     whole conversion turns on in this drill. J() below is not a wobble
+     laid over a drawn line to make it look hand-made: it moves the ANCHORS
+     the action line is splined through, and that spline (pose.sweep) IS
+     the ground truth the chamfer scores against. Its amplitude, 0.008–0.035
+     of figure height, sits right on the scoring window (FREE_FRAC 0.012,
+     SPAN_FRAC 0.148), so two players whose jitter differed would be
+     tracing measurably different curves for the same number. It is seeded.
+
+     THE SAME DRAWS ARE THE SAME POSE, at whatever size the sheet allows.
+     Every def is written in unit space (hip at the origin, figure ≈ 1
+     tall) and buildPose fits it with ONE isotropic factor F plus a
+     centring translation, so a phone gets the desktop's pose smaller. The
+     scoring window is a fraction of pose.size with eased pixel floors
+     under it, so the difficulty travels with the size.
+
+     GUARDED, and the guard is load-bearing: index.html cache-busts its own
+     scripts but every drill loads ../sdk/artdaily-sdk.js BARE, so the two
+     cache independently and a returning visitor can hold a warm old SDK
+     against a cold copy of this file. An unguarded call would throw inside
+     newRound() before the first pose was built — blank sheet, "Loading…"
+     forever. Only the BARE call form is used: every draw in this drill goes
+     through uniform() below, and Math.random is a drop-in for that. */
+  var roundRng = null;
+
+  /* One raw uniform in [0,1) — the round's, or the plain one when an old
+     SDK is cached. Every random draw in this file goes through here. */
+  function uniform() { return roundRng ? roundRng() : Math.random(); }
+
+  /* Unchanged as a function — x + (u * 2 - 1) * a is exactly what it always
+     was, with Math.random() swapped for the round's uniform, x drawn before
+     y as before. u is uniform on [0,1) either way, so the jitter keeps
+     precisely the symmetric shape it had and a seeded pose is not an easier
+     or a harder pose. */
   function J(x, y, a) {
     a = (a === undefined) ? 0.02 : a;
-    return { x: x + (Math.random() * 2 - 1) * a, y: y + (Math.random() * 2 - 1) * a };
+    return { x: x + (uniform() * 2 - 1) * a, y: y + (uniform() * 2 - 1) * a };
   }
 
   /* Each def: sweep anchors (the full action line — the LOA spline
@@ -399,9 +447,9 @@
 
   function buildPose(poseNo, W, H) {
     var kinds = POSE_KINDS[poseNo];
-    var kind = kinds[Math.floor(Math.random() * kinds.length)];
+    var kind = kinds[Math.floor(uniform() * kinds.length)];
     var def = POSE_DEFS[kind]();
-    if (Math.random() < 0.5) mirrorDef(def);
+    if (uniform() < 0.5) mirrorDef(def);
 
     var sweep = catmullRom(def.anchors, PER_SEG);
     var hipIdx = def.hipA * PER_SEG;
@@ -606,6 +654,13 @@
     if (roundResult && state !== 'done') finishRound();
     round += 1;
     poseIdx = 0;
+    /* THE ONE LINE THAT MAKES A SCORE COMPARABLE. round is already 1 on the
+       first round of a sitting, so round 1 is today's shared round and every
+       "new round" after it is practice. Re-seeded HERE, per round and BEFORE
+       startPose() below, so a replay can never deal the pose just drawn. */
+    roundRng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round)
+      : Math.random;
     poseScores = [];
     poseFits = [];
     poseKinds = [];
@@ -784,7 +839,14 @@
     if (res) {
       hudScore.textContent = String(res.score);
       hudBest.textContent = res.best === null ? '–' : String(res.best);
-      showToast((res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+      /* A first-ever round has no previous best, so isNewBest is trivially
+         true and "new best!" celebrates nothing — on the one round where the
+         number most needs saying what it IS. The SDK marks that round with
+         isFirst; where it is undefined the old wording stands. */
+      showToast(res.isFirst
+        ? 'first score ' + res.score + ' / 100 — your mark to beat'
+        : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100',
+        res.isNewBest && !res.isFirst);
     }
     draw();
   }

@@ -3,25 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Horizon Read — an eye level and horizon line drill</title>
+<title>Eye Level and Horizon Line — estimate the camera height</title>
 <meta name="description" content="Five scenes hide the camera's eye level behind boxes, fence posts and figures. Drag the horizon line to where the cues put it, and read perspective faster.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Horizon Read">
 <meta property="og:description" content="estimate the camera's eye level — a daily art drill">
 <meta property="og:site_name" content="Art Daily · SadeAli">
 <meta property="og:url" content="https://artdaily.sadeali.com/horizon-read/">
-<!-- The page's own card, deliberately: the drills have no per-drill art, and a
-     share with no image at all renders as a grey box. 1200x630, declared so a
-     scraper can lay out the card before it has fetched the file. -->
-<meta property="og:image" content="https://artdaily.sadeali.com/og.png">
+<!-- This drill's own share card, built from the registry by tools/build-og.js:
+     its name, tagline, category and address. 1200x630, declared so a scraper
+     can lay out the card before it has fetched the file. -->
+<meta property="og:image" content="https://artdaily.sadeali.com/og/horizon-read.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Art Daily — tiny daily drills for artists">
+<meta property="og:image:alt" content="Horizon Read — estimate the camera's eye level. A form &amp; perspective drill at artdaily.sadeali.com/horizon-read">
 <link rel="canonical" href="https://artdaily.sadeali.com/horizon-read/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Horizon Read">
 <meta name="twitter:description" content="estimate the camera's eye level — a daily art drill">
-<meta name="twitter:image" content="https://artdaily.sadeali.com/og.png">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og/horizon-read.png">
 <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🌅&lt;/text&gt;&lt;/svg&gt;">
 <link rel="stylesheet" href="css/style.css">
 <script>
@@ -82,7 +82,7 @@
         <p>Studio tip: things at your eye level show you neither their top nor their underside — hunt for that flip.</p>
       </div>
 
-      <noscript><p class="hint">This drill needs JavaScript — nothing else, no trackers, no accounts.</p></noscript>
+      <noscript><p class="hint">This drill needs JavaScript — nothing else, and no account needed.</p></noscript>
     </div>
   </div>
 </main>
@@ -92,8 +92,8 @@
   <p>Five procedural scenes a round. Each hides the camera's eye level behind whatever is standing in it — boxes, a fence running away from you, a walker or two — and you drag a line to where the horizon has to be, then lock it in. Drag it with your finger, nudge it with the arrow keys, Enter locks and advances. Five chips under the canvas fill in with the round's scores as you go.</p>
   <p>Horizon and eye level are the same height, and every object in the frame reports on it: box tops are visible only from below the line, undersides only from above, heads of same-height figures ride along it, and a receding row of posts aims straight at it. The flip — where a thing stops showing you its top and starts showing you its underside — is what you learn to hunt for. The geometry is real rather than drawn to look convincing, so those readings hold: each box is a real solid whose front corners are carried back along their own rays until they meet the vanishing point, one shared depth ratio doing the whole box, and the fence steps in by <code>t = k·step / (k·step + depth)</code>, so the spacing survives the diagonal check an artist would run on it.</p>
   <h3>What a miss costs</h3>
-  <p>One line of geometry does the grading: a scene scores <code>100 × clamp(1 − |dy| / (0.14·H), 0, 1)</code>, where dy is how far your line sits from the true one and H is the frame height. Dead on is 100, and the score reaches zero at 14% of the frame away. The round is the mean of the five. Your miss is reported as a share of the frame first and in pixels second, so it means the same thing on a phone as on a desktop. The reveal then draws the true line and rings the cue that settled the scene.</p>
-  <p class="about-more">More form & perspective drills: <a href="../cross-contour/">Wrap the Form</a> · <a href="../down-the-row/">Down the Row</a> · <a href="../perspective/">Vanishing Act</a> · <a href="../">all 42 drills</a></p>
+  <p>One line of geometry does the grading: a scene scores <code>100 × clamp(1 − |dy| / (0.14·H), 0, 1)</code>, where dy is how far your line sits from the true one and H is the frame height. Dead on is 100, and the score reaches zero at 14% of the frame away. The round is the mean of the five. Your miss is reported as a share of the frame first and in pixels second, so it means the same thing on a phone as on a desktop. The reveal then draws the true line and rings the cue that settled the scene. There is no model behind it — one subtraction against a line the scene was built from.</p>
+  <p class="about-more">More form & perspective drills: <a href="../cross-contour/">Wrap the Form</a> · <a href="../down-the-row/">Down the Row</a> · <a href="../perspective/">Vanishing Act</a> · <a href="../">the whole catalogue</a></p>
 </section>
 
 <footer class="footer">
@@ -105,9 +105,13 @@
     <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
     <span aria-hidden="true">·</span>
     <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/for-teachers/">For teachers</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/privacy/">Privacy</a>
     <span id="supportLinks"></span>
   </nav>
-  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no tracking</p>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no account needed</p>
 </footer>
 
 <script src="../sdk/artdaily-sdk.js"></script>

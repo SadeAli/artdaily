@@ -358,7 +358,44 @@
   var VP_CORE = 0.20;               /* …and this far off the optical axis */
   var MIN_FACE = 0.015;             /* no visible face thinner than this */
 
-  function rand(lo, hi) { return lo + Math.random() * (hi - lo); }
+  /* ---- where a scene's numbers come from -------------------------------
+     THE ROUND'S CONTENT IS A SEQUENCE OF NORMALISED DRAWS, and in this
+     drill it is nothing BUT normalised draws: every value below is in
+     units of canvas width, ASPECT is a constant, and the sheet is only
+     multiplied in at paint time. So two players on any two devices get
+     the same three scenes today — the same camera, the same blocks, the
+     same two vanishing points to hunt — and a score finally has a
+     denominator. Round 1 is today's shared round; round 2 and on are
+     practice, same distribution, unshared seed.
+
+     ONE STREAM PER SCENE. The three scenes are dealt one at a time, minutes
+     apart, and makeCamera contains a retry loop (up to 24 draws of f) whose
+     length depends on the values it has already drawn. Keeping each scene
+     on its own stream means scene 2 is scene 2 regardless of what scene 1
+     spent, and it is the shape the SDK documents for an item index. Each
+     stream is the same generator with the same uniform output, so nothing
+     about the distribution of any value here moves. */
+  var sceneRng = Math.random;
+
+  /* GUARDED, and the guard is load-bearing: index.html cache-busts its own
+     scripts with ?v=, but every drill loads ../sdk/artdaily-sdk.js BARE, so
+     the two files cache independently. A returning visitor holding a warm
+     old SDK plus a cold copy of this file would call a function that does
+     not exist, and startScene would throw before the first block was
+     built — blank sheet, HUD at "–". Falling back to Math.random costs
+     today's player nothing but a non-comparable round, which is what they
+     had yesterday, and it self-heals when the SDK's max-age expires. */
+  function seedSceneRng() {
+    sceneRng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round, sceneIdx)
+      : Math.random;
+  }
+
+  /* Unchanged as a function — lo + u * (hi - lo) is exactly what it always
+     was, with Math.random() swapped for the round's uniform. u is uniform
+     on [0,1) either way, so every value downstream keeps precisely the
+     shape it had: a seeded scene is not an easier or a harder scene. */
+  function rand(lo, hi) { return lo + sceneRng() * (hi - lo); }
   function lerp(a, b, t) { return a + (b - a) * t; }
 
   /* Difficulty ramp within a round. `t` slides the camera's yaw across
@@ -384,8 +421,8 @@
       dLmax = Math.min(pu - VP_EDGE, f * f / VP_CORE);
     } while (dLmin > dLmax && guard++ < 24);
     if (dLmin > dLmax) { dLmin = dLmax = (dLmin + dLmax) / 2; }
-    var t = d.t[0] + Math.random() * (d.t[1] - d.t[0]);
-    if (d.edge && Math.random() < 0.5) t = 1 - t;   /* mirror the hard scene */
+    var t = d.t[0] + sceneRng() * (d.t[1] - d.t[0]);
+    if (d.edge && sceneRng() < 0.5) t = 1 - t;   /* mirror the hard scene */
     var dL = lerp(dLmin, dLmax, t);
     var dR = f * f / dL;
     return {
@@ -413,7 +450,7 @@
     var delLo = Math.min(d.base[0], delHi - 0.015);
     var del = rand(delLo, delHi);
     var tau;
-    if (Math.random() < d.low) {
+    if (sceneRng() < d.low) {
       tau = -rand(0.15, 0.5) * del;                 /* shorter than the eye */
     } else {
       var tauHi = Math.min(d.top[1], cam.pv - 0.03);
@@ -486,6 +523,17 @@
       ty: cam.pv / ASPECT,
       vpL: { x: cam.vpL, y: cam.pv / ASPECT },
       vpR: { x: cam.vpR, y: cam.pv / ASPECT },
+      /* COSMETIC, LEFT ON Math.random ON PURPOSE. sunLeft only decides
+         which of a block's two visible faces is filled at alpha 0.15 and
+         which at 0.07 — a mirror of the shading, identical ink either way.
+         It moves no edge, no corner and no vanishing point, so it is not
+         part of the thing the score is computed from, and seeding it would
+         spend a draw of the round's sequence on a lighting preference.
+         (It is also the LAST draw makeScene makes, so leaving it out of the
+         stream cannot shift anything that follows it.) The one visible
+         consequence: two players comparing screenshots of today's scene may
+         see it lit from opposite sides. Same scene, same score, mirrored
+         shadow. */
       boxes: boxes, lw: d.lw, sunLeft: Math.random() < 0.5,
       /* the camera that took the photograph, kept so the scene can be
          checked against (vpL−pu)(vpR−pu) = −f² */
@@ -566,6 +614,8 @@
   }
 
   function startScene() {
+    /* Re-seeded for THIS scene, before a single value is drawn. */
+    seedSceneRng();
     scene = makeScene(sceneIdx);
     guess = { y: 0.8, v1: 0.3, v2: 0.7 };
     drag = null;    /* a pointer held across scenes must not move the fresh guess */
@@ -662,7 +712,14 @@
     var res = ArtDaily.report(roundScore(sceneScores));
     hudScore.textContent = String(res.score);
     hudBest.textContent = res.best === null ? '–' : String(res.best);
-    showToast((res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+    /* A first-ever round has no previous best, so isNewBest is trivially
+       true and "new best!" celebrates nothing — on the one round where the
+       number most needs saying what it IS. The SDK marks that round with
+       isFirst; where it is undefined the old wording stands. */
+    showToast(res.isFirst
+      ? 'first score ' + res.score + ' / 100 — your mark to beat'
+      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100',
+      res.isNewBest && !res.isFirst);
   }
 
   function advance() {

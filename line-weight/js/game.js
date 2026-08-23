@@ -598,7 +598,31 @@
   var att = null;          /* the attempt buffer — see newAttempt() */
   var cursor = null;       /* {x, y} live weight readout while drawing */
 
-  function rand(lo, hi) { return lo + Math.random() * (hi - lo); }
+  /* ---- where the round's five target ribbons come from -----------------
+     THE ROUND'S CONTENT IS A SEQUENCE OF NORMALISED DRAWS, and only that.
+     Round 1 of a sitting is dealt from ArtDaily.roundRandom(1) — seeded off
+     today and this slug — so every player redraws the same five weight
+     profiles today and a score finally has a denominator. Round 2 and on are
+     practice: same generator, same distribution, unshared seed.
+
+     rand() is unchanged as a function — lo + u * (hi - lo), with Math.random
+     swapped for the round's uniform. u is uniform on [0,1) either way, so a
+     seeded ribbon swells exactly as much as an unseeded one did, and the five
+     uniforms handed to makeTargetProfile are still five plain uniforms — the
+     'random-smooth' profile keeps its shape distribution to the character.
+
+     NO PER-STROKE CACHE IS NEEDED, unlike lines. makeSpec() is called exactly
+     once per stroke (newRound for stroke 0, the advance for the rest) — the
+     resize handler only repaints, because the spec is already stored as
+     fractions of H (ampF, tiltF) and absolute ink widths — so this rolling
+     generator is never walked forward twice for the same ribbon.
+
+     The kind of each stroke is FIXED (PROFILE_ORDER), so the ramp is the same
+     for everyone with or without a seed; what the seed shares is the widths,
+     the guide's bow and tilt, and the shape of the fifth, free-form one. */
+  var roundRng = Math.random;
+
+  function rand(lo, hi) { return lo + roundRng() * (hi - lo); }
 
   function strokeLabel() {
     return 'stroke ' + (strokeIdx + 1) + ' of ' + STROKES_PER_ROUND +
@@ -611,12 +635,12 @@
     var kind = PROFILE_ORDER[idx];
     var wMin = idx < 2 ? rand(2, 3.5) : rand(2.5, 5);
     var wMax = idx < 2 ? rand(12.5, 16) : rand(11, 15);
-    var seed = [Math.random(), Math.random(), Math.random(), Math.random(), Math.random()];
+    var seed = [roundRng(), roundRng(), roundRng(), roundRng(), roundRng()];
     spec = {
       kind: kind,
       wMin: wMin,
       wMax: wMax,
-      ampF: (0.05 + 0.012 * idx + rand(0, 0.03)) * (Math.random() < 0.5 ? -1 : 1),
+      ampF: (0.05 + 0.012 * idx + rand(0, 0.03)) * (roundRng() < 0.5 ? -1 : 1),
       tiltF: rand(-0.04, 0.04),
       targetWs: makeTargetProfile(kind, N_SAMPLES, wMin, wMax, seed)
     };
@@ -648,6 +672,22 @@
     revealing = null;
     playing = true;
     newAttempt();
+    /* THE ONE LINE THAT MAKES A SCORE COMPARABLE. round is already 1 on the
+       first round of a sitting, so round 1 is today's shared round and every
+       "new round" after it is practice.
+
+       GUARDED, and the guard is load-bearing. index.html cache-busts its own
+       scripts with ?v=, but every drill loads ../sdk/artdaily-sdk.js BARE, so
+       the two files cache INDEPENDENTLY and roundRandom is new: a returning
+       visitor holding a warm SDK from another drill plus a cold copy of this
+       file would call a function that does not exist, throw inside newRound()
+       before the first ribbon exists, and sit on "Loading…" with a blank
+       sheet. Falling back to Math.random costs today's player nothing but a
+       non-comparable round — exactly what they had yesterday — and it
+       self-heals when the SDK's max-age expires. */
+    roundRng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round)
+      : Math.random;
     makeSpec(0);
     hudRound.textContent = String(round);
     hudScore.textContent = '–';
@@ -1208,7 +1248,14 @@
     var res = ArtDaily.report(meanScore(scores));
     hudScore.textContent = String(res.score);
     hudBest.textContent = res.best === null ? '–' : String(res.best);
-    showToast((res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+    /* A first-ever round has no previous best, so isNewBest is trivially
+       true and "new best!" celebrates nothing — on the one round where the
+       number most needs saying what it IS. The SDK marks that round with
+       isFirst; where it is undefined the old wording stands. */
+    showToast(res.isFirst
+      ? 'first score ' + res.score + ' / 100 — your mark to beat'
+      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100',
+      res.isNewBest && !res.isFirst);
   }
 
   var toastTimer = null;

@@ -505,8 +505,45 @@
     { yaw: [120, 170], pitch: [50, 72], negPitch: true },
   ];
 
-  function randInt(lo, hi) { return lo + Math.floor(Math.random() * (hi - lo + 1)); }
-  function randSign() { return Math.random() < 0.5 ? -1 : 1; }
+  /* ---- where a box's numbers come from ---------------------------------
+     THE ITEM'S CONTENT IS A SEQUENCE OF DRAWS, and this drill is the one
+     in the chapter where that sequence is the WHOLE item: yaw and pitch are
+     whole degrees, the target and the opening pose are both angles, and the
+     canvas never enters the generation at all. So today's five boxes are
+     bit-for-bit the same five boxes on a phone and on a desktop, and a
+     score off them is finally a number with a denominator. Round 1 of a
+     sitting is today's shared round; round 2 and on are practice — same
+     generator, same distribution, unshared seed.
+
+     ONE STREAM PER BOX, asked for at the moment the box is built, which is
+     the shape the SDK documents for an item index: the five boxes are dealt
+     one at a time, and box 4 must be box 4 whatever boxes 1–3 spent. (Both
+     branches that skip a draw — the non-negative pitch on item 1, and
+     avoidDotSliver's nudge — depend on the item index and on values already
+     drawn, never on the sheet, so nothing here can diverge between two
+     players anyway.) */
+  var itemRng = Math.random;
+
+  /* GUARDED, and the guard is load-bearing: index.html cache-busts its own
+     scripts with ?v=, but every drill loads ../sdk/artdaily-sdk.js BARE, so
+     the two files cache independently. A returning visitor with a warm old
+     SDK and a cold copy of this file would call a function that does not
+     exist, and startItem would throw before the first box was posed —
+     blank sheet, HUD at "–". Falling back to Math.random costs today's
+     player nothing but a non-comparable round, which is what they had
+     yesterday, and it self-heals when the SDK's max-age expires. */
+  function seedItemRng() {
+    itemRng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round, itemIdx)
+      : Math.random;
+  }
+
+  /* Both unchanged as functions — the same expressions they always were,
+     with Math.random() swapped for the item's uniform, which is uniform on
+     [0,1) just the same. Same rounding, same inclusive ends, same coin: a
+     seeded box is not an easier or a harder box. */
+  function randInt(lo, hi) { return lo + Math.floor(itemRng() * (hi - lo + 1)); }
+  function randSign() { return itemRng() < 0.5 ? -1 : 1; }
 
   function targetForItem(idx) {
     var r = RAMP[Math.min(idx, RAMP.length - 1)];
@@ -518,6 +555,8 @@
   }
 
   function startItem() {
+    /* Re-seeded for THIS box, before a single value is drawn. */
+    seedItemRng();
     /* Never open dead flat: a front-on rectangle carries almost no 3D
        information, so the first thing a beginner saw was not a box. */
     pose = { yaw: randSign() * randInt(8, 14), pitch: randInt(4, 8) };
@@ -697,7 +736,14 @@
     var res = ArtDaily.report(roundScore(scores));
     hudScore.textContent = String(res.score);
     hudBest.textContent = res.best === null ? '–' : String(res.best);
-    showToast((res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+    /* A first-ever round has no previous best, so isNewBest is trivially
+       true and "new best!" celebrates nothing — on the one round where the
+       number most needs saying what it IS. The SDK marks that round with
+       isFirst; where it is undefined the old wording stands. */
+    showToast(res.isFirst
+      ? 'first score ' + res.score + ' / 100 — your mark to beat'
+      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100',
+      res.isNewBest && !res.isFirst);
   }
 
   function finishRound() {

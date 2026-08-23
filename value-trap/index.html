@@ -3,25 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Value Trap — matching colour value against grey</title>
+<title>Value vs Colour — match a colour to the grey of its value</title>
 <meta name="description" content="One grey target and six loud colours; only one is exactly as light. A value matching drill for judging how light or dark a colour really is.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Value Trap">
 <meta property="og:description" content="find the colour that matches the value — a daily art drill">
 <meta property="og:site_name" content="Art Daily · SadeAli">
 <meta property="og:url" content="https://artdaily.sadeali.com/value-trap/">
-<!-- The page's own card, deliberately: the drills have no per-drill art, and a
-     share with no image at all renders as a grey box. 1200x630, declared so a
-     scraper can lay out the card before it has fetched the file. -->
-<meta property="og:image" content="https://artdaily.sadeali.com/og.png">
+<!-- This drill's own card, built from its registry entry by tools/build-og.js:
+     name, tagline and the drill's URL, so a screenshot of the share is also
+     directions. 1200x630, declared so a scraper can lay out the card before it
+     has fetched the file. -->
+<meta property="og:image" content="https://artdaily.sadeali.com/og/value-trap.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Art Daily — tiny daily drills for artists">
+<meta property="og:image:alt" content="Art Daily card: Value Trap — tap the colour as light as the grey — artdaily.sadeali.com/value-trap">
 <link rel="canonical" href="https://artdaily.sadeali.com/value-trap/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Value Trap">
 <meta name="twitter:description" content="find the colour that matches the value — a daily art drill">
-<meta name="twitter:image" content="https://artdaily.sadeali.com/og.png">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og/value-trap.png">
 <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🪤&lt;/text&gt;&lt;/svg&gt;">
 <link rel="stylesheet" href="css/style.css">
 <script>
@@ -91,7 +92,7 @@
         <p>Studio tip: half-shut your eyes, or imagine the picture in black and white — the colour is shouting, the value is whispering, and it is the value that makes a painting read.</p>
       </div>
 
-      <noscript><p class="hint">This drill needs JavaScript — nothing else, no trackers, no accounts.</p></noscript>
+      <noscript><p class="hint">This drill needs JavaScript. Nothing to install, and no account needed.</p></noscript>
     </div>
   </div>
 </main>
@@ -101,8 +102,8 @@
   <p>An item is one grey target chip, somewhere between L* 30 and 75, and six chips in loud hues. Exactly one of the six carries the grey&rsquo;s value; tap it, or press its number, since the chips are keyed 1&ndash;6. The moment you pick, all of them flip to their own greyscale equivalents with their L* numbers printed on &mdash; the squint view &mdash; which stays up until you dismiss it, with no clock running, so a miss can be studied. Six items make a round, and the margin between the right answer and its nearest distractor tightens from 12 L* to 5.</p>
   <p>Hue interferes with value, and that interference is the trap. A saturated chip announces itself, while its lightness &mdash; the property that decides whether a picture reads at all &mdash; says very little out loud. Half-shutting your eyes is the old remedy, and the squint view is that gesture made literal, but it arrives only once the answer is locked in, so the judgement itself happens with the colour still shouting.</p>
   <h3>What a near miss is worth</h3>
-  <p>The right chip is 100. A wrong one still earns for being close in value: 38 &times; (1 &minus; |&Delta;L*| / reach)&sup3;, where reach is 3.8&times; the tightest gap available on that item. Measuring against the item&rsquo;s own gap keeps the nearest wrong chip worth a visible ~15 whether the item was easy or subtle, while distant picks fade to nothing. Cubing the fade is deliberate: with six chips and one right answer, guessing alone already banks about 17, and cubing holds a blind round close to that floor &mdash; a measured mean of 24 over 20,000 simulated rounds. A round is the mean of its six items.</p>
-  <p class="about-more">More colour drills: <a href="../neutral-hunt/">Neutral Hunt</a> · <a href="../temperature-sort/">Temperature Sort</a> · <a href="../colour-constancy/">Colour Constancy</a> · <a href="../">all 42 drills</a></p>
+  <p>The right chip is 100. A wrong one still earns for being close in value: 38 &times; (1 &minus; |&Delta;L*| / reach)&sup3;, where reach is 3.8&times; the tightest gap available on that item. Both numbers fall out of that arithmetic and nothing else &mdash; the chips were built to their L* values before they were drawn, so no model has to judge them. Measuring against the item&rsquo;s own gap keeps the nearest wrong chip worth a visible ~15 whether the item was easy or subtle, while distant picks fade to nothing. Cubing the fade is deliberate: with six chips and one right answer, guessing alone already banks about 17, and cubing holds a blind round close to that floor &mdash; a measured mean of 24 over 20,000 simulated rounds. A round is the mean of its six items.</p>
+  <p class="about-more">More colour drills: <a href="../neutral-hunt/">Neutral Hunt</a> · <a href="../temperature-sort/">Temperature Sort</a> · <a href="../colour-constancy/">Colour Constancy</a> · <a href="../">the whole catalogue</a></p>
 </section>
 
 <footer class="footer">
@@ -114,9 +115,13 @@
     <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
     <span aria-hidden="true">·</span>
     <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/for-teachers/">For teachers</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/privacy/">Privacy</a>
     <span id="supportLinks"></span>
   </nav>
-  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no tracking</p>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no account needed</p>
 </footer>
 
 <script src="../sdk/artdaily-sdk.js"></script>

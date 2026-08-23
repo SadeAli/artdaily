@@ -3,25 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cube From Plane — a two-point perspective cube drill</title>
+<title>Two-Point Perspective Cube — grow a face into a correct box</title>
 <meta name="description" content="Grow one drawn face into a correct two-point-perspective cube by dragging three corners. Perspective practice in aiming edges at vanishing points.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Cube From Plane">
 <meta property="og:description" content="grow the face into a correct cube — a daily art drill">
 <meta property="og:site_name" content="Art Daily · SadeAli">
 <meta property="og:url" content="https://artdaily.sadeali.com/cube-from-plane/">
-<!-- The page's own card, deliberately: the drills have no per-drill art, and a
-     share with no image at all renders as a grey box. 1200x630, declared so a
-     scraper can lay out the card before it has fetched the file. -->
-<meta property="og:image" content="https://artdaily.sadeali.com/og.png">
+<!-- This drill's own share card, built from the registry by tools/build-og.js:
+     its name, tagline, category and address. 1200x630, declared so a scraper
+     can lay out the card before it has fetched the file. -->
+<meta property="og:image" content="https://artdaily.sadeali.com/og/cube-from-plane.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Art Daily — tiny daily drills for artists">
+<meta property="og:image:alt" content="Cube From Plane — grow the face into a correct cube. A form &amp; perspective drill at artdaily.sadeali.com/cube-from-plane">
 <link rel="canonical" href="https://artdaily.sadeali.com/cube-from-plane/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Cube From Plane">
 <meta name="twitter:description" content="grow the face into a correct cube — a daily art drill">
-<meta name="twitter:image" content="https://artdaily.sadeali.com/og.png">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og/cube-from-plane.png">
 <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🎲&lt;/text&gt;&lt;/svg&gt;">
 <link rel="stylesheet" href="css/style.css">
 <script>
@@ -79,7 +79,7 @@
         <p>keys: 1/2/3 pick a dot, arrows nudge (shift = fine), enter = done.</p>
       </div>
 
-      <noscript><p class="hint">This drill needs JavaScript — nothing else, no trackers, no accounts.</p></noscript>
+      <noscript><p class="hint">This drill needs JavaScript — nothing else, and no account needed.</p></noscript>
     </div>
   </div>
 </main>
@@ -89,8 +89,8 @@
   <p>The sheet shows a horizon and one vertical face of a cube. Three numbered dots are yours — 1 far-bottom, 2 far-top, 3 top-back — to drag until all nine visible edges converge; then press done. Three boxes per round (two on a first-ever round, so the first score arrives in about a minute), the right-hand vanishing point pulling in further each box. The dots start 25–33% of the face diagonal off the truth, so pressing done without moving anything cannot clear 30 on any hardware.</p>
   <p>The habit being replaced is placing corners; the habit being built is aiming edges at vanishing points. The word arrives before the drill leans on it: while the dots are still live, faint dashed lines carry the drawn face's two horizontal edges out to the left vanishing point, tagged <em>these edges aim here</em>. Underneath, the truth is an actual unit cube through a real pinhole camera — the 90° constraint ties the pair of vanishing points to the focal length, so the square face you were handed secretly fixes both.</p>
   <h3>What each dot costs you</h3>
-  <p>Per corner, the error is the distance from your dot to the true corner over the face diagonal; a box scores <code>100 · clamp(1 − mean(err)/0.30, 0, 1)</code> with a perfect zone around the truth so 100 is reachable, and the round is the mean of the boxes. That zone belongs to the hardware: 1.5% of the face diagonal is the pen standard, opened ×2 for a mouse or trackpad and ×1.5 for a finger, then floored at 4 eased pixels, 9 on a coarse screen — 1.5% of a 140px phone face was a 2.1px target, under the device's own noise. The 0.30 ramp is identical everywhere, because that part is judgement, not hardware.</p>
-  <p class="about-more">More form & perspective drills: <a href="../box-check/">Box Check</a> · <a href="../vp-hunt/">Vanishing Point Hunt</a> · <a href="../rotate-place/">Rotate & Place</a> · <a href="../">all 42 drills</a></p>
+  <p>Per corner, the error is the distance from your dot to the true corner over the face diagonal; a box scores <code>100 · clamp(1 − mean(err)/0.30, 0, 1)</code> with a perfect zone around the truth so 100 is reachable, and the round is the mean of the boxes. That zone belongs to the hardware: 1.5% of the face diagonal is the pen standard, opened ×2 for a mouse or trackpad and ×1.5 for a finger, then floored at 4 eased pixels, 9 on a coarse screen — 1.5% of a 140px phone face was a 2.1px target, under the device's own noise. The 0.30 ramp is identical everywhere, because that part is judgement, not hardware. Nothing is judged by a model — the mark is that comparison of your three dots against corners the camera fixed before you touched them.</p>
+  <p class="about-more">More form & perspective drills: <a href="../box-check/">Box Check</a> · <a href="../vp-hunt/">Vanishing Point Hunt</a> · <a href="../rotate-place/">Rotate & Place</a> · <a href="../">the whole catalogue</a></p>
 </section>
 
 <footer class="footer">
@@ -102,9 +102,13 @@
     <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
     <span aria-hidden="true">·</span>
     <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/for-teachers/">For teachers</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/privacy/">Privacy</a>
     <span id="supportLinks"></span>
   </nav>
-  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no tracking</p>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no account needed</p>
 </footer>
 
 <script src="../sdk/artdaily-sdk.js"></script>

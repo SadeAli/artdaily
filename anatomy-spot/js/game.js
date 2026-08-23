@@ -307,7 +307,46 @@
      round's range and its ramp are unchanged. */
   var OPENER_PARTS = ['head', 'torso', 'leg', 'shoulders'];
 
-  function rand(lo, hi) { return lo + Math.random() * (hi - lo); }
+  /* ---- where the five items come from ----------------------------------
+     THE ROUND'S CONTENT IS A SEQUENCE OF NORMALISED DRAWS. Round 1 of a
+     sitting is dealt from ArtDaily.roundRandom(1) — seeded from today and
+     this slug — so every player hunts the same five flaws today: the same
+     part, the same side, the same direction of error, the same pose and
+     the same figure carrying it. Round 2 and on are practice: same
+     generator, same distribution, unshared seed.
+
+     NO PER-ITEM CACHE IS NEEDED HERE, and this drill needs one least of
+     all: all five items are dealt up front, in one burst inside newRound,
+     and nothing after that draws at all. layoutItem() rebuilds the PIXEL
+     geometry from the item it was already handed — that is what runs on a
+     resize — so a rotation re-lays the same five mannequins out and can
+     never re-deal them.
+
+     THE SAME DRAWS REALLY ARE THE SAME DRILL HERE. An item is a part name,
+     a side, a sign, five pose angles in degrees and a figure index: not one
+     of them is a function of the canvas. layoutItem multiplies by a head
+     unit taken from min(H*0.104, W*0.097) and stands the figures at 0.30W
+     and 0.70W, and locationScore grades in head-units, so a phone and a
+     desktop get the same question at the same difficulty.
+
+     GUARDED, and the guard is load-bearing: index.html cache-busts its own
+     scripts but every drill loads ../sdk/artdaily-sdk.js BARE, so the two
+     cache independently and a returning visitor can hold a warm old SDK
+     against a cold copy of this file. An unguarded call would throw inside
+     newRound() before a single item existed — blank sheet, "Loading…"
+     forever. Only the BARE call form is used: every draw in this drill goes
+     through uniform() below, and Math.random is a drop-in for that. */
+  var roundRng = null;
+
+  /* One raw uniform in [0,1) — the round's, or the plain one when an old
+     SDK is cached. Every random draw in this file goes through here. */
+  function uniform() { return roundRng ? roundRng() : Math.random(); }
+
+  /* Unchanged as a function — lo + u * (hi - lo) is exactly what it always
+     was, with Math.random() swapped for the round's uniform. u is uniform
+     on [0,1) either way, so every value downstream keeps precisely the
+     shape it had and a seeded round is not an easier or a harder round. */
+  function rand(lo, hi) { return lo + uniform() * (hi - lo); }
 
   function randPose() {
     return {
@@ -322,10 +361,10 @@
        terminates on the first draw whichever pool is in hand. */
     var pool = (idx === 0) ? OPENER_PARTS : PARTS;
     var part = prevPart;
-    while (part === prevPart) part = pool[Math.floor(Math.random() * pool.length)];
+    while (part === prevPart) part = pool[Math.floor(uniform() * pool.length)];
     var side = (part === 'upperArm' || part === 'forearm' || part === 'leg')
-      ? (Math.random() < 0.5 ? 'L' : 'R') : null;
-    var factor = 1 + (Math.random() < 0.5 ? -1 : 1) * errFactorForItem(idx);
+      ? (uniform() < 0.5 ? 'L' : 'R') : null;
+    var factor = 1 + (uniform() < 0.5 ? -1 : 1) * errFactorForItem(idx);
     /* ONE pose, shared. Posing the two figures independently meant the
        player was not spotting one difference between matched figures —
        they were comparing two differently-posed figures where only one
@@ -335,7 +374,7 @@
        about, which is what "two figures, one flaw" promises. */
     var pose = randPose();
     return {
-      flawedIdx: Math.random() < 0.5 ? 0 : 1,
+      flawedIdx: uniform() < 0.5 ? 0 : 1,
       part: part, side: side, factor: factor,
       poses: [pose, pose]
     };
@@ -379,6 +418,13 @@
     itemIdx = 0;
     itemScores = [];
     items = [];
+    /* THE ONE LINE THAT MAKES A SCORE COMPARABLE. round is already 1 on the
+       first round of a sitting, so round 1 is today's shared round and every
+       "new round" after it is practice. Re-seeded HERE, per round and BEFORE
+       the deal below, so a replay can never hand back the round just played. */
+    roundRng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round)
+      : Math.random;
     var prev = null;
     for (var i = 0; i < ITEMS_PER_ROUND; i++) {
       items.push(makeItem(i, prev));
@@ -746,7 +792,14 @@
     hudScore.textContent = String(res.score);
     hudBest.textContent = res.best === null ? '–' : String(res.best);
     hint.textContent = verdictMsg + ' — round done, press "new round" to go again.';
-    showToast((res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+    /* A first-ever round has no previous best, so isNewBest is trivially
+       true and "new best!" celebrates nothing — on the one round where the
+       number most needs saying what it IS. The SDK marks that round with
+       isFirst; where it is undefined the old wording stands. */
+    showToast(res.isFirst
+      ? 'first score ' + res.score + ' / 100 — your mark to beat'
+      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100',
+      res.isNewBest && !res.isFirst);
   }
 
   var toastTimer = null;

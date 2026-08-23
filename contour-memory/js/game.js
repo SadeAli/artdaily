@@ -481,7 +481,55 @@
      scored — finishRound() is presentation only (see finishFigure) */
   var roundResult = null;
 
-  function rand(lo, hi) { return lo + Math.random() * (hi - lo); }
+  /* ---- where the three blobs come from --------------------------------
+     THE ROUND'S CONTENT IS A SEQUENCE OF NORMALISED DRAWS. Round 1 of a
+     sitting is dealt from ArtDaily.roundRandom(1) — seeded from today and
+     this slug — so every player memorizes the same three shapes today and
+     the score finally has a denominator. Round 2 and on are practice: same
+     generator, same distribution, unshared seed.
+
+     NO PER-FIGURE CACHE IS NEEDED HERE, unlike lines. makeFigure() is called
+     exactly once per figure (startFigure), and a resize SCALES the existing
+     contour rather than regenerating it — see the resize handler, which is
+     deliberate and predates this. So a plain rolling generator can never
+     deal a different blob under the player's hand.
+
+     THE SAME DRAWS ARE VERY NEARLY THE SAME FIGURE HERE, which is unusual.
+     Every control point is centre + (unit direction × R × draw), with one R
+     for both axes, so a phone's blob is the desktop's blob at a smaller
+     size — similar, not merely comparable. Scoring aligns centroid and
+     normalizes scale before the chamfer, so the shape task is identical. The
+     one thing that still differs by device is `exposure`, which makeFigure
+     stretches by up to 1.6x on a small sheet: a 92px blob is not the same
+     memory task as a 190px one. That is a fairness branch that predates
+     this and is not something a seed can or should paper over.
+
+     GUARDED, and the guard is load-bearing: index.html cache-busts its own
+     scripts but every drill loads ../sdk/artdaily-sdk.js BARE, so the two
+     cache independently and a returning visitor can hold a warm old SDK
+     against a cold copy of this file. An unguarded call would throw inside
+     newRound() before the first figure exists — blank sheet, "Loading…"
+     forever. Only the BARE call form is used: every draw in this drill goes
+     through uniform() below, and Math.random is a drop-in for that — there is no
+     helper to shim. Falling back costs today's player nothing but a
+     non-comparable round, which is what they had yesterday. */
+  var roundRng = null;
+
+  /* One raw uniform in [0,1) — the round's, or the plain one when an old SDK
+     is cached. Every random draw in this file goes through here.
+     The Math.random side also covers the ONE call that happens before any
+     round exists: the boot start-screen blob (makeFigure(0) at the bottom of
+     this file) is a dashed teaching sample that is never flashed, never drawn
+     over and never scored. Dealing it from the round's generator would burn
+     four draws per control point out of round 1's sequence before the round
+     began, and every player's real first figure would move. */
+  function uniform() { return roundRng ? roundRng() : Math.random(); }
+
+  /* Unchanged as a function — lo + u * (hi - lo) is exactly what it always
+     was, with Math.random() swapped for the round's uniform. u is uniform on
+     [0,1) either way, so every value downstream keeps precisely the shape it
+     had and a seeded round is not an easier or a harder round. */
+  function rand(lo, hi) { return lo + uniform() * (hi - lo); }
 
   function figLabel() { return 'figure ' + (figIdx + 1) + ' of ' + FIGURES_PER_ROUND; }
 
@@ -540,6 +588,13 @@
     scores = [];
     records = [];
     roundResult = null;
+    /* THE ONE LINE THAT MAKES A SCORE COMPARABLE. round is already 1 on the
+       first round of a sitting, so round 1 is today's shared round and every
+       "new round" after it is practice. Re-seeded HERE, per round, so a
+       replay can never deal the round just played. */
+    roundRng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round)
+      : Math.random;
     playing = true;
     hudRound.textContent = String(round);
     hudScore.textContent = '–';
@@ -671,7 +726,14 @@
     if (res) {
       hudScore.textContent = String(res.score);
       hudBest.textContent = res.best === null ? '–' : String(res.best);
-      showToast((res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+      /* A first-ever round has no previous best, so isNewBest is trivially
+         true and "new best!" celebrates nothing — on the one round where the
+         number most needs saying what it IS. The SDK marks that round with
+         isFirst; where it is undefined the old wording stands. */
+      showToast(res.isFirst
+        ? 'first score ' + res.score + ' / 100 — your mark to beat'
+        : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100',
+        res.isNewBest && !res.isFirst);
     }
   }
 

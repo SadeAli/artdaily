@@ -28,7 +28,7 @@ Round score = mean of 6 items; distractor margins shrink 12 → 5 L* within the 
 Run it: `python3 -m http.server 8080` in the repo root, not this folder —
 the SDK, the page chrome and the font are loaded from above it — then open
 `localhost:8080/value-trap/`.
-No build step, no dependencies, no tracking.
+No build step, no dependencies, no third-party code in the drill itself.
 
 Part of [Art Daily](https://artdaily.sadeali.com/) · a
 [SadeAli](https://sadeali.com/) experiment.

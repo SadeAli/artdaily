@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- QUERY-FIRST TITLE. "Full Circle" is a name nobody searches for; the
+     practice is what people type. The name keeps the <h1>, so the drill still
+     has an identity once you are on the page. -->
+<title>Draw a Perfect Circle — free online drawing drill</title>
+<meta name="description" content="Draw a circle freehand in one stroke. The drill fits the truest circle to your line, scores how far you strayed from it, and says what went wrong — flat on the left, closed early, drifting wide. Six a round, no account needed.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Full Circle">
+<meta property="og:description" content="draw one circle freehand, all the way round — a daily art drill">
+<meta property="og:site_name" content="Art Daily · SadeAli">
+<meta property="og:url" content="https://artdaily.sadeali.com/circle/">
+<!-- This drill's own card, built from the registry by tools/build-og.js: emoji,
+     category, name, tagline and the URL, so a screenshot of the share is
+     directions back here. 1200x630, declared so a scraper can lay out the card
+     before it has fetched the file. -->
+<meta property="og:image" content="https://artdaily.sadeali.com/og/circle.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Full Circle — draw one circle freehand, all the way round. A line &amp; hand drill at artdaily.sadeali.com/circle">
+<link rel="canonical" href="https://artdaily.sadeali.com/circle/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Full Circle">
+<meta name="twitter:description" content="draw one circle freehand, all the way round — a daily art drill">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og/circle.png">
+<link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;⭕&lt;/text&gt;&lt;/svg&gt;">
+<link rel="stylesheet" href="css/style.css">
+<script>
+(function(){var q=null,t=null;try{q=new URLSearchParams(location.search).get('theme');}catch(e){}try{t=localStorage.getItem('sadeali-theme');}catch(e){}var v=(q==='light'||q==='dark')?q:t;document.documentElement.dataset.theme=(v==='dark')?'dark':'light';})();
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Art Daily", "item": "https://artdaily.sadeali.com/"}, {"@type": "ListItem", "position": 2, "name": "Full Circle", "item": "https://artdaily.sadeali.com/circle/"}]}
+</script>
+</head>
+<body>
+<!-- A landmark, not a bare div: the back link and the theme toggle are the
+     only controls outside <main>, and content in no landmark at all is
+     content a screen-reader player skipping by region never lands on. -->
+<header class="topbar">
+  <a class="backlink" href="https://artdaily.sadeali.com/"><span aria-hidden="true">←</span> artdaily</a>
+  <div class="topbar-spacer"></div>
+  <button class="iconbtn" id="themeToggle" aria-label="Toggle light or dark theme" title="Toggle theme" hidden>
+    <svg class="ic-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/></svg>
+    <svg class="ic-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+  </button>
+</header>
+
+<main class="stage game-wide">
+  <div class="term">
+    <div class="term-bar" aria-hidden="true"><i class="dot d1"></i><i class="dot d2"></i><i class="dot d3"></i><span class="term-title">~/artdaily/circle</span></div>
+    <div class="term-body game-body">
+      <div class="game-hud">
+        <div class="game-id">
+          <h1 class="game-name"><span class="game-emoji" aria-hidden="true">⭕</span> Full Circle</h1>
+          <p class="game-tagline">draw one circle freehand, all the way round</p>
+        </div>
+        <dl class="hud-stats">
+          <div class="hud-stat"><dt>round</dt><dd id="hudRound">–</dd></div>
+          <div class="hud-stat"><dt>score</dt><dd id="hudScore">–</dd></div>
+          <div class="hud-stat"><dt>best</dt><dd id="hudBest">–</dd></div>
+          <!-- The SDK fills and unhides this; keep the id (protocol v1).
+               The <dt> is for assistive tech only (hidden below the CSS
+               marker): a <dd> alone is not a legal description-list group,
+               and an orphan value is read with no term at all, or hung off
+               the one before it — "best: scoring for mouse or trackpad". -->
+          <div class="hud-stat hud-input"><dt class="hud-input-term">input</dt><dd id="inputMode" hidden></dd></div>
+        </dl>
+      </div>
+
+      <!-- The teaching line: it carries the prompt AND every reveal in
+           words, so it is a live region — and it is the drill's ONLY one. -->
+      <p class="hint" id="hint" aria-live="polite">Loading…</p>
+
+      <div class="game-stage">
+        <!-- role="img" + a name js/game.js keeps CURRENT (describeSheet).
+             NO tabindex: the stroke itself needs a pointer, so a tab stop
+             here would be a focus ring on something the keyboard cannot
+             use. Every control around it is keyboard-operable, and the
+             hint line alone says what to do and how it went. -->
+        <canvas class="game-canvas" id="gameCanvas" role="img" aria-label="Full Circle drill sheet"></canvas>
+        <!-- Decoration: every word of it is in the hint line already. -->
+        <div class="toast" id="toast" aria-hidden="true" hidden></div>
+      </div>
+
+      <div class="game-controls">
+        <button class="btn btn-primary" id="btnRound">new round <span aria-hidden="true">↻</span></button>
+        <button class="btn" id="btnHow" aria-expanded="false" aria-controls="howTo">how to play</button>
+      </div>
+      <div class="howto" id="howTo" hidden>
+        <p class="howto-cmd" aria-hidden="true"><span class="prompt">$</span> man circle</p>
+        <p>Draw a circle on the sheet with one stroke, all the way round to where you started, and lift. Six circles make a round. The reveal holds a moment so you can study it; tap the sheet to jump to the next one.</p>
+        <p>Anywhere on the sheet, any size you like. Every tolerance here is a plain fraction of your own circle&rsquo;s radius, with no pixel floor under it, so the same shape scores the same at any size: scale one attempt up or down and the number does not move. What size does change is the drawing, not the marking — your hand&rsquo;s wobble is a fixed number of pixels, so it is a bigger fraction of a small circle, and drawing big is genuinely easier. The one size rule is a refusal: a circle whose radius is under a tenth of the sheet&rsquo;s short side, and never under 40&nbsp;px, is too small for the drill to measure honestly. That costs you nothing.</p>
+        <p><strong>Ran out of trackpad or glass halfway round?</strong> Lifting early does not score. The drill says how far round you got and draws a dashed ring where you stopped: press inside it and the same circle carries on. A stroke that covers less than four fifths of a turn is never graded at all.</p>
+        <p>Scored on how far your line strays from the truest circle that can be drawn through it, measured as a fraction of that circle&rsquo;s own radius and averaged along the line rather than over the samples, so drawing part of it faster barely moves the mark — under a point, even at a hard flick. Up to 45 points come off for a gap where the line should have closed; running past your own start is the cheaper mistake and the first tenth of a turn of overlap is free. The round is the average of the six.</p>
+        <p>The reveal draws that true circle over your line, marks the point of widest drift with a dot and a dash, and puts the score in the middle. The dotted band around it is where the score runs out. Then it says what actually went wrong — flat on the left, closing early, drifting wide as you come back round — graded against the same tolerance as the number, so the words and the score never disagree. At the end of the round, if every circle went flat in the same place, it says so: that is the habit to fix, not any one circle.</p>
+        <p>The drill grades against the hardware it detects (shown in the corner as &ldquo;scoring for &hellip;&rdquo;), because the same wobble means different things from a mouse, a finger and a pen. Your score is only ever compared with your own.</p>
+        <p>Studio tip: swing from the shoulder, not the wrist or the fingers. Move the pen in the air above the paper a few times first, then drop it in on the same path — and keep your eye on the point you started from, not on the tip.</p>
+      </div>
+
+      <noscript><p class="hint">This drill needs JavaScript. Nothing else to install, and no account needed.</p></noscript>
+    </div>
+  </div>
+</main>
+
+<section class="about" aria-labelledby="aboutHead">
+  <h2 id="aboutHead">Drawing a circle freehand, and finding out why it is not one</h2>
+  <p>A blank sheet. Draw a circle on it with one stroke — anywhere, any size — all the way round to where you began, then lift. Six of them make a round, roughly forty seconds. Your last two attempts stay faintly behind the new one, because redrawing over your own last try is the studio warm-up the whole thing is built out of.</p>
+  <p>Almost nobody is bad at circles evenly. The hand goes flat in one place, and which place depends on your grip and on whether the stroke comes from the wrist or the shoulder — a wrist runs out of arc partway round and the line straightens for a moment. So the drill draws the truest circle through your line, marks where you strayed furthest from it, and names the miss in ordinary words: flat on the left, you close early, it drifts out as you come back round. At the end of the round, if every circle went flat in the same place, it says so — six circles with the same flat spot are one habit, not six mistakes.</p>
+  <h3>How it is scored</h3>
+  <p>The scoring is not a model or a stored answer. It is closed-form geometry, computed on your device from the points your stroke passed through: a least-squares circle is fitted to them, and the score is the RMS distance from your line to that fitted circle, divided by its radius.</p>
+  <p>Averaged <em>along the line</em>, which is the part that takes some care. Your digitizer samples on a clock — 120 to 1000 times a second — so the number of samples in a stretch of line says how long your hand spent there, not how much line there is. Anything averaged by counting samples is therefore an average over time: whipping through a flat spot would put it in the mean a third as often as the arc beside it, and the same shape would score higher for being drawn unevenly. Both the fit and the RMS weight every sample by the length of line it stands for instead, so the mark is the same however fast any part of it was drawn, and the same at any digitizer rate.</p>
+  <p>Under 1.2% of the radius is a clean 100; the roundness score reaches zero at 13% of the radius, multiplied by 1.0 for a pen, 1.5 for a finger and 2.0 for a mouse or trackpad, because a wrist pivoting a mouse cannot creep the way a nib can. Those percentages are the whole band — there is no pixel floor under them — so a small circle and a large one really are held to the same standard, and a scaled copy of an attempt scores the same to the last decimal. Circles too small to measure that way are refused rather than graded kindly. Closing counts too: the arc you leave missing costs up to 45 points, and a stroke covering less than four fifths of a turn is not scored at all — the drill offers to carry it on instead.</p>
+  <p class="about-more">More line &amp; hand drills: <a href="../lines/">Steady Lines</a> · <a href="../ellipses/">Ellipse Orbit</a> · <a href="../superimposed/">Superimposed Lines</a> · <a href="../">every drill</a></p>
+</section>
+
+<footer class="footer">
+  <nav class="footnav" aria-label="Site links">
+    <a href="https://artdaily.sadeali.com/">More drills</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://sadeali.com/">More experiments</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
+    <span aria-hidden="true">·</span>
+    <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span id="supportLinks"></span>
+  </nav>
+  <!-- The separators are decoration: read out, this line ended "SadeAli
+       middle dot free middle dot no ads". Same rule as the nav above. -->
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli <span aria-hidden="true">·</span> free <span aria-hidden="true">·</span> no ads <span aria-hidden="true">·</span> no account needed</p>
+</footer>
+
+<script src="../sdk/artdaily-sdk.js"></script>
+<script src="../js/support-config.js"></script>
+<script src="../js/main.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>

@@ -293,7 +293,63 @@
     { f: 3 / 5, l: '3/5' },
   ];
 
-  function rand(lo, hi) { return lo + Math.random() * (hi - lo); }
+  /* ---- where the six items come from ----------------------------------
+     THE ROUND'S CONTENT IS A SEQUENCE OF NORMALISED DRAWS. Round 1 of a
+     sitting is dealt from ArtDaily.roundRandom(1) — seeded from today and
+     this slug — so every player is asked the same six questions today,
+     including WHICH stated ratio item 4 asks for, and a shared score
+     finally has a denominator. Round 2 and on are practice: same
+     generator, same distribution, unshared seed.
+
+     NO PER-ITEM CACHE IS NEEDED HERE, unlike lines. makeItem() is called
+     exactly once per item (newRound, then nextStep), and a resize
+     RESCALES the item rather than regenerating it — deliberately, and it
+     predates this: the comment on scaleItem records that regenerating
+     meant an iOS address bar collapsing during an ordinary scroll
+     silently deleted a placed tick AND swapped the question. So a plain
+     rolling generator can never deal a different question under the
+     player's hand.
+
+     THE SAME DRAWS ARE NOT THE SAME PIXELS. Lengths are drawn as
+     FRACTIONS of W and midpoints as fractions of the free span, then
+     clamped to the canvas, so what is shared is where in that range the
+     line sits — not how many pixels from the left edge. Below 520px
+     segGeom already thins the margins and lengthens the ruler (see its
+     comment) so the same question stays the same question on a phone;
+     that is a fairness branch a seed neither can nor should paper over,
+     and it means a narrow sheet can clamp a long line where a wide one
+     does not.
+
+     GUARDED, and the guard is load-bearing: index.html cache-busts its own
+     scripts but every drill loads ../sdk/artdaily-sdk.js BARE, so the two
+     cache independently and a returning visitor can hold a warm old SDK
+     against a cold copy of this file. An unguarded call would throw inside
+     newRound() before the first item exists — blank sheet, "Loading…"
+     forever. Only the BARE call form is used: every draw in this drill
+     goes through uniform() below, and Math.random is a drop-in for that. */
+  var roundRng = null;
+
+  /* One raw uniform in [0,1) — the round's, or the plain one when an old
+     SDK is cached. Every random draw in this file goes through here.
+
+     NOT NAMED u(), which is what the pilot (lines) calls its twin and what
+     this was written as first. `var` is function-scoped and hoisted, and
+     three functions in this file already bind a local `u`: makeItem's head
+     unit (h / 7.5) and drawFigure's copy of it, plus segCrossFraction's
+     along-fraction. Inside makeItem the local won a whole function's worth
+     of scope, so `u() < 0.5` in the mid-angled branch and `u() * RATIOS.length`
+     in the ratio branch were calling a NUMBER. Measured: item 4 threw
+     "u is not a function" out of makeItem, the round stalled on a stale item,
+     and the HUD went on printing a running mean for questions the drill was
+     no longer asking. It is renamed rather than the locals, because the
+     locals are the drill's own vocabulary and this helper is the visitor. */
+  function uniform() { return roundRng ? roundRng() : Math.random(); }
+
+  /* Unchanged as a function — lo + u * (hi - lo) is exactly what it always
+     was, with Math.random() swapped for the round's uniform. u is uniform
+     on [0,1) either way, so every value downstream keeps precisely the
+     shape it had and a seeded round is not an easier or a harder round. */
+  function rand(lo, hi) { return lo + uniform() * (hi - lo); }
 
   /* ---- item geometry ---- */
   /* On a narrow sheet the ruler gets longer and the margins thinner
@@ -345,13 +401,13 @@
     } else {
       var kind = 'seg', ideals = [0.5], labels = ['1/2'];
       if (kindName === 'mid-flat') g = segGeom(rand(-8, 8), 0.62, 0.78);
-      else if (kindName === 'mid-angled') g = segGeom(Math.random() < 0.5 ? rand(25, 65) : rand(115, 155), 0.42, 0.58);
+      else if (kindName === 'mid-angled') g = segGeom(uniform() < 0.5 ? rand(25, 65) : rand(115, 155), 0.42, 0.58);
       else if (kindName === 'thirds-flat') { g = segGeom(rand(-10, 10), 0.58, 0.75); ideals = [1 / 3, 2 / 3]; labels = ['1/3', '2/3']; }
       else if (kindName === 'thirds-steep') { g = segGeom(rand(58, 122), 0.5, 0.68); ideals = [1 / 3, 2 / 3]; labels = ['1/3', '2/3']; }
       else {
         kind = 'ratio';
         g = segGeom(rand(-6, 6), 0.5, 0.66); /* dx>0, so a is the left end */
-        r = RATIOS[Math.floor(Math.random() * RATIOS.length)];
+        r = RATIOS[Math.floor(uniform() * RATIOS.length)];
         ideals = [r.f];
         labels = [r.l];
       }
@@ -403,6 +459,13 @@
     round += 1;
     itemIdx = 0;
     itemScores = [];
+    /* THE ONE LINE THAT MAKES A SCORE COMPARABLE. round is already 1 on the
+       first round of a sitting, so round 1 is today's shared round and every
+       "new round" after it is practice. Re-seeded HERE, per round, so a
+       replay can never deal the round just played. */
+    roundRng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round)
+      : Math.random;
     drawing = false;
     strokePts = [];
     revealing = null;
@@ -918,7 +981,14 @@
     hudScore.textContent = String(res.score);
     hudBest.textContent = res.best === null ? '–' : String(res.best);
     hint.textContent = 'round done — press "new round" to go again.';
-    showToast((res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+    /* A first-ever round has no previous best, so isNewBest is trivially
+       true and "new best!" celebrates nothing — on the one round where the
+       number most needs saying what it IS. The SDK marks that round with
+       isFirst; where it is undefined the old wording stands. */
+    showToast(res.isFirst
+      ? 'first score ' + res.score + ' / 100 — your mark to beat'
+      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100',
+      res.isNewBest && !res.isFirst);
   }
 
   var toastTimer = null;

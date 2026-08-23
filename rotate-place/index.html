@@ -3,25 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rotate & Place — a mental rotation drill for drawing boxes</title>
+<title>Box Rotation Practice — match the pose by eye</title>
 <meta name="description" content="Drag a box until it matches a hidden target pose, spinning and tipping it. Practice mental rotation and drawing boxes from any angle.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Rotate & Place">
 <meta property="og:description" content="spin the box into the target pose — a daily art drill">
 <meta property="og:site_name" content="Art Daily · SadeAli">
 <meta property="og:url" content="https://artdaily.sadeali.com/rotate-place/">
-<!-- The page's own card, deliberately: the drills have no per-drill art, and a
-     share with no image at all renders as a grey box. 1200x630, declared so a
-     scraper can lay out the card before it has fetched the file. -->
-<meta property="og:image" content="https://artdaily.sadeali.com/og.png">
+<!-- This drill's own share card, built from the registry by tools/build-og.js:
+     its name, tagline, category and address. 1200x630, declared so a scraper
+     can lay out the card before it has fetched the file. -->
+<meta property="og:image" content="https://artdaily.sadeali.com/og/rotate-place.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Art Daily — tiny daily drills for artists">
+<meta property="og:image:alt" content="Rotate &amp; Place — spin the box into the target pose. A form &amp; perspective drill at artdaily.sadeali.com/rotate-place">
 <link rel="canonical" href="https://artdaily.sadeali.com/rotate-place/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Rotate & Place">
 <meta name="twitter:description" content="spin the box into the target pose — a daily art drill">
-<meta name="twitter:image" content="https://artdaily.sadeali.com/og.png">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og/rotate-place.png">
 <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🧊&lt;/text&gt;&lt;/svg&gt;">
 <link rel="stylesheet" href="css/style.css">
 <script>
@@ -80,7 +80,7 @@
         <p>studio tip: match one axis at a time — line up the long edge first, then roll the dot face into place.</p>
       </div>
 
-      <noscript><p class="hint">This drill needs JavaScript — nothing else, no trackers, no accounts.</p></noscript>
+      <noscript><p class="hint">This drill needs JavaScript — nothing else, and no account needed.</p></noscript>
     </div>
   </div>
 </main>
@@ -90,8 +90,8 @@
   <p>A small panel holds an elongated box — proportions 2:1:1.4, one face marked with a painted dot — at a yaw and pitch you are never told. The larger box beside it starts elsewhere, and you drag until the two poses agree: sideways spins it, up and down tips it. A round runs five boxes, opening near the canonical views and finishing on rear-quarter tilts as steep as 72°. A target with no dot anywhere means you are seeing the back of the box, so the spin has to carry past 90°.</p>
   <p>The box is a solid under a pinhole camera, not a flat diagram: the eye sits nine half-extents back, so the projection spreads about 1.34× across the form and at a three-quarter view the near vertical edge comes out roughly 30% longer than its far twin. The pose has to be read from that convergence and from which face carries the dot, never from the outline — turn a cuboid 180° about its own axis and its vertices land back on themselves, so two poses draw the identical silhouette. The same read decides whether a box, a head or a chair can be drawn from an angle you have never seen it at.</p>
   <h3>How the gap becomes a number</h3>
-  <p>One number is measured and the route you took to it is not: the size of the single turn that would still carry your box onto the target's pose. Zero degrees off scores 100, forty degrees off scores 0, and the round score is the mean of the five. Every lock snaps your pose to whole degrees and every target is a whole degree, so an exact 100 is reachable by dragging, not only by arrow key. After the lock the target ghosts over your box and the reveal names the correction in words — off by 7.2°, spin 5° right, tip 4° up.</p>
-  <p class="about-more">More form & perspective drills: <a href="../ellipse-in-plane/">Ellipse in Plane</a> · <a href="../cylinder-ends/">Cylinder Ends</a> · <a href="../cast-shadow/">Cast Shadow</a> · <a href="../">all 42 drills</a></p>
+  <p>One number is measured and the route you took to it is not: the size of the single turn that would still carry your box onto the target's pose. Zero degrees off scores 100, forty degrees off scores 0, and the round score is the mean of the five. Every lock snaps your pose to whole degrees and every target is a whole degree, so an exact 100 is reachable by dragging, not only by arrow key. After the lock the target ghosts over your box and the reveal names the correction in words — off by 7.2°, spin 5° right, tip 4° up. That one angle is the whole judgement; no model looks at your box, only at the rotation between two poses the drill already holds.</p>
+  <p class="about-more">More form & perspective drills: <a href="../ellipse-in-plane/">Ellipse in Plane</a> · <a href="../cylinder-ends/">Cylinder Ends</a> · <a href="../cast-shadow/">Cast Shadow</a> · <a href="../">the whole catalogue</a></p>
 </section>
 
 <footer class="footer">
@@ -103,9 +103,13 @@
     <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
     <span aria-hidden="true">·</span>
     <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/for-teachers/">For teachers</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/privacy/">Privacy</a>
     <span id="supportLinks"></span>
   </nav>
-  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no tracking</p>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no account needed</p>
 </footer>
 
 <script src="../sdk/artdaily-sdk.js"></script>

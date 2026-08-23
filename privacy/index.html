@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy — what Art Daily stores, and what it counts</title>
+<meta name="description" content="No account is needed, nothing you draw is uploaded, and your progress lives in your own browser. What the site counts, what it stores, and what a school needs to know.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Privacy — Art Daily">
+<meta property="og:description" content="What is stored on your device, what the site counts, and what it never collects.">
+<meta property="og:site_name" content="Art Daily · SadeAli">
+<meta property="og:url" content="https://artdaily.sadeali.com/privacy/">
+<!-- The site card: this page has no art of its own and a share with no image
+     renders as a grey box. -->
+<meta property="og:image" content="https://artdaily.sadeali.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Art Daily — tiny daily drills for artists">
+<link rel="canonical" href="https://artdaily.sadeali.com/privacy/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Privacy — Art Daily">
+<meta name="twitter:description" content="What is stored on your device, what the site counts, and what it never collects.">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og.png">
+<link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🔒&lt;/text&gt;&lt;/svg&gt;">
+<link rel="preload" href="../fonts/caveat-latin.woff2" as="font" type="font/woff2" crossorigin>
+<!-- ONE level up — this page is /privacy/, like /practice/. -->
+<link rel="stylesheet" href="../css/style.css">
+<script>
+(function(){var t=null;try{t=localStorage.getItem('sadeali-theme');}catch(e){}document.documentElement.dataset.theme=(t==='dark')?'dark':'light';})();
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Art Daily", "item": "https://artdaily.sadeali.com/"}, {"@type": "ListItem", "position": 2, "name": "Privacy", "item": "https://artdaily.sadeali.com/privacy/"}]}
+</script>
+</head>
+<body>
+<div class="topbar">
+  <a class="backlink" href="../" aria-label="Art Daily">← artdaily</a>
+  <div class="topbar-spacer"></div>
+  <button class="iconbtn" id="themeToggle" aria-label="Toggle light or dark theme" title="Toggle theme" hidden>
+    <svg class="ic-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/></svg>
+    <svg class="ic-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+  </button>
+</div>
+
+<!-- This page DESCRIBES rather than promises, and that is deliberate. The footer
+     used to assert "no tracking" as a slogan; a Cloudflare default switched on an
+     analytics beacon and the claim was false by morning, with nobody having touched
+     the code. A description can go out of date. A promise gets broken. So: plain
+     present tense, dated, and specific enough that a school IT reviewer can act on
+     it without emailing anyone. -->
+<main class="hero">
+  <div class="sheet hero-sheet">
+    <p class="hero-eyebrow">privacy · last updated 22 august 2026</p>
+    <h1 class="hero-title">what this <span class="tilt">site</span> knows</h1>
+    <p class="hero-sub">Short version: you do not need an account, nothing you draw is uploaded, and your practice record lives in your own browser where you can delete it.</p>
+  </div>
+
+  <section class="section" aria-labelledby="deviceHead">
+    <div class="cat-head"><h2 id="deviceHead" class="accent-mint" style="text-decoration-color: var(--mint);">on your device</h2></div>
+    <p class="cat-note">Three keys in this browser's <code>localStorage</code>. Nothing else, and no cookies.</p>
+    <ul class="plainlist">
+      <li><b>artdaily-progress-v1</b> — which drills you played on which day, your best score that day, your streak, and your skill totals.</li>
+      <li><b>artdaily-best-&lt;drill&gt;</b> — your personal best for one drill.</li>
+      <li><b>sadeali-theme</b> — whether you chose light or dark.</li>
+    </ul>
+    <p class="cat-note">Your drawings themselves are never stored anywhere, not even locally — a stroke is scored and then it is gone. Clearing site data in your browser erases all of it. The <b>reset</b> link on the front page does less than that — it clears your practice record, streak and skill totals, and leaves each drill's personal best in place. Nothing above is sent to a server.</p>
+  </section>
+
+  <section class="section" aria-labelledby="countHead">
+    <div class="cat-head"><h2 id="countHead" class="accent-sky" style="text-decoration-color: var(--sky);">what gets counted</h2></div>
+    <p class="cat-note">One counter, and it is worth being exact about it.</p>
+    <p class="cat-note">This site is served through Cloudflare, and Cloudflare's analytics record that a page was loaded: which page, roughly which country, which browser, how fast it rendered, and which site linked here. That is aggregate — there is no cookie, no identifier, no profile, and nothing that follows you to another website. It is the same class of information any web server writes to a log.</p>
+    <p class="cat-note">It is used for one thing: knowing whether anyone is out there. There are no ads on this site and nothing to sell you, so there is nothing to target.</p>
+    <p class="cat-note">If you subscribe to the newsletter, your email address goes to Buttondown, who send the emails. That is the only thing you can hand over, and only by typing it in yourself. Every email has an unsubscribe link.</p>
+  </section>
+
+  <section class="section" aria-labelledby="notHead">
+    <div class="cat-head"><h2 id="notHead" class="accent-coral" style="text-decoration-color: var(--coral);">what it does not do</h2></div>
+    <ul class="plainlist">
+      <li>No account is needed to use anything here.</li>
+      <li>No ads, and no advertising or cross-site tracking code.</li>
+      <li>Nothing you draw leaves your browser.</li>
+      <li>Nothing is sold or shared with anyone.</li>
+      <li>No AI is involved in scoring — every drill grades your marks with plain geometry or a fixed answer key, which is why a drill can show you the correct answer — drawn over your own stroke in the drawing drills, revealed beside your pick in the tapping ones.</li>
+    </ul>
+  </section>
+
+  <section class="section" aria-labelledby="schoolHead">
+    <div class="cat-head"><h2 id="schoolHead" class="accent-sunny" style="text-decoration-color: var(--sunny);">for teachers and school IT</h2></div>
+    <p class="cat-note">Written so you can paste it into a ticket.</p>
+    <p class="cat-note">Nothing is collected from a student using the drills. No account is needed, there is no sign-in, and no drill asks for a name, an email address or any other identifier. The one field on the site that accepts an email address is the newsletter sign-up in the footer of the front page — it is optional, it is for adults who want to hear when new drills ship, and nothing about the drills depends on it. If that field is not wanted in a classroom, send students straight to a drill URL such as <code>artdaily.sadeali.com/lines/</code>, which has no sign-up on it at all. No education record is created, stored or transmitted — the site cannot see a student's work or their score, because neither leaves the browser. Clearing site data on a shared machine removes everything the previous student left behind.</p>
+    <p class="cat-note">To allow it through a filter: one domain, <b>artdaily.sadeali.com</b>. It is HTTPS only. It asks for no camera, microphone or location permission, and there is nothing to download or install. It runs in current Chrome, Edge, Safari and Firefox, on a Chromebook, iPad, Windows or Mac, with a mouse, trackpad, finger or stylus.</p>
+    <p class="cat-note">Deliberately not claimed: no compliance certification, because a website cannot hold one — the acronyms a district review asks about name laws that bind schools and vendors, not badges a site earns. What this page gives you instead is the fact underneath them: nothing is collected from a student using the drills, so there is nothing to consent to and nothing to disclose.</p>
+  </section>
+
+  <section class="section" aria-labelledby="changeHead">
+    <div class="cat-head"><h2 id="changeHead" class="accent-lilac" style="text-decoration-color: var(--lilac);">if this changes</h2></div>
+    <p class="cat-note">An optional account may exist here one day, for syncing your practice record between devices or comparing a score with other people. If it does, it will be optional — nothing on this site will ever require one to get started, and everything described above stays true for anyone who does not create one.</p>
+    <p class="cat-note">This page is dated at the top. It describes how the site works today rather than promising how it will work forever, because the last version of this promise was broken by a setting somebody else changed.</p>
+  </section>
+</main>
+
+<footer class="footer">
+  <nav class="footnav" aria-label="Site links">
+    <a href="https://artdaily.sadeali.com/">More drills</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://sadeali.com/">More experiments</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
+    <span aria-hidden="true">·</span>
+    <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span id="supportLinks"></span>
+  </nav>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no account needed</p>
+</footer>
+
+<script src="../js/support-config.js"></script>
+<script src="../js/main.js"></script>
+</body>
+</html>

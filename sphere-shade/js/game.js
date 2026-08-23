@@ -519,7 +519,41 @@
   var confirmNew = false, confirmTimer = null, confirmHint = '';
   var doneNag = false;  /* has done-with-nothing-drawn already been queried? */
 
-  function rand(lo, hi) { return lo + Math.random() * (hi - lo); }
+  /* ---- where a round's content comes from ------------------------------
+     THE ROUND'S CONTENT IS A SEQUENCE OF NORMALISED DRAWS, and only that.
+     Round 1 of a sitting is dealt from ArtDaily.roundRandom(1) — seeded
+     from today and this slug — so every player gets the same lights today
+     and a score is finally a number with a denominator. Round 2 and on are
+     practice: same generator, same distribution, unshared seed.
+
+     THIS DRILL IS THE EASY CASE for pixels: what a draw decides here is an
+     AZIMUTH and a TILT in degrees, plus two mark angles — pure numbers with
+     no canvas in them. relayout() turns the sphere's radius and centre into
+     pixels from W/H afterwards, deterministically and without drawing
+     anything, so two players on different sheets get the same light, the
+     same terminator and the same core, laid out for their own screen.
+
+     A plain rolling generator is safe: newSphere() is called exactly twice
+     per round (newRound and the advance at the end of a reveal) and a
+     resize runs relayout(), never newSphere(), so no repaint can walk the
+     sequence forward and change the light under the player's hand.
+
+     Every draw in this file is CONTENT — there is no cosmetic random here
+     at all: the paper, the plan view and the reveal are all derived from
+     the light vector. */
+  var roundRng = null;
+
+  /* One uniform in [0, 1). Falls back to Math.random before the first
+     newRound() and whenever the SDK is too old to answer (see the guard in
+     newRound) — the round is then simply unshared, which is what every
+     round was yesterday. */
+  function u() { return roundRng ? roundRng() : Math.random(); }
+
+  /* Unchanged as a function — lo + u * (hi - lo) is exactly what it always
+     was, with Math.random() swapped for the round's uniform. u is uniform
+     on [0,1) either way, so every value downstream keeps precisely the
+     shape it had, and a seeded round is not an easier or a harder round. */
+  function rand(lo, hi) { return lo + u() * (hi - lo); }
 
   function relayout() {
     if (!S) return;
@@ -543,21 +577,32 @@
     var az, tilt, L, alt, tries = 0;
     /* first-ever visit: keep BOTH spheres on the easy light. Escalating
        before the first idea has landed is how a beginner decides the
-       drill is not for them. */
+       drill is not for them.
+       THE ONE THING THE SEED CANNOT SHARE. This branch reads a DEVICE-LOCAL
+       fact — whether this browser has ever recorded a best — so on round 1
+       a newcomer's SECOND sphere is dealt from the easy pool while a
+       returning player's is dealt from the hard one. Both branches draw the
+       same four values in the same order, but from different ranges, and the
+       rejection loop below then accepts at a different try, so from sphere 2
+       on the two sequences diverge. Sphere 1 is easy for everyone and is
+       identical for everyone. This is a deliberate fairness branch that
+       predates seeding and is not something a seed can or should paper over
+       — a beginner's first round staying winnable matters more than their
+       second sphere matching a stranger's. */
     var easy = idx === 0 || (FIRST_VISIT && round <= 1);
     do {
       if (easy) {
         /* side light close to the picture plane: the classic almost
            straight terminator, low sun */
-        az = Math.random() < 0.5 ? rand(-166, -146) : rand(-34, -14);
-        tilt = (Math.random() < 0.5 ? -1 : 1) * rand(7, 18);
+        az = u() < 0.5 ? rand(-166, -146) : rand(-34, -14);
+        tilt = (u() < 0.5 ? -1 : 1) * rand(7, 18);
       } else {
         /* three-quarter or back light, high sun: the terminator bulges
            and the core swings off the centre line. Azimuths stay clear
            of dead vertical, where left and right flanks read equally
            dark and the core has no honest answer. */
-        az = Math.random() < 0.5 ? rand(-132, -106) : rand(-74, -48);
-        tilt = Math.random() < 0.5 ? -rand(26, 46) : rand(22, 36);
+        az = u() < 0.5 ? rand(-132, -106) : rand(-74, -48);
+        tilt = u() < 0.5 ? -rand(26, 46) : rand(22, 36);
       }
       L = lightVec(az, tilt);
       alt = sunAltitudeDeg(L);
@@ -591,6 +636,22 @@
     round += 1;
     sphereIdx = 0;
     items = [];
+    /* THE ONE LINE THAT MAKES A SCORE COMPARABLE. round is already 1 on the
+       first round of a sitting, so round 1 is today's shared round and every
+       "new round" after it is practice. Re-seeded HERE, per round, and BEFORE
+       newSphere(0) pulls its first draw, so a replay cannot deal the round
+       just played.
+
+       GUARDED, and the guard is load-bearing. index.html cache-busts its own
+       scripts with ?v=, but every drill loads ../sdk/artdaily-sdk.js BARE, so
+       the two files cache INDEPENDENTLY: a returning visitor holding a warm
+       SDK from any other drill plus a cold copy of this file would call a
+       function that does not exist, throw before the first sphere is dealt,
+       and sit on a blank sheet forever. Falling back to Math.random costs
+       today's player nothing but a non-comparable round. */
+    roundRng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round)
+      : Math.random;
     newSphere(0);
     hudRound.textContent = String(round);
     hudScore.textContent = '–';
@@ -1654,7 +1715,7 @@
        leaves it undefined and the old wording stands. */
     showToast(res.isFirst
       ? 'first score ' + res.score + ' / 100 — your mark to beat'
-      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest && !res.isFirst);
   }
 
   var toastTimer = null;

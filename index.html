@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Art Daily — free daily drawing exercises and warmups</title>
-<meta name="description" content="Free daily drawing exercises for colour, value, line, perspective and composition. One scored drill takes 2-4 minutes in your browser. No ads, no signup.">
+<meta name="description" content="Free daily drawing exercises for colour, value, line, perspective and composition. One scored drill takes 2-4 minutes in your browser. No ads, no account needed.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Art Daily — tiny daily drills for artists">
-<meta property="og:description" content="Free daily drawing exercises: colour, value, line, perspective, composition. One scored drill, 2-4 minutes. No ads, no signup.">
+<meta property="og:description" content="Free daily drawing exercises: colour, value, line, perspective, composition. One scored drill, 2-4 minutes. No ads, no account needed.">
 <meta property="og:site_name" content="Art Daily · SadeAli">
 <meta property="og:url" content="https://artdaily.sadeali.com/">
 <meta property="og:image" content="https://artdaily.sadeali.com/og.png">
@@ -17,7 +17,7 @@
 <link rel="canonical" href="https://artdaily.sadeali.com/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Art Daily — tiny daily drills for artists">
-<meta name="twitter:description" content="Free daily drawing exercises: colour, value, line, perspective, composition. One scored drill, 2-4 minutes. No ads, no signup.">
+<meta name="twitter:description" content="Free daily drawing exercises: colour, value, line, perspective, composition. One scored drill, 2-4 minutes. No ads, no account needed.">
 <meta name="twitter:image" content="https://artdaily.sadeali.com/og.png">
 <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🎨&lt;/text&gt;&lt;/svg&gt;">
 <link rel="preload" href="fonts/caveat-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -30,10 +30,70 @@
      (?v=) and a drill loads them bare, so one file sits in the cache twice.
      That is the deliberate trade — versioning them from a drill would mean
      bumping ?v= inside 43 folders on every deploy. -->
-<!-- ?v=8 busts the CDN/browser cache on deploy: registry.js is served
+<!-- ?v=10 busts the CDN/browser cache on deploy: registry.js is served
      with a 4h max-age, so without this a returning visitor keeps an old
      catalogue. Bump V in every asset URL below when css/js changes. -->
-<link rel="stylesheet" href="css/style.css?v=8">
+<link rel="stylesheet" href="css/style.css?v=10">
+<!-- The footer newsletter's styles live HERE, not in css/style.css, because
+     that file is the shared sketchbook theme every drill folder loads too and
+     the form exists on this one page. Values mirror the .ask-* rules in it so
+     the two asks read as one thing: 44px minimum targets, and an input border
+     at 85% --muted — a --line border on --card is about 1.5:1, which is not
+     enough to say a text field is there at all. Colours are all tokens, so
+     dark comes for free. -->
+<style>
+.signup {
+  max-width: 32rem;
+  margin: 0 auto 26px;
+  padding-bottom: 22px;
+  border-bottom: 1px dashed var(--line);
+  text-align: left;
+}
+.signup-head {
+  margin: 0;
+  font-family: var(--hand);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.signup-body { margin: 2px 0 10px; font-size: 0.8rem; color: var(--muted); }
+.signup-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0; }
+/* Its own row above the field: at 360px the label, the input and the button
+   cannot share a line, and a label that wraps into the middle of the row
+   reads as if it belongs to the button. */
+.signup-label { flex: 1 0 100%; font-size: 0.78rem; font-weight: 700; color: var(--muted); }
+.signup-input {
+  flex: 1 1 12rem;
+  min-width: 0;   /* or the 12rem basis refuses to shrink and the row overflows */
+  min-height: 44px;
+  padding: 6px 12px;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--ink);
+  background: var(--card);
+  border: 1px solid color-mix(in srgb, var(--muted) 85%, transparent);
+  border-radius: 4px 10px 5px 9px;
+}
+.signup-btn {
+  min-height: 44px;
+  padding: 7px 16px;
+  font-family: var(--hand);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--mint) 22%, var(--card));
+  border: 1px solid color-mix(in srgb, var(--mint) 55%, var(--line));
+  border-radius: 4px 12px 5px 10px;
+  box-shadow: 0 2px 0 var(--shadow);
+  cursor: pointer;
+}
+.signup-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 0 var(--shadow); }
+.signup-fine { margin: 10px 0 0; font-size: 0.72rem; color: var(--muted); }
+.signup-said { margin: 8px 0 0; font-size: 0.78rem; font-weight: 700; color: var(--ink); }
+/* Empty is this line's resting state — see the note on it in the markup —
+   and an empty paragraph must not push the footer nav down while it waits. */
+.signup-said:empty { margin: 0; }
+</style>
 <script>
 (function(){var t=null;try{t=localStorage.getItem('sadeali-theme');}catch(e){}document.documentElement.dataset.theme=(t==='dark')?'dark':'light';})();
 </script>
@@ -108,6 +168,11 @@
            finger-driven platform this page has. Zero visual effect. -->
       <ol class="today-list" id="todayList" role="list" aria-label="Today's three warmups"></ol>
       <p class="today-done" id="todayDone">the daily plan needs JavaScript — the drill links below work without it</p>
+      <!-- The day-one → day-two bridge, filled by renderToday only on the
+           first day on record once a drill is done. A plain <p>, not a live
+           region: the player-foot status already announces the round, and
+           this line is ambient copy for the eye that lands back here. -->
+      <p class="today-note" id="todayNote" hidden></p>
       <button class="sharebtn" id="shareBtn" type="button" hidden>copy today's card</button>
       <div class="closing" id="closing" hidden></div>
     </div>
@@ -177,6 +242,7 @@
         <li><a href="warm-up/">Warm Up</a></li>
         <li><a href="superimposed/">Superimposed Lines</a></li>
         <li><a href="lines/">Steady Lines</a></li>
+        <li><a href="circle/">Full Circle</a></li>
         <li><a href="ellipses/">Ellipse Orbit</a></li>
         <li><a href="draw-through/">Draw Through</a></li>
         <li><a href="symmetry/">Mirror Mirror</a></li>
@@ -208,6 +274,27 @@
   </noscript>
 </main>
 
+<!-- The six chapter guides. NOT inside <main> and NOT inside <noscript>: they are
+     prose about the subject rather than part of the drill catalogue, and they must be
+     crawlable and clickable whether or not the renderer ran. Every guide links down
+     into its drills; before this block existed nothing linked back up, so seven
+     long-form pages written to be found were reachable only by typing the URL.
+     Static markup on purpose — renderCatalogue builds the spreads from the registry,
+     and the guides have no registry entry because they are not drills. -->
+<section class="section" id="guides" aria-labelledby="guidesHead">
+  <div class="cat-head"><h2 id="guidesHead" class="accent-sky" style="text-decoration-color: var(--sky);">why these drills</h2></div>
+  <p class="cat-note">one guide per chapter — what the skill actually is, and what the scoring is measuring when it marks you.</p>
+  <ul class="plainlist">
+    <li><a href="practice/colour/">Colour</a> — seeing a colour clearly enough to mix it</li>
+    <li><a href="practice/value/">Value &amp; light</a> — the thing that decides whether a drawing reads</li>
+    <li><a href="practice/line/">Line &amp; hand</a> — why your lines bow, and the mechanics that fix it</li>
+    <li><a href="practice/perspective/">Form &amp; perspective</a> — the horizon is your eye level, and the rest follows</li>
+    <li><a href="practice/composition/">Composition</a> — where things sit in the frame</li>
+    <li><a href="practice/observation/">Observation &amp; memory</a> — seeing what is actually there</li>
+  </ul>
+  <p class="cat-note"><a href="practice/">all six guides →</a></p>
+</section>
+
 <section class="section" id="progress" aria-label="Your progress">
   <div class="cat-head"><h2 class="accent-mint" style="text-decoration-color: var(--mint);">your paint tubes</h2></div>
   <div class="record" id="record" hidden></div>
@@ -217,7 +304,7 @@
        <li> itself, which takes away the list-item box outright, so buildMeters
        marks each row role="listitem" too. -->
   <ul class="meters" id="skillMeters" role="list" hidden></ul>
-  <p class="storenote">progress lives in this browser's localStorage — no accounts, nothing leaves your device · <button class="resetlink" id="resetBtn" type="button">reset it</button></p>
+  <p class="storenote">progress lives in this browser's localStorage — no account needed, and nothing is sent to a server · <button class="resetlink" id="resetBtn" type="button">reset it</button></p>
 </section>
 
 <!-- tabindex="-1" so openPlayer can put focus on the dialog itself. Without
@@ -250,20 +337,61 @@
 </dialog>
 
 <footer class="footer">
+  <!-- The quiet, always-available ask. buildAsk() in js/app.js is the other
+       one and it is gated on `store.streak.count < 3` — three separate days of
+       return visits before an email field exists anywhere on the site. Every
+       way this page gets a spike (a community post, a Show HN, a clip) is a
+       flood of FIRST-TIME visitors, and to all of them the site had no way to
+       be subscribed to at all. This is the field that is simply there.
+       It ships HIDDEN and stays hidden unless js/app.js finds a Buttondown
+       name in js/support-config.js — the same Stage-0 rule as the support
+       links below, so nobody is ever shown a form that posts nowhere. app.js
+       writes the action for the same reason the reveal is its job: the
+       username lives in a .js file, so with JavaScript off there is nothing
+       here to fill in and nothing here to see. Degrading to absent beats
+       degrading to a control that silently fails.
+       A PLAIN FORM POST, deliberately, and target="_blank" is load-bearing:
+       Buttondown answers this endpoint with a Cloudflare Turnstile challenge,
+       which is a page a human has to be handed. A fetch() submit cannot see
+       one — it reads the challenge as a normal response, the page says thank
+       you, and the person is never subscribed. Hence the new tab, and hence
+       .signup-fine telling them it is coming. -->
+  <div class="signup" id="footerSignup" hidden>
+    <!-- A heading, not a <p>: heading jumping is how this page gets crossed,
+         and every other region of it has one. -->
+    <h2 class="signup-head">one email a month</h2>
+    <p class="signup-body">A drill, and the mistake it catches. Nothing else, and every email has an unsubscribe link.</p>
+    <form class="signup-form" id="footerSignupForm" method="post" target="_blank">
+      <!-- A real <label>, and autocomplete="email": without it the browser
+           will not offer to fill the only field in the form, which on a phone
+           is the difference between one tap and typing an address by hand. -->
+      <label class="signup-label" for="footerSignupEmail">your email</label>
+      <input class="signup-input" id="footerSignupEmail" type="email" name="email" autocomplete="email" required placeholder="you@example.com">
+      <button class="signup-btn" type="submit">subscribe</button>
+    </form>
+    <p class="signup-fine">Subscribing opens a new tab. Check your inbox after that — you are on the list once you click the confirmation link.</p>
+    <!-- Empty, and never hidden. A live region that is display:none is not in
+         the accessibility tree, so text written into it while it is gone can
+         be dropped outright — the same rule .page-toast at the top of this
+         page carries. It empties instead, and empty it paints nothing. -->
+    <p class="signup-said" id="footerSignupSaid" role="status" aria-live="polite"></p>
+  </div>
   <nav class="footnav" aria-label="Site links">
     <a href="https://sadeali.com/">More experiments</a>
     <span aria-hidden="true">·</span>
     <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
     <span aria-hidden="true">·</span>
     <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/privacy/">Privacy</a>
     <span id="supportLinks"></span>
   </nav>
-  <p class="fineprint">© SadeAli · free · no ads · no tracking</p>
+  <p class="fineprint">© SadeAli · free · no ads · no account needed</p>
 </footer>
 
-<script src="js/support-config.js?v=8"></script>
-<script src="js/registry.js?v=8"></script>
-<script src="js/main.js?v=8"></script>
-<script src="js/app.js?v=8"></script>
+<script src="js/support-config.js?v=10"></script>
+<script src="js/registry.js?v=10"></script>
+<script src="js/main.js?v=10"></script>
+<script src="js/app.js?v=10"></script>
 </body>
 </html>

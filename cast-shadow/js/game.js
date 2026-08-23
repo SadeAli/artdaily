@@ -327,7 +327,57 @@
   }
 
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
-  function rand(lo, hi) { return lo + Math.random() * (hi - lo); }
+  /* ---- where an item's numbers come from -------------------------------
+     THE ITEM'S CONTENT IS A SEQUENCE OF DRAWS: which side the sun is on,
+     how the box is turned, how the top slopes, how high the sun stands and
+     where the form sits on the ground patch. Round 1 of a sitting is dealt
+     from ArtDaily.roundRandom — seeded from today and this slug — so
+     everyone gets the same items today and a score finally has a
+     denominator; round 2 and on are practice, same distribution, unshared
+     seed.
+
+     ONE STREAM PER ITEM, because genItem is a REJECTION SAMPLER: it draws
+     four values per attempt and retries up to 40 times, RAISING THE SUN a
+     notch each time, until every true landing sits inside the ground patch.
+     On a single rolling generator the number of attempts spent on item 1
+     would decide where item 2 begins — and see the next paragraph for why
+     that number is not the same on every device. Asked per index, a
+     divergence inside item N stays inside item N.
+
+     THE PATCH IS THE HONEST LIMIT, and it is a bigger one than in the rest
+     of this chapter. A sheet under 520px is given a SMALLER ground patch
+     (8×5 grid units instead of 10×6) — a fairness rule that predates this
+     and exists so the form is not 35px wide on a phone. genItem places the
+     box as a fraction of that patch and rejects against margins measured in
+     grid units, so a phone and a desktop can accept a different attempt and
+     end up with the sun at a different altitude. The DRAW SEQUENCE is
+     identical everywhere; the scene built out of it is only identical
+     within a screen-size class. That is a deliberate fairness branch, not
+     something a seed can or should paper over — flagged here so whoever
+     ships the leaderboard knows this drill compares within a class.
+     (`FIRST_VISIT && round <= 1` narrows the last item's sun range the same
+     way, on the first round anyone ever plays.) */
+  var itemRng = Math.random;
+
+  /* GUARDED, and the guard is load-bearing: index.html cache-busts its own
+     scripts with ?v=, but every drill loads ../sdk/artdaily-sdk.js BARE, so
+     the two files cache independently. A returning visitor with a warm old
+     SDK and a cold copy of this file would call a function that does not
+     exist, and newItem would throw before the first form was built — blank
+     sheet, HUD at "–". Falling back to Math.random costs today's player
+     nothing but a non-comparable round, which is what they had yesterday,
+     and it self-heals when the SDK's max-age expires. */
+  function seedItemRng(level) {
+    itemRng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round, level)
+      : Math.random;
+  }
+
+  /* Unchanged as a function — lo + u * (hi - lo) is exactly what it always
+     was, with Math.random() swapped for the item's uniform. u is uniform on
+     [0,1) either way, so every value downstream keeps precisely the shape
+     it had: a seeded item is not an easier or a harder item. */
+  function rand(lo, hi) { return lo + itemRng() * (hi - lo); }
   function inGround(p, m, pp) {
     var q = pp || activePatch();
     return p.x >= m && p.x <= q.gx - m && p.z >= m && p.z <= q.gz - m;
@@ -344,10 +394,14 @@
 
   function genItem(level) {
     var p = patch, gxMax = p.gx, gzMax = p.gz;
-    var sunLeft = Math.random() < 0.5;
-    var rot = level === 0 ? 0 : (level === 1 ? rand(-14, 14) : rand(24, 66) * (Math.random() < 0.5 ? 1 : -1));
+    /* CONTENT, not decoration: sunLeft flips the sun's azimuth AND the half
+       of the patch the form stands on, so it changes every ray the player
+       has to place. (The sunLeft in vp-hunt only mirrors a face's shading —
+       different name, different thing.) */
+    var sunLeft = itemRng() < 0.5;
+    var rot = level === 0 ? 0 : (level === 1 ? rand(-14, 14) : rand(24, 66) * (itemRng() < 0.5 ? 1 : -1));
     var hx = rand(0.62, 0.88), hz = rand(0.62, 0.88);
-    var sm = SLOPE[level], sa = Math.random() * Math.PI * 2;
+    var sm = SLOPE[level], sa = itemRng() * Math.PI * 2;
     /* raising the base with the slope keeps every corner well above
        the ground, so the top stays one honest plane */
     var h0 = rand(1.0, 1.35) + sm * 0.85;
@@ -420,6 +474,8 @@
 
   /* build an item on the current patch, then rescale the view to it */
   function newItem(level) {
+    /* Re-seeded for THIS item, before a single value is drawn. */
+    seedItemRng(level);
     item = genItem(level);
     makeView();
     return item;
@@ -538,7 +594,7 @@
        leaves it undefined and the old wording stands. */
     showToast(res.isFirst
       ? 'first score ' + res.score + ' / 100 — your mark to beat'
-      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest && !res.isFirst);
   }
 
   /* ==================== painting ====================

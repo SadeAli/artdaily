@@ -476,7 +476,66 @@
   var strokes = [], cur = [], drawingNow = false, activePtr = null, activeType = '';
   var revealing = null, revealTimer = null, pulsing = null, roundResult = null;
 
-  function rand(lo, hi) { return lo + Math.random() * (hi - lo); }
+  /* ---- where the three compositions come from --------------------------
+     THE ROUND'S CONTENT IS A SEQUENCE OF NORMALISED DRAWS. Round 1 of a
+     sitting is dealt from ArtDaily.roundRandom(1) — seeded from today and
+     this slug — so every player traces the same three gaps today, and
+     item 2 is the same vocabulary ('arch' or 'ring') for all of them.
+     Round 2 and on are practice: same generator, same distribution,
+     unshared seed.
+
+     NO PER-ITEM CACHE IS NEEDED HERE, unlike lines. makeItem() is called
+     exactly once per item (newRound, then nextItem), and a resize
+     MULTIPLIES the whole composition through rather than rebuilding it —
+     deliberately, and it predates this (see the resize handler: rebuilding
+     would throw away a trace in progress on every phone rotation). So a
+     plain rolling generator can never swap the gap under the player's hand.
+
+     WHAT IS SHARED IS THE GAP'S SHAPE, EXACTLY — and that is the part
+     being scored. makeGapPoly is fed nothing but draws (base is a fraction
+     of H; a2/a3/ph2/ph3/sx/sy/rot are pure numbers), then movePoly applies
+     ONE uniform scale and a translation, and scoring is chamfer over the
+     bounding diagonal. So a phone and a desktop trace the same outline at
+     different sizes for the same score.
+
+     THE ONE PLACE THIS DRILL CANNOT PROMISE MORE — read before adding a
+     draw. randIn() below SKIPS its draw when the range has collapsed
+     (hi <= lo), returning the midpoint instead. That is not decoration: the
+     ranges are built from W, H, pad and D, and D grows when minGapPx()
+     stretches a narrow gap up to a fingertip's width on a small sheet, so
+     in principle a phone can collapse a range a desktop does not. If that
+     ever happens the round's generator is one draw behind for the REST of
+     that round and the compositions after it diverge from a wider sheet's —
+     still a legitimate gap, still an internally consistent round, just not
+     the same round the desktop player got.
+     MEASURED, and it did not fire: a full round played at 330px and at
+     1100px pulls an identical draw count on every one of eight different
+     days (9 / 22 / 36 or 9 / 25 / 39 after each item — the 22-vs-25 split is
+     the seeded arch/ring branch, which agrees across both widths). So the
+     hazard is real in the code and not reached by today's geometry. Left
+     exactly as it was rather than made to draw-and-discard, because the
+     branch structure and the values it returns are the drill's, not this
+     conversion's, to change. Flagged so it is decided on purpose, and
+     re-measure this if the ranges, pad, minGapPx or the aspect ever move.
+
+     GUARDED, and the guard is load-bearing: index.html cache-busts its own
+     scripts but every drill loads ../sdk/artdaily-sdk.js BARE, so the two
+     cache independently and a returning visitor can hold a warm old SDK
+     against a cold copy of this file. An unguarded call would throw inside
+     newRound() before the first item exists — blank sheet, "Loading…"
+     forever. Only the BARE call form is used: every draw in this drill goes
+     through uniform() below, and Math.random is a drop-in for that. */
+  var roundRng = null;
+
+  /* One raw uniform in [0,1) — the round's, or the plain one when an old
+     SDK is cached. Every random draw in this file goes through here. */
+  function uniform() { return roundRng ? roundRng() : Math.random(); }
+
+  /* Unchanged as functions — lo + u * (hi - lo) is exactly what rand always
+     was, with Math.random() swapped for the round's uniform, and randIn's
+     degenerate branch is untouched. u is uniform on [0,1) either way, so
+     every value downstream keeps precisely the shape it had. */
+  function rand(lo, hi) { return lo + uniform() * (hi - lo); }
   function randIn(lo, hi) { return hi <= lo ? (lo + hi) / 2 : rand(lo, hi); }
   function itemLabel() { return 'space ' + (itemIdx + 1) + ' of ' + ITEMS_PER_ROUND; }
   function trainingWheels() { return round === 1 && itemIdx === 0 && playing && !revealing; }
@@ -497,7 +556,7 @@
       base = H * rand(0.17, 0.20); a2 = rand(0.04, 0.09); a3 = rand(0.03, 0.07);
       sx = 1; sy = rand(0.88, 1.04); rot = rand(0, Math.PI);
     } else if (idx === 1) {   /* lumpier, slightly squashed */
-      vocab = Math.random() < 0.5 ? 'arch' : 'ring';
+      vocab = uniform() < 0.5 ? 'arch' : 'ring';
       base = H * rand(0.14, 0.17); a2 = rand(0.08, 0.14); a3 = rand(0.05, 0.10);
       sx = rand(1.0, 1.2); sy = rand(0.72, 0.92); rot = rand(0, Math.PI);
     } else {                  /* sliver between leaning forms */
@@ -985,6 +1044,14 @@
     itemIdx = 0;
     itemScores = [];
     itemKinds = [];
+    /* THE ONE LINE THAT MAKES A SCORE COMPARABLE. round is already 1 on the
+       first round of a sitting, so round 1 is today's shared round and every
+       "new round" after it is practice. Re-seeded HERE, per round, so a
+       replay can never deal the round just played — and BEFORE makeItem(0)
+       below, which is the first thing that draws from it. */
+    roundRng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round)
+      : Math.random;
     strokes = [];
     cur = [];
     drawingNow = false;
@@ -1012,7 +1079,14 @@
     hint.textContent = 'round done — ' + roundCoach(itemKinds) + ' press "new round" to go again.';
     updateControls();
     draw();
-    if (res) showToast((res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+    /* A first-ever round has no previous best, so isNewBest is trivially
+       true and "new best!" celebrates nothing — on the one round where the
+       number most needs saying what it IS. The SDK marks that round with
+       isFirst; where it is undefined the old wording stands. */
+    if (res) showToast(res.isFirst
+      ? 'first score ' + res.score + ' / 100 — your mark to beat'
+      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100',
+      res.isNewBest && !res.isFirst);
   }
 
   var toastTimer = null;

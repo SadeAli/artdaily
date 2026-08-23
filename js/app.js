@@ -4,8 +4,13 @@
    the daily warmup checklist and the paint-tube meters; hosts
    games in the player dialog and turns their postMessage results
    into streaks and skill levels. All state lives in THIS
-   origin's localStorage — no accounts, no network. Protocol
-   details: GAME_GUIDE.md + sdk/.
+   origin's localStorage — no server of our own, and no account is
+   needed to play. Two things do leave the browser and neither is ours:
+   an email address a visitor types into the newsletter form, and
+   Cloudflare's analytics beacon, which the CDN injects at the edge.
+   Do not write "nothing leaves the browser" anywhere — it stopped
+   being true on 2026-08-22 and the footer claim was retired for it.
+   Protocol details: GAME_GUIDE.md + sdk/.
    ============================================================ */
 (function () {
   'use strict';
@@ -73,7 +78,7 @@
   /* ---- progress store ---- */
 
   function freshStore() {
-    return { days: {}, streak: { count: 0, last: '', freezes: 0 }, skills: {}, badges: {}, seen: {} };
+    return { days: {}, streak: { count: 0, last: '', freezes: 0, longest: 0 }, skills: {}, badges: {}, seen: {} };
   }
 
   /* Arrays sneak past typeof checks but JSON.stringify drops their named
@@ -169,6 +174,11 @@
     if (typeof s.streak.last !== 'string') s.streak.last = '';
     s.streak.count = whole(s.streak.count);
     s.streak.freezes = whole(s.streak.freezes, 2);  /* 2 = the cap touchStreak banks to */
+    /* The high-water mark that survives a broken streak — see touchStreak.
+       A store from before the field existed holds no longest, and the best
+       available answer there is the live count. Never let it sit BELOW the
+       count, or the record would print "5-day streak · longest 3". */
+    s.streak.longest = Math.max(whole(s.streak.longest), s.streak.count);
     if (!isPlainish(s.skills)) s.skills = {};
     /* Skill totals owe the same RANGE check streak.count gets above, and for
        a worse reason: bump() reads a total back, adds to it and writes it out
@@ -438,6 +448,10 @@
       st.count = 1;
     }
     st.last = t;
+    /* The longest run ever kept. Written here — the only place count moves
+       up — so a streak that later dies leaves its mark behind instead of
+       erasing itself; renderRecord and the lapsed checklist line spend it. */
+    if (st.count > whole(st.longest)) st.longest = st.count;
     if (st.count > 0 && st.count % 5 === 0 && st.freezes < 2) {
       st.freezes += 1;
       /* Spending a freeze and banking one can land on the same day
@@ -1009,12 +1023,52 @@
          start" lost its "to start" when the heading above became "start
          here" — the same word twice, six lines apart, was doing the job
          once.) */
+      /* And with NOTHING done yet the perfect-day tail is not the sentence
+         a returning player needs. Two return states outrank it:
+         - streak alive but not yet counted today: name the stake. Guarded
+           on last !== today, because a round on a NON-checklist drill also
+           touches the streak — the stake line must never claim a streak is
+           at risk on a day that already banked it.
+         - streak dead but a real run on record: the lapsed player is
+           currently greeted by nothing at all. Hand their record back and
+           name the first step. 3 is the first count the streak badges call
+           a habit; a "longest run" of 1 or 2 is not a run worth naming. */
+      var tail = 'perfect day ★ when all three';
+      if (done === 0 && !cold) {
+        var stk = store.streak;
+        if (streakAlive() && stk.last !== todayKey()) {
+          tail = '🔥 ' + stk.count + (stk.count === 1 ? ' day' : ' days') +
+            ' — one drill keeps the streak';
+        } else if (!streakAlive() && whole(stk.longest) >= 3) {
+          tail = 'your longest run was ' + stk.longest +
+            ' days — a new one starts with one drill';
+        }
+      }
       say(todayDone, cold
         ? (picks.length === 3 ? 'your first three' : 'your first ' + picks.length) +
           ' · about ' + minutes + ' min in total · pick one'
         : all
           ? done + '/' + picks.length + ' done · ★ perfect day'
-          : done + '/' + picks.length + ' done · perfect day ★ when all three');
+          : done + '/' + picks.length + ' done · ' + tail);
+    }
+    /* The day-one → day-two bridge. The only "come back tomorrow" on the
+       whole site used to render after a PERFECT day, which a first-timer
+       rarely finishes — so the visitor this line exists for never saw it.
+       Shown only on the first day on record, once something is done and
+       while the closing card has not taken over; a plain <p>, not a live
+       region — the player-foot status already announces the round. */
+    var noteEl = $('todayNote');
+    if (noteEl) {
+      var dk = Object.keys(store.days);
+      var firstDay = !cold && !all && done >= 1 &&
+        dk.length === 1 && dk[0] === todayKey();
+      if (firstDay) {
+        say(noteEl, 'saved in this browser — a fresh three tomorrow, and day two makes it a streak');
+        noteEl.hidden = false;
+      } else {
+        noteEl.textContent = '';
+        noteEl.hidden = true;
+      }
     }
     if (shareBtn) shareBtn.hidden = done < 1;
   }
@@ -1057,8 +1111,9 @@
   }
 
   /* ---- practice record ----
-     "No accounts" should not mean "no memory". Everything here is
-     already on disk in store.days; it just was never shown back. */
+     Not needing an account should not mean not being remembered.
+     Everything here is already on disk in store.days; it just was
+     never shown back. */
 
   function renderRecord() {
     var box = $('record');
@@ -1138,10 +1193,20 @@
          channels: "every 5th day banks a rest day, and one missed day…". */
       box.appendChild(say(el('p', 'record-note'),
         '🔥 ' + st.count + '-day streak' +
+        /* Only when it beats the live count — "5-day streak · longest 5"
+           is the same fact twice. */
+        (whole(st.longest) > st.count ? ' · longest ' + st.longest : '') +
         (st.freezes > 0
           ? ' · ❄️ ' + st.freezes + ' rest ' + (st.freezes === 1 ? 'day' : 'days') + ' banked'
           : '') +
         ' — every 5th day banks a ❄️ rest day, and one missed day spends a banked rest day instead of resetting the count'));
+    } else if (whole(store.streak.longest) >= 2) {
+      /* A broken streak used to erase itself: a player back after a gap saw
+         nothing of the run they kept. Hand the record back and make it the
+         target. (>= 2 — a "longest streak" of one day is not a run.) */
+      box.appendChild(say(el('p', 'record-note'),
+        '🔥 your longest streak was ' + store.streak.longest +
+        ' days — still the mark to beat'));
     }
     box.hidden = false;
   }
@@ -1381,7 +1446,7 @@
     var wasOn = document.activeElement;
     var keepCls = null;
     if (wasOn && wasOn !== box && box.contains && box.contains(wasOn)) {
-      keepCls = ['sharebtn', 'ask-btn', 'ask-no'].filter(function (c) {
+      keepCls = ['sharebtn', 'ask-btn', 'ask-no', 'remindbtn'].filter(function (c) {
         return wasOn.classList && wasOn.classList.contains(c);
       })[0] || '';
     }
@@ -1431,7 +1496,12 @@
     box.appendChild(row);
 
     var st = store.streak;
-    var line = st.count > 1 ? '🔥 ' + st.count + ' days running' : '🔥 day one — come back tomorrow and it becomes a streak';
+    /* Name tomorrow's stake, not just today's number: a count on its own
+       says nothing about what the next visit does to it. The day-one line
+       already names it; the running line now does too. */
+    var line = st.count > 1
+      ? '🔥 ' + st.count + ' days running — one drill tomorrow keeps it'
+      : '🔥 day one — come back tomorrow and it becomes a streak';
     if (st.freezes > 0) line += ' · ❄️ ' + st.freezes + ' rest day' + (st.freezes > 1 ? 's' : '') + ' banked';
     box.appendChild(say(el('p', 'closing-streak'), line));
 
@@ -1454,6 +1524,17 @@
     share.type = 'button';
     share.addEventListener('click', function () { copyShare(share); });
     btns.appendChild(share);
+    /* The one external trigger a server-less site can offer: a static
+       calendar file holding a daily ten-minute "warmup" event. Offered
+       here — after delivered value — and nowhere else. Deleting the event
+       from the calendar ends it; the file holds nothing but the event.
+       say() hides the 📅 from the accessible name. */
+    var rem = document.createElement('a');
+    rem.className = 'remindbtn';
+    rem.href = 'reminder.ics';
+    rem.setAttribute('download', 'artdaily-warmup.ics');
+    say(rem, 'add a daily reminder 📅');
+    btns.appendChild(rem);
     box.appendChild(btns);
 
     var ask = buildAsk();
@@ -1474,17 +1555,65 @@
     }
   }
 
-  /* THE ONE ASK. Deliberately the newsletter, not money: it needs no
-     payment rail, it is the higher-value ask for a habit product, and
-     "hear when new drills land" is a reason to come back rather than a
-     favour. Stage-0 — returns null unless a Buttondown name is set, so
-     it can never be a broken form. Shown only after a full warmup on a
-     3-day streak (real, repeated value), at most once, dismissible. */
+  /* THE ASK, and there are two surfaces for it. Deliberately the newsletter
+     and not money: it needs no payment rail, it is the higher-value ask for a
+     habit product, and a monthly teaching email is a reason to come back
+     rather than a favour. Both are Stage-0 — nothing appears unless a
+     Buttondown name is set in js/support-config.js, so neither can ever be a
+     broken form.
+
+       - The FOOTER FIELD (wireFooterSignup below, markup in index.html) is
+         always there, for everybody, from the first second of the first
+         visit. It is the one that matters on a launch day.
+       - buildAsk() is the LOUD one: a card at the end of a finished warmup on
+         a 3-day streak, at most once, dismissible. It has earned the right to
+         interrupt; the footer field has not and never asks for it.
+
+     `store.seen.ask` is the single flag the two share, so subscribing in the
+     footer retires the day-3 card. Being asked again on Wednesday morning for
+     something you did on Sunday is how a quiet ask stops reading as quiet.
+
+     BOTH must promise the same thing — one email a month, a drill and the
+     mistake it catches. The old copy here said "one short email when new
+     drills land", which is a different newsletter from the one that is
+     actually planned, and two contradictory promises for one list is a
+     complaint waiting to be written. */
   /* read-modify-write, like every other mutation here */
   function markAskSeen() {
     adoptStore();
     store.seen.ask = true;
     saveStore();
+  }
+
+  /* The footer field. index.html ships it hidden and with no action, and this
+     is the only code that ever fills either of those in — so with JavaScript
+     off, or with no Buttondown name configured, it stays exactly as absent as
+     it started. */
+  function wireFooterSignup() {
+    var S = window.SUPPORT || {};
+    var box = $('footerSignup');
+    var form = $('footerSignupForm');
+    if (!box || !form) return;
+    if (!S.buttondown) return;
+    form.action = 'https://buttondown.com/api/emails/embed-subscribe/' + S.buttondown;
+    /* No preventDefault anywhere in here: the browser must be left to do the
+       real POST into the new tab, because what comes back is a Turnstile
+       challenge that a human has to answer. Everything below is bookkeeping
+       around a submit that is still going to happen. */
+    form.addEventListener('submit', function () {
+      markAskSeen();
+      /* The day-3 card may be on screen RIGHT NOW — the closing card is
+         rendered whenever today's warmup is complete, so someone can finish
+         their third day, scroll past the card and subscribe in the footer
+         instead. markAskSeen only stops it being BUILT again; the one already
+         in the document has to be taken out by hand, or the page still asks
+         for an address that was handed over two seconds ago. */
+      var card = document.querySelector('#closing .ask');
+      if (card) card.remove();
+      var said = $('footerSignupSaid');
+      if (said) said.textContent = 'a tab just opened — confirm there, then check your inbox';
+    });
+    box.hidden = false;
   }
 
   function buildAsk() {
@@ -1494,10 +1623,10 @@
     if (store.streak.count < 3) return null;
 
     var wrap = el('div', 'ask');
-    wrap.appendChild(el('p', 'ask-head', 'three days running — want a note when new drills land?'));
+    wrap.appendChild(el('p', 'ask-head', 'three days running — want one email a month?'));
     wrap.appendChild(el('p', 'ask-body',
-      'Art Daily is free and stays free: no ads, no accounts, nothing tracked. ' +
-      'New drills get added most months. One short email when they do — nothing else, unsubscribe anytime.'));
+      'Art Daily is free to use: no ads, no account needed. ' +
+      'One email a month: a drill, and the mistake it catches. Nothing else, unsubscribe anytime.'));
 
     var form = document.createElement('form');
     form.className = 'ask-form';
@@ -1509,6 +1638,9 @@
     input.name = 'email';
     input.required = true;
     input.placeholder = 'you@example.com';
+    /* Same reason as the footer field: without this the browser will not
+       offer to fill the only box in the form. */
+    input.setAttribute('autocomplete', 'email');
     input.setAttribute('aria-label', 'Email address');
     var send = el('button', 'ask-btn', 'keep me posted');
     send.type = 'submit';
@@ -1516,6 +1648,13 @@
     form.appendChild(send);
     form.addEventListener('submit', function () { markAskSeen(); });
     wrap.appendChild(form);
+    /* The tab and the confirmation email are the same surprise here as in the
+       footer, so they get the same warning. Both classes are wanted: .ask-body
+       is the muted small-print style and the 54ch measure, and .signup-fine
+       (in index.html, so it wins the cascade) drops it a size and moves the
+       margin below the form instead of above it. */
+    wrap.appendChild(el('p', 'ask-body signup-fine',
+      'Subscribing opens a new tab. Check your inbox after that — you are on the list once you click the confirmation link.'));
 
     var no = el('button', 'ask-no', 'no thanks');
     no.type = 'button';
@@ -2079,6 +2218,7 @@
   renderMeters();
   renderRecord();
   syncThemeLabel();
+  wireFooterSignup();
   consumeLogHash();
   /* The closing card was only ever built at the instant the third drill
      landed (and on a cross-tab storage event). Refresh the page — or come

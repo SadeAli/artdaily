@@ -43,4 +43,4 @@ fixes are the interesting part of the code:
 
 Live: <https://artdaily.sadeali.com/steady-tunnel/> · part of
 [artdaily.sadeali.com](https://artdaily.sadeali.com/). No build step,
-no trackers.
+no third-party code in the drill itself.

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Colour Mixing Exercises — how to train your colour eye</title>
+<meta name="description" content="Why you cannot see the colour in front of you, and eight scored drills that measure it: mixing, temperature, neutrals, coloured light. Free, no account needed.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Colour Mixing Exercises">
+<meta property="og:description" content="The hard part of colour is not the mixing — it is that context and light edit the colour before you see it.">
+<meta property="og:site_name" content="Art Daily · SadeAli">
+<meta property="og:url" content="https://artdaily.sadeali.com/practice/colour/">
+<!-- The site card. The guides have no art of their own; tools/build-og.js
+     builds per-drill cards from the registry and has no guide template yet. -->
+<meta property="og:image" content="https://artdaily.sadeali.com/og/practice-colour.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Art Daily — the colour practice guide">
+<link rel="canonical" href="https://artdaily.sadeali.com/practice/colour/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Colour Mixing Exercises">
+<meta name="twitter:description" content="The hard part of colour is not the mixing — it is that context and light edit the colour before you see it.">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og/practice-colour.png">
+<link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🎨&lt;/text&gt;&lt;/svg&gt;">
+<link rel="preload" href="../../fonts/caveat-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../css/style.css">
+<style>
+/* ---- /practice/ prose ----
+   NOT in css/style.css on purpose: that file is the shared sketchbook theme
+   every one of the 42 drills loads too, and these seven pages are the only
+   long-form copy on the site. Tokens only, so both themes come free.
+   This block is byte-identical on every page in the section — see
+   /practice/_TEMPLATE.md. Change it there and here together, or the six
+   guides stop looking like one section. */
+.guide { width: 100%; max-width: 44rem; margin: 0 auto; padding: 6px 20px 4px; overflow-wrap: break-word; }
+.guide h1 {
+  margin: 4px 0 8px;
+  font-family: var(--hand);
+  font-size: clamp(2rem, 7vw, 2.9rem);
+  font-weight: 700;
+  line-height: 1.05;
+  text-decoration: underline wavy var(--accent, var(--sunny)) 2px;
+  text-underline-offset: 9px;
+}
+.guide h2 { margin: 34px 0 6px; font-family: var(--hand); font-size: clamp(1.55rem, 5vw, 1.95rem); font-weight: 700; line-height: 1.12; }
+.guide h3 { margin: 22px 0 4px; font-family: var(--hand); font-size: 1.3rem; font-weight: 700; line-height: 1.15; }
+.guide p, .guide li { font-size: 0.95rem; line-height: 1.7; }
+.guide p { margin: 0 0 12px; }
+.guide ul, .guide ol { margin: 0 0 14px; padding-left: 1.35em; }
+.guide li { margin: 0 0 7px; }
+.guide a { color: var(--link); font-weight: 700; }
+.guide code { font-size: 0.86rem; padding: 1px 5px; border-radius: 4px; background: color-mix(in srgb, var(--ink) 8%, transparent); }
+.guide .lede { margin: 0 0 18px; font-family: var(--hand); font-size: 1.35rem; line-height: 1.35; color: var(--muted); }
+/* the one thing no other article about these subjects can print: the real
+   constant, lifted out of the drill's own scoring function */
+.guide .measured {
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+  border-left: 3px solid color-mix(in srgb, var(--accent, var(--sunny)) 60%, transparent);
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
+  border-radius: 0 8px 8px 0;
+}
+.guide .measured b { font-family: var(--hand); font-size: 1.1rem; font-weight: 700; display: block; }
+.guide .guide-more { margin-top: 20px; padding-top: 12px; border-top: 1px dashed var(--line); font-size: 0.86rem; color: var(--muted); }
+/* .section is 1080px wide for a 42-card catalogue. Narrow it to the prose
+   column so a page of guide text and a block of cards share one left edge. */
+.section.guide-cards { max-width: 44rem; }
+</style>
+<script>
+(function(){var q=null,t=null;try{q=new URLSearchParams(location.search).get('theme');}catch(e){}try{t=localStorage.getItem('sadeali-theme');}catch(e){}var v=(q==='light'||q==='dark')?q:t;document.documentElement.dataset.theme=(v==='dark')?'dark':'light';})();
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Art Daily", "item": "https://artdaily.sadeali.com/"}, {"@type": "ListItem", "position": 2, "name": "Practice", "item": "https://artdaily.sadeali.com/practice/"}, {"@type": "ListItem", "position": 3, "name": "Colour", "item": "https://artdaily.sadeali.com/practice/colour/"}]}
+</script>
+</head>
+<body>
+<div class="topbar">
+  <a class="backlink" href="../" aria-label="practice">← practice</a>
+  <div class="topbar-spacer"></div>
+  <button class="iconbtn" id="themeToggle" aria-label="Toggle light or dark theme" title="Toggle theme" hidden>
+    <svg class="ic-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/></svg>
+    <svg class="ic-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+  </button>
+</div>
+
+<main>
+<section class="guide accent-coral">
+  <h1>How to mix a colour you cannot see</h1>
+  <p class="lede">Colour mixing is a search problem, and the target keeps moving. This chapter is about holding it still.</p>
+  <p>Mixing is not the hard part — more of this, less of that, check against the target. The hard part is that the target moves. What sits beside a colour changes how it reads; what light falls on it changes what reaches your eye; and your visual system corrects for both before you get a look in.</p>
+  <p>These eight drills train one thing: reading a colour cleanly enough to match it. Two, <a href="../../value-trap/">Value Trap</a> and <a href="../../colour-constancy/">Colour Constancy</a>, exist to prove the edit is happening, and both hold the true answer as a number — so the size of the edit can be printed. Every threshold below came out of the drill's own <code>js/game.js</code>.</p>
+</section>
+
+<section class="guide accent-coral">
+  <h2>One colour, three judgements</h2>
+  <p>Most mixing frustration is two of three properties confused for each other. <strong>Hue</strong> is which colour it is, red against orange; <strong>chroma</strong> is how strong it is, vivid down to grey; <strong>value</strong> is how light or dark. Until you know which one a mix is wrong on, you turn all three knobs and undo your own corrections.</p>
+  <p><a href="../../colors/">Color Mixer</a> names it: on lock-in it compares the lightness, chroma and leftover hue differences in CIE Lab and reports whichever carried the miss.</p>
+  <p class="measured"><b>What counts as a match</b>Both colours are converted into CIE Lab and compared by CIE76 ΔE. ΔE 2 or under is a flat 100 — the just-noticeable difference. Above it the score falls straight to zero at <code>clamp(32 × (0.6 + chroma/78), 16, 50)</code>: the window widens with the <em>target's</em> own chroma, about ΔE 22 on the near-grey the round ends with, pinned at 50 on a vivid one. Ten degrees of hue error is worth far more ΔE on the vivid one, so the scaling keeps the same eye error costing the same. The first two items are then multiplied by 1.35 and 1.12 — a warm-up allowance for the item, not for your hardware.</p>
+  <h3>Ratios, not ingredients</h3>
+  <p>Which pigments go into a mix is the easy half; how much of each takes years. <a href="../../mix-to-target/">Mix to Target</a> gives you two or three bases, one slider each, on a subtractive model: a weighted geometric mean per channel in linear light, so a dark pigment drags the mix down instead of averaging towards grey.</p>
+  <p class="measured"><b>Why 100 is always reachable</b>Each target is generated by running hidden weights <em>through the same mixing function the sliders drive</em>, quantised to whole percents with a 15% floor each — so no pigment is a red herring and the exact answer sits on a notch a hand can land. Score is <code>100 × (1 − ΔE/26)</code>; the sliders open at least ΔE 12 away, capping a do-nothing lock at 54.</p>
+</section>
+
+<section class="guide accent-lilac">
+  <h2>Why the colour you see is not the colour that is there</h2>
+  <h3>The neighbours are arguing with it</h3>
+  <p>A colour is judged against its surroundings, never alone: the same grey reads warm beside a blue and cool beside an orange. That is a nuisance when you are identifying one, and the only reason you ever can — a faint warmth is invisible alone, obvious beside a cooler grey.</p>
+  <p><a href="../../neutral-hunt/">Neutral Hunt</a> is built out of that: nine near-greys, eight carrying a temperature cast and one carrying none, and you tap the one with nothing in it. Comparison finds it. Staring does not.</p>
+  <p class="measured"><b>How small a cast you are asked to catch</b>Chips are generated in CIELAB, so every cast is a known number, and the neutral is <code>a = b = 0</code> exactly. The other eight run from Lab chroma 10–16 on the first grid to 5–7 on the fifth, hues 25° apart or more, all inside L* 50–65 so lightness never gives it away. A wrong pick earns <code>100 × (1 − C/C<sub>max</sub>) × 0.55</code>, where C<sub>max</sub> is the strongest cast <em>on that grid</em> — so a nearly-neutral miss pays, and the credit cannot inflate as the grids tighten.</p>
+  <h3>The hue is shouting over the value</h3>
+  <p>Value is what a picture is built out of, and a saturated colour is the worst announcer of it: a strong red says loudly that it is red and almost nothing about whether it is lighter than the grey beside it. Squinting blurs and dims until the colour stops arguing.</p>
+  <p><a href="../../value-trap/">Value Trap</a> makes that scorable. A grey chip sits above six loud ones and exactly one shares its value; the moment you pick, every chip flips to its own grey with its L* printed on it — the squint made literal.</p>
+  <p class="measured"><b>How close the wrong answers sit</b>The gap between the right chip and the nearest wrong one shrinks 1.4 points an item: 12 points of L* on the first, 5 on the sixth, out of a 0–100 scale. A miss earns <code>38 × (1 − |ΔL*| / reach)³</code>, with reach 3.8 times the closest a wrong chip can actually sit — which keeps the nearest wrong chip worth 15 out of 100 on every item, easy or hard, while a wild miss falls away fast. Blind tapping banks about 17.</p>
+  <p>One note narrows the claim: <em>the same value</em> means the same CIE L*, computed from luminance — a measurement, not a model of how light the chip looks between five rivals.</p>
+</section>
+
+<section class="guide accent-coral">
+  <h2>Colour constancy: taking the light back off</h2>
+  <p>The second edit is the bigger one. A white wall at sunset sends orange light to your eye and you see white anyway, because your visual system works out what the light is doing and subtracts it. That reflex is colour constancy — a direct obstacle to painting.</p>
+  <p><a href="../../colour-constancy/">Colour Constancy</a> runs it backwards. One coloured light tints a scene — a ground, a card labelled <em>white card</em>, a grey block, a prop, a patch — and beside it a neutral grey field where you rebuild the patch's real colour. That card genuinely is white, so whatever colour it appears <em>is</em> the light. Subtract it from the patch; what is left is the answer.</p>
+  <p>Every surface is composed as reflectance × illuminant per channel in linear RGB, so the true colour is a number the scene was built from. Lock in and the light switches off: the cast falls away from the whole scene at once. That is the lesson.</p>
+  <p class="measured"><b>What leaving the light in costs</b>The cast is a direction in Lab — the patch as seen, minus the patch as it is. Your miss splits along and across it: the along part is how much of the light you failed to take off, the across part is slider slop, priced at <code>RESIDUAL_W = 0.3</code> of it. The along part is charged as a fraction of the cast, not a raw distance, so wherever the cast measures between ΔE 12 and ΔE 30 the arithmetic is linear — leave 20% of the light in, lose 20 points; copy what you see, score zero.</p>
+  <p>Deals where the light barely moves the patch are re-dealt, up to twelve tries, until the cast clears ΔE 6; the round then averages your four signed misses into a bias line — four shades pulled the same way are one habit, not four mistakes.</p>
+</section>
+
+<section class="guide accent-bubblegum">
+  <h2>Warm and cool is a relationship, not a list</h2>
+  <p>Everyone learns the list — red, orange, yellow warm; green, blue, violet cool — and it is little use at the palette, where the judgement that matters is comparative. Is <em>this</em> red warmer than <em>that</em> red? Temperature is a position on a scale built from the colours present.</p>
+  <p><a href="../../temperature-sort/">Temperature Sort</a> removes every cue except hue: five shuffled swatches to order warmest to coolest, generated in OKLCH at one shared chroma per set, lightness held inside ±0.02 of its 0–1 scale, so the lighter chip is not the warmer one and neither is the more saturated one. They stay on the orange-through-green-to-blue arc, 20° to 235°, because magenta and violet read warm or cool depending on their surroundings.</p>
+  <p class="measured"><b>Why a shuffle is not worth half marks</b>Sets tighten from about 45° of hue between neighbours to about 16°, and the score counts pairs, not positions: over the ten pairs five chips make, concordant minus discordant — Kendall's tau — rescaled with the zero at <code>TAU_FLOOR = −0.2</code>, below a shuffle rather than at it. A perfect row is 100, one adjacent swap 83, two 67, half the pairs right 17, and an untouched deal about 23 — where plain agreement would pay it 50.</p>
+  <h3>Warm light, cool shadow</h3>
+  <p>Outdoors a form has two lights: the sun, which is warm, and the whole dome of the sky, which is blue. The lit side gets both; the shadow side gets only the sky. So a shadow is not the object's colour made darker — it is the sky's colour filtered through the object's own, which is why shadows go blue on a bright day.</p>
+  <p><a href="../../sun-and-sky/">Sun &amp; Sky</a> asks for that one judgement: a ball under a sky, a rail from deep blue through colourless to low amber. The ball is real geometry, lit by <code>albedo ⊙ (key × max(0, n·L) + fill × (0.5 + 0.5 × n·up))</code> in linear light — a surface facing up sees the whole sky, one facing down none of it, a ball's shadow side in between.</p>
+  <p class="measured"><b>The rail cannot be read by value</b>The fill carries a luminance of 0.30 against the key's 0.92, and every position on the rail is re-weighted to that same value — so dragging changes the sky's colour, never its strength. The score is <code>100 × (1 − |Δt| / zero)</code> on a rail two units wide, with <code>zero = 0.62</code>: a judgement tolerance, of which only the hand's share is eased for hardware — a trackpad adds 0.08, a finger 0.04, a pen nothing.</p>
+</section>
+
+<section class="guide accent-sky">
+  <h2>A palette is proportions, not a set of colours</h2>
+  <p>What makes a picture feel like one thing is not which colours it uses but how much of each: a large quiet field, a second colour doing the work, a small loud note the arrangement exists to let ring. <a href="../../palette-pick/">Palette Pick</a> tests whether you can read those roles back out.</p>
+  <p class="measured"><b>What the accent is worth</b>Scenes are generated with the dominant at 0.45–0.55 of the area, the secondary 0.25–0.35, the accent 0.08–0.12. The score weights the three roles <code>0.45 / 0.33 / 0.22</code> and adds 6 points for the accent within ΔE 20 — so the smallest area carries more than a fifth of the mark. A miss is counted in <em>grid cells</em>, one cell being the mean ΔE between neighbouring chips, and zeroes at 2.0 of them.</p>
+</section>
+
+<section class="guide accent-mint">
+  <h2>What a browser drill cannot teach you</h2>
+  <p>These are eye drills: reading a colour, naming what is wrong with a mix, knowing what a shadow should do. That is most of the difficulty, and none of it is painting. What it buys is one fairness — seven of the eight score identically on a phone and on a desktop, because the eye reading a colour is the same eye whatever is in your hand.</p>
+  <ul>
+    <li><strong>Screen colour is emitted; paint is reflected.</strong> The model in <a href="../../mix-to-target/">Mix to Target</a> stands in for the <em>behaviour</em> of subtractive mixing, not for any real pigment: your ultramarine has a mass tone, a granulation, a shift as it dries.</li>
+    <li><strong>Your screen is not calibrated.</strong> Below about 5 units of chroma a laptop panel cannot show a cast at all — which is where <a href="../../neutral-hunt/">Neutral Hunt</a> stops shrinking them, and why it opens by asking you to switch off any blue-light filter.</li>
+    <li><strong>Nothing here is a mark, or from life.</strong> No pressure, no brush load, no edges, no working large — and a real object has bounce light and a sun that moves.</li>
+  </ul>
+</section>
+
+<section class="guide accent-coral">
+  <h2>How to practise this week</h2>
+  <p>Four sessions of two to four minutes, diagnostics first so the later scores mean something.</p>
+  <ol>
+    <li><strong><a href="../../value-trap/">Value Trap</a>.</strong> Not to win it: sitting near the blind floor of 17 means colour is dominating your value judgement completely, which is the most fixable thing here.</li>
+    <li><strong><a href="../../colors/">Color Mixer</a>.</strong> Ignore the total; read the axis the reveal names. If <em>lightness</em> comes up three times in five, your mixing problem is a value problem in a colour costume and the <a href="../value/">value chapter</a> is the better week.</li>
+    <li><strong><a href="../../colour-constancy/">Colour Constancy</a>.</strong> Read the &ldquo;you left X% of the light in&rdquo; line, not the score. Above 50% means you are still copying appearance; a negative number, over-correcting.</li>
+    <li><strong><a href="../../sun-and-sky/">Sun &amp; Sky</a>, then its closing line</strong> — which appears only when three shades of four lean the same way by more than a tenth of the tolerance. <em>Too warm</em> means you paint shadows as the object's colour darkened.</li>
+  </ol>
+  <p>Then keep one as a warm-up: <a href="../../neutral-hunt/">Neutral Hunt</a> if your greys come out tinted, <a href="../../temperature-sort/">Temperature Sort</a> if you cannot say which of two reds is warmer, <a href="../../palette-pick/">Palette Pick</a> if your pictures never feel built from a palette.</p>
+  <p class="guide-more">Next: <a href="../value/">value &amp; light</a>, which all of this rests on — <a href="../../values/">Value Squint</a>, then <a href="../../sphere-shade/">Shade a Sphere</a>. Or <a href="../observation/">observation</a>. All six: <a href="../">the practice guides</a> · Every drill: <a href="../../">the catalogue</a></p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <nav class="footnav" aria-label="Site links">
+    <a href="https://artdaily.sadeali.com/">More drills</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://sadeali.com/">More experiments</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
+    <span aria-hidden="true">·</span>
+    <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span id="supportLinks"></span>
+  </nav>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no account needed</p>
+</footer>
+
+<script src="../../js/support-config.js"></script>
+<script src="../../js/main.js"></script>
+</body>
+</html>

@@ -435,17 +435,69 @@
     rgb(0.52, 0.47, 0.39),
   ];
 
-  function pick(list) { return list[Math.floor(Math.random() * list.length) % list.length]; }
+  /* ---- where a round's four scenes come from ---------------------------
+     A ROUND IS A SHORT SEQUENCE OF NORMALISED DRAWS: two shuffles (which
+     skies and which balls come up, and in what order), a ground colour
+     per item, and four numbers per item for the sun's direction. Round 1
+     of a sitting is dealt from ArtDaily.roundRandom(1) — seeded from
+     today and this slug — so everyone painting Sun & Sky today gets the
+     same four lighting set-ups and a score finally has a denominator.
+     Round 2 and on are practice: same generator, same distribution,
+     unshared seed.
+
+     THIS DRILL HAS A CANVAS BUT ITS CONTENT IS NOT IN PIXELS — the block
+     above says so already, and it is what makes the shared round exact
+     rather than merely proportional. A sky, a ball, a ground and a unit
+     light vector are the same numbers on a 390px phone and a 900px
+     desktop; only the picture they are drawn into changes size. Two
+     players are answering the identical question, and the answer (the
+     sky temperature) does not depend on the sheet at all.
+
+     NOTHING TO CACHE. buildRound() deals all four items ONCE, at the top
+     of a round, and stores them; the resize path re-fits and re-paints
+     stored items rather than re-dealing them (which is exactly why a
+     phone rotated mid-item leaves the answer where it was). So a plain
+     rolling generator cannot walk out from under the player.
+
+     EVERY DRAW IS CONTENT — there is genuinely no decoration in this
+     file to leave loose. The two shuffles are the round's syllabus, the
+     ground colour is the surface the cast shadow lands on (the anchor
+     the player reads the answer off), and the light direction decides
+     where the shadow side of the ball is and how much of it there is.
+     Nothing is drawn per frame from a random source: draw() is pure
+     given the item.
+
+     GUARDED, and the guard is load-bearing. index.html cache-busts its own
+     scripts with ?v= but every drill loads ../sdk/artdaily-sdk.js BARE, so
+     the two files cache independently: a returning visitor holding a warm
+     OLD SDK plus a cold copy of this file would call a function that does
+     not exist, inside newRound(), before the first scene is ever built —
+     "Loading…" forever, blank canvas. Falling back to Math.random costs
+     today's player nothing but a non-comparable round, which is exactly
+     what they had yesterday.
+
+     ONLY THE BARE CALL FORM IS USED — rng(), never rng.pick()/.shuffle()
+     — because Math.random carries no helpers, so the fallback path would
+     need a shim, and a shim is a second copy of the arithmetic that can
+     drift from the first. Every line below is the line it always was
+     with Math.random() swapped for rng(): pick() keeps its % length
+     counterweight, both shuffles still walk DOWN one draw per step, and
+     lightDir() still draws side, x, y, z in that order. Uniform on
+     [0,1) either way, so a seeded round is not an easier or a harder
+     round. */
+  var rng = Math.random;
+
+  function pick(list) { return list[Math.floor(rng() * list.length) % list.length]; }
 
   /* A light direction with the sun up, off to one side, and mostly
      behind the viewer's shoulder — the arrangement that leaves a
      readable shadow side on a ball without hiding the light side. */
   function lightDir() {
-    var side = Math.random() < 0.5 ? -1 : 1;
+    var side = rng() < 0.5 ? -1 : 1;
     return unit({
-      x: side * (0.40 + Math.random() * 0.35),
-      y: 0.34 + Math.random() * 0.34,
-      z: 0.45 + Math.random() * 0.30,
+      x: side * (0.40 + rng() * 0.35),
+      y: 0.34 + rng() * 0.34,
+      z: 0.45 + rng() * 0.30,
     });
   }
 
@@ -474,12 +526,12 @@
   function buildRound() {
     var rest = SKIES.slice(1);
     for (var i = rest.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
+      var j = Math.floor(rng() * (i + 1));
       var tmp = rest[i]; rest[i] = rest[j]; rest[j] = tmp;
     }
     var balls = BALLS.slice(1);
     for (var k = balls.length - 1; k > 0; k--) {
-      var m = Math.floor(Math.random() * (k + 1));
+      var m = Math.floor(rng() * (k + 1));
       var t2 = balls[k]; balls[k] = balls[m]; balls[m] = t2;
     }
     var items = [makeItem(SKIES[0], BALLS[0], 0)];
@@ -1219,6 +1271,15 @@
 
   function newRound() {
     round += 1;
+    /* THE ONE LINE THAT MAKES A SCORE COMPARABLE. Re-seeded per round, so
+       round 1 is today's shared four scenes and every round after it is
+       practice. It sits above the buildRound() call below — the deal must
+       come out of the NEW generator, not the last round's — and
+       buildRound() rebuilds roundItems whole, so there is no cached draw
+       left over to replay. See the block above pick() for the guard. */
+    rng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round)
+      : Math.random;
     itemIdx = 0;
     scores = [];
     diffs = [];

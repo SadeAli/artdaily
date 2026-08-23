@@ -105,6 +105,17 @@ store the page keeps the record in, so stay on keys nobody else owns: the
 page holds `artdaily-progress-v1`, the SDK holds `artdaily-best-<slug>` and
 `artdaily-input`, and both read `sadeali-theme`.
 
+One more thing the SDK paints that a drill author should know exists: on a
+**standalone** page, after the first finished round of a sitting, it injects
+a one-line `.daily-note` under the hand-off bar — *"round 1 is today's round
+— a fresh one lands at midnight."* — but only if the drill has dealt from
+`dailyRandom` / `roundRandom(1)` this sitting, so a drill with no daily seed
+never carries a claim that is false for it. It is a plain `<p>`, deliberately
+not a live region (the hint stays the one spoken channel), and its styles
+ride in from the SDK as token-based CSS, not from your `css/style.css`. Do
+not write your own "come back tomorrow" copy into a drill; this line is the
+one place it lives, so it can stay true (and be retired) everywhere at once.
+
 ## The first thirty seconds (the only thirty a beginner gives you)
 
 Almost every drill that loses a player loses them here, and almost never
@@ -1042,7 +1053,7 @@ node --check js/game.js
   screen. Difficulty may ramp *within* a round.
 - **Honest scoring.** Score the geometry (deviation, ΔE, angle error),
   never time-on-page.
-- **Zero build, no trackers.** Plain files, no analytics, no accounts.
+- **Zero build, no trackers.** A drill's own code ships no analytics and no third-party requests, and needs no account. (This is a rule for what a DRILL contains, not a claim about the deployed site — Cloudflare injects an analytics beacon at the edge.)
   Self-contained is the default (scenes are drawn procedurally on canvas,
   which also hands you exact ground truth for scoring) — external
   resources aren't banned, but you almost never need one.
@@ -1088,6 +1099,32 @@ of the index deliberately: it carries a `robots` `noindex` meta tag and is
 the one game folder missing from `sitemap.xml`. A real drill is the
 opposite of both — delete that meta line from your copy and add the drill's
 URL to the sitemap.
+
+**Your drill's content must come from the day's seed, not from `Math.random()`.**
+`game-template/js/game.js` already does this and its comment is the spec: one `roundRng`
+per round, assigned in `newRound()` from `ArtDaily.roundRandom(round)`, so round 1 of a
+sitting is the same round for everyone playing today and a score finally has a
+denominator. Three rules come with it:
+
+- **Guard the call.** `(window.ArtDaily && ArtDaily.roundRandom) ? ... : Math.random`.
+  A drill loads `../sdk/artdaily-sdk.js` bare while `index.html` versions its own
+  scripts, so the two cache independently — an unguarded call to a function a stale SDK
+  does not have hangs the drill on "Loading..." with a blank canvas, for returning
+  visitors only. That was reproduced, not imagined.
+- **Bare calls only.** `Math.random` is the fallback and carries no `.range`/`.int`/
+  `.pick` helpers, so using one would throw on exactly the visitors the guard protects.
+- **Seed content, not decoration.** Clouds, grain and hand-drawn wobble stay on
+  `Math.random()`. Seeding them gains nothing, consumes draws, and shifts every content
+  draw after them. Name which is which in a comment — `crop-it` is the worked example,
+  with a separate `crand()` so the two can never be confused.
+
+**The drill count lives in five places, not eighty-five.** Shipping a drill changes the
+number the site quotes. That number used to be hardcoded in 85 places — 51 of them the
+`all 42 drills` link at the end of every drill's about section, which is *navigation*, not
+a claim anyone verifies. Those now read `the whole catalogue` and never need touching
+again. The number survives only where a reader actually reads it as a claim:
+`practice/index.html`'s title, its two social descriptions, its opening line, and its
+closing catalogue link. Update those five and nothing else.
 
 **Two registrations, not one.** A registry entry alone leaves the drill
 invisible with JavaScript disabled. Every `status: 'live'` entry also

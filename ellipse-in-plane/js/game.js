@@ -315,7 +315,53 @@
      that face's inscribed circle in 3D. Math only, no DOM.
      ============================================================ */
 
-  function rand(lo, hi) { return lo + Math.random() * (hi - lo); }
+  /* ---- where a face's numbers come from --------------------------------
+     THE ITEM'S CONTENT IS A SEQUENCE OF DRAWS, and here every one of them
+     is a 3D quantity — a yaw in degrees, a depression angle, a camera
+     distance, a lateral shift. The canvas only arrives afterwards, in
+     layoutScene's fit-to-sheet similarity, so today's faces are the same
+     faces on every device and a score off them is finally a number with a
+     denominator. Round 1 of a sitting is today's shared round; round 2 and
+     on are practice — same generator, same distribution, unshared seed.
+
+     ONE STREAM PER FACE, asked for as the face is built. The three faces
+     are dealt one at a time and face 3 must be face 3 whatever faces 1–2
+     spent; it is also the shape the SDK documents for an item index.
+
+     THE ONE THING A SEED CANNOT MAKE IDENTICAL is the `gentle` branch in
+     genItem3D. It is chosen on `W < 480` — a deliberate fairness rule that
+     predates this and keeps the truth's minor axis big enough to aim at on
+     a phone — and it swaps the RANGE the last face's yaw is drawn from
+     (52–62° instead of 62–75°). The draw COUNT is identical either way, so
+     nothing after it shifts, and both ranges are drawn from the same
+     uniform; but a phone's third face today really is a gentler ellipse
+     than a desktop's. That is a fairness branch, not a seeding failure, and
+     it is not something a seed can or should paper over. Flagged here so
+     whoever ships the leaderboard knows the third item is only comparable
+     within a screen-size class.
+     (`FIRST_VISIT && round <= 1` sets the same flag, and has the same
+     effect on the very first round anyone ever plays.) */
+  var itemRng = Math.random;
+
+  /* GUARDED, and the guard is load-bearing: index.html cache-busts its own
+     scripts with ?v=, but every drill loads ../sdk/artdaily-sdk.js BARE, so
+     the two files cache independently. A returning visitor with a warm old
+     SDK and a cold copy of this file would call a function that does not
+     exist, and startItem would throw before the first box was built —
+     blank sheet, HUD at "–". Falling back to Math.random costs today's
+     player nothing but a non-comparable round, which is what they had
+     yesterday, and it self-heals when the SDK's max-age expires. */
+  function seedItemRng(idx) {
+    itemRng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round, idx)
+      : Math.random;
+  }
+
+  /* Unchanged as a function — lo + u * (hi - lo) is exactly what it always
+     was, with Math.random() swapped for the item's uniform. u is uniform on
+     [0,1) either way, so every value downstream keeps precisely the shape
+     it had and a seeded face is not an easier or a harder face. */
+  function rand(lo, hi) { return lo + itemRng() * (hi - lo); }
 
   /* A box yawed about the vertical axis; the camera looks along +z,
      so vertical edges stay vertical: classic 2-point perspective. */
@@ -395,7 +441,7 @@
      turned side, item 2 a narrow, heavily foreshortened side (face
      normal 62–75° off the view axis). */
   function genItem3D(idx, gentle) {
-    var s = 1, side = Math.random() < 0.5 ? -1 : 1;
+    var s = 1, side = itemRng() < 0.5 ? -1 : 1;
     var yaw, C, faceAxis, faceSign, depr, alpha, Cz;
     if (idx === 0) {
       yaw = side * radians(rand(20, 40));
@@ -692,6 +738,8 @@
 
   function startItem(idx) {
     itemIdx = idx;
+    /* Re-seeded for THIS face, before a single value is drawn. */
+    seedItemRng(idx);
     /* narrow sheets get the gentler foreshortening too: the truth's minor
        axis must stay big enough to aim at */
     scene = layoutScene(genItem3D(idx, FIRST_VISIT && round <= 1 || W < 480), W, H);
@@ -770,7 +818,7 @@
            leaves it undefined and the old wording stands. */
         showToast(res.isFirst
           ? 'first score ' + res.score + ' / 100 — your mark to beat'
-          : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+          : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest && !res.isFirst);
       }
       /* the ramp guarantees the LAST face is the worst, so the round used
          to end on the player's weakest number. Name the best one too. */

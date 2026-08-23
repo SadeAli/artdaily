@@ -184,7 +184,42 @@
   var lastResult = null; /* { dE, score } for the currently locked item */
   var roundItems = []; /* { target, mix, score } per locked item, for the recap */
 
-  function randInt(lo, hi) { return lo + Math.floor(Math.random() * (hi - lo + 1)); }
+  /* ---- where the five targets come from --------------------------------
+     THE ROUND'S CONTENT IS FIFTEEN NORMALISED DRAWS: hue, saturation and
+     lightness for each of the five colours, pulled in that fixed order by
+     makeTarget(). Round 1 of a sitting comes from ArtDaily.roundRandom(1) —
+     seeded from today and this slug — so everyone mixing this drill today
+     is matching the same five swatches and a score finally has a
+     denominator. Round 2 and on are practice: same generator, same
+     distribution, unshared seed.
+
+     UNLIKE THE PIXEL DRILLS THERE IS NOTHING TO CACHE HERE. A colour is not
+     laid out against a canvas — h/s/l are absolute, so two players see the
+     literally identical swatch, not merely the same fraction of their own
+     sheet — and makeTarget(idx) is called exactly once per item, from
+     nextItem(). Nothing regenerates a target on resize or on a theme
+     change (draw() only re-paints the swatches it already has), so a plain
+     rolling generator can never walk out from under the player.
+
+     GUARDED, and the guard is load-bearing: index.html cache-busts its own
+     scripts with ?v= but every drill loads ../sdk/artdaily-sdk.js BARE, so
+     the two files cache independently. A returning visitor holding a warm
+     OLD SDK plus a cold copy of this file would call a function that does
+     not exist, inside newRound(), before the first target is ever built —
+     "Loading…" forever, and the drill dead. Falling back to Math.random
+     costs today's player nothing but a non-comparable round, which is what
+     they had yesterday, and it self-heals when the SDK's cache expires.
+
+     ONLY THE BARE CALL FORM IS USED — rng(), never rng.int() — for the
+     same reason: Math.random has no helpers on it, so the fallback would
+     need a shim of its own, and a shim is a SECOND arithmetic path that
+     can drift from the first. randInt below is the line it always was with
+     Math.random() swapped for roundRng(). Both are uniform on [0,1), so
+     every value downstream keeps exactly the shape it had and a seeded
+     round is not an easier or a harder round. */
+  var roundRng = Math.random;
+
+  function randInt(lo, hi) { return lo + Math.floor(roundRng() * (hi - lo + 1)); }
 
   /* ramp: an easy, plainly-coloured warm-up, then vivid, then muted,
      ending near-neutral — desaturated targets are far harder to judge by
@@ -300,6 +335,12 @@
 
   function newRound() {
     round += 1;
+    /* THE ONE LINE THAT MAKES A SCORE COMPARABLE — re-seeded per round, so
+       round 1 is today's shared five colours and every "new round" (and
+       every mid-round restart) after it is practice. */
+    roundRng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round)
+      : Math.random;
     itemIdx = 0;
     itemScores = [];
     roundItems = [];
@@ -474,7 +515,14 @@
     hint.textContent = 'round done — “new round” mixes five fresh colors.';
     renderRecap();
     setRoundBtnLabel(false);
-    showToast((res.isNewBest ? 'new best! ' : 'round score ') + res.score + ' / 100', res.isNewBest);
+    /* A first-ever round has no previous best, so isNewBest is trivially
+       true and "new best!" celebrates nothing — on the one round where the
+       number most needs saying what it IS. The SDK marks that round with
+       isFirst; where it is undefined the old wording stands. */
+    showToast(res.isFirst
+      ? 'first score ' + res.score + ' / 100 — your mark to beat'
+      : (res.isNewBest ? 'new best! ' : 'round score ') + res.score + ' / 100',
+      res.isNewBest && !res.isFirst);
   }
 
   /* round-end recap: the five target-over-mix pairs, side by side */

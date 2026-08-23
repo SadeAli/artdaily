@@ -316,6 +316,10 @@ a { color: inherit; }
 
 .today-done { margin: 12px 0 0; font-size: 0.76rem; font-weight: 700; color: var(--muted); }
 
+/* The day-one → day-two bridge under the checklist (renderToday). Quieter
+   than .today-done — a full sentence, not a scoreboard — so regular weight. */
+.today-note { margin: 6px 0 0; font-size: 0.76rem; color: var(--muted); }
+
 .sharebtn {
   display: inline-flex;
   align-items: center;
@@ -337,6 +341,31 @@ a { color: inherit; }
 }
 .sharebtn:hover { transform: rotate(0deg) translateY(-2px); box-shadow: 0 4px 0 var(--shadow); }
 .sharebtn.copied { background: color-mix(in srgb, var(--mint) 24%, var(--card)); border-color: var(--mint); }
+
+/* "add a daily reminder 📅" on the closing card — a link to /reminder.ics,
+   dressed as the sticker button beside it (share = sunny, reminder = sky)
+   and tilted the other way so the pair reads as two stickers, not a set. */
+.remindbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  margin-top: 12px;
+  margin-left: 10px;
+  padding: 7px 16px;
+  font-family: var(--hand);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink);
+  text-decoration: none;
+  background: color-mix(in srgb, var(--sky) 22%, var(--card));
+  border: 1px solid color-mix(in srgb, var(--sky) 55%, var(--line));
+  border-radius: 4px 12px 5px 10px;
+  box-shadow: 0 2px 0 var(--shadow);
+  transform: rotate(1deg);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.remindbtn:hover { transform: rotate(0deg) translateY(-2px); box-shadow: 0 4px 0 var(--shadow); }
 
 /* ===== Session closure — the end of the day's warmup ===== */
 

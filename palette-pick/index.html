@@ -3,25 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Palette Pick — a colour drill for reading a palette</title>
+<title>Colour Palette Practice — pick the three that carry the scene</title>
 <meta name="description" content="Pick the three chips that carry a painted scene: the biggest area, the second colour and the small loud one. A drill for reading colour out of a picture.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Palette Pick">
 <meta property="og:description" content="pick the 3 colours that carry the scene — a daily art drill">
 <meta property="og:site_name" content="Art Daily · SadeAli">
 <meta property="og:url" content="https://artdaily.sadeali.com/palette-pick/">
-<!-- The page's own card, deliberately: the drills have no per-drill art, and a
-     share with no image at all renders as a grey box. 1200x630, declared so a
-     scraper can lay out the card before it has fetched the file. -->
-<meta property="og:image" content="https://artdaily.sadeali.com/og.png">
+<!-- This drill's own card, built from its registry entry by tools/build-og.js:
+     name, tagline and the drill's URL, so a screenshot of the share is also
+     directions. 1200x630, declared so a scraper can lay out the card before it
+     has fetched the file. -->
+<meta property="og:image" content="https://artdaily.sadeali.com/og/palette-pick.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Art Daily — tiny daily drills for artists">
+<meta property="og:image:alt" content="Art Daily card: Palette Pick — pick the 3 colours that carry the scene — artdaily.sadeali.com/palette-pick">
 <link rel="canonical" href="https://artdaily.sadeali.com/palette-pick/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Palette Pick">
 <meta name="twitter:description" content="pick the 3 colours that carry the scene — a daily art drill">
-<meta name="twitter:image" content="https://artdaily.sadeali.com/og.png">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og/palette-pick.png">
 <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🖍️&lt;/text&gt;&lt;/svg&gt;">
 <link rel="stylesheet" href="css/style.css">
 <script>
@@ -85,7 +86,7 @@
         <p>Studio tip: half-shut your eyes at the scene first — the big colours are what survive that. The small loud one does not; hunt that one with eyes open.</p>
       </div>
 
-      <noscript><p class="hint">This drill needs JavaScript — nothing else, no trackers, no accounts.</p></noscript>
+      <noscript><p class="hint">This drill needs JavaScript. Nothing to install, and no account needed.</p></noscript>
     </div>
   </div>
 </main>
@@ -95,8 +96,8 @@
   <p>Every scene was painted from a palette the drill already knows, and your job is to find three of its colours in the chip grid: the biggest area, the second colour, and the small loud one — dominant, secondary and accent, in any order. Three scenes make a round, running from bold flats to quieter low-chroma work. After you lock in, the grid stays on screen with the true chips ringed, each real colour butted edge to edge against your pick and the strip above the scene lettered D / S / A / m by role.</p>
   <p>The trap worth knowing is area. A scene carries unscored side colours too, so a wide dull band can occupy more surface than the loud note and still not be what the picture is about. Half-shutting your eyes settles the big two; the accent has to be hunted with the eyes open. The exact cluster colours are always planted somewhere in the grid, alongside decoy off-tone chips so hunting for an odd-looking square never pays, and the clusters are kept far enough apart that a clean 100 stays reachable.</p>
   <h3>Turning three chips into a number</h3>
-  <p>Your picks are matched to the true clusters by testing all six assignments and keeping the best, so three well-read colours are never marked down for being paired off badly. Each pairing is then scored on the Lab distance between your chip and the true colour, weighted 45 / 33 / 22 by how much the role carries. A miss is measured in grid cells rather than raw ΔE, against the average ΔE between neighbouring chips, so landing one square off costs about half that role's points, not all. Hitting the accent within ΔE 20 adds 6, three near-identical picks are refused outright, and the round is the mean of its three scenes.</p>
-  <p class="about-more">More colour drills: <a href="../mix-to-target/">Mix to Target</a> · <a href="../value-trap/">Value Trap</a> · <a href="../neutral-hunt/">Neutral Hunt</a> · <a href="../">all 42 drills</a></p>
+  <p>Your picks are matched to the true clusters by testing all six assignments and keeping the best, so three well-read colours are never marked down for being paired off badly. Each pairing is then scored on the Lab distance between your chip and the true colour, weighted 45 / 33 / 22 by how much the role carries. A miss is measured in grid cells rather than raw ΔE, against the average ΔE between neighbouring chips, so landing one square off costs about half that role's points, not all. Hitting the accent within ΔE 20 adds 6, three near-identical picks are refused outright, and the round is the mean of its three scenes. Nothing here is a model reading the picture — the scene was painted from those clusters before you saw it, so every comparison is arithmetic against an answer that already existed.</p>
+  <p class="about-more">More colour drills: <a href="../mix-to-target/">Mix to Target</a> · <a href="../value-trap/">Value Trap</a> · <a href="../neutral-hunt/">Neutral Hunt</a> · <a href="../">the whole catalogue</a></p>
 </section>
 
 <footer class="footer">
@@ -108,9 +109,13 @@
     <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
     <span aria-hidden="true">·</span>
     <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/for-teachers/">For teachers</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/privacy/">Privacy</a>
     <span id="supportLinks"></span>
   </nav>
-  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no tracking</p>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no account needed</p>
 </footer>
 
 <script src="../sdk/artdaily-sdk.js"></script>

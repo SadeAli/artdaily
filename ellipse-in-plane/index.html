@@ -3,25 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ellipse in Plane — a drill for ellipses in perspective</title>
+<title>Ellipses in Perspective — lay an ellipse on a plane</title>
 <meta name="description" content="Sweep an ellipse onto the highlighted face of a perspective box, then nudge it with handles. The plate-on-a-table, wheel-on-an-axle skill.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Ellipse in Plane">
 <meta property="og:description" content="lay a correct ellipse onto the face — a daily art drill">
 <meta property="og:site_name" content="Art Daily · SadeAli">
 <meta property="og:url" content="https://artdaily.sadeali.com/ellipse-in-plane/">
-<!-- The page's own card, deliberately: the drills have no per-drill art, and a
-     share with no image at all renders as a grey box. 1200x630, declared so a
-     scraper can lay out the card before it has fetched the file. -->
-<meta property="og:image" content="https://artdaily.sadeali.com/og.png">
+<!-- This drill's own share card, built from the registry by tools/build-og.js:
+     its name, tagline, category and address. 1200x630, declared so a scraper
+     can lay out the card before it has fetched the file. -->
+<meta property="og:image" content="https://artdaily.sadeali.com/og/ellipse-in-plane.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Art Daily — tiny daily drills for artists">
+<meta property="og:image:alt" content="Ellipse in Plane — lay a correct ellipse onto the face. A form &amp; perspective drill at artdaily.sadeali.com/ellipse-in-plane">
 <link rel="canonical" href="https://artdaily.sadeali.com/ellipse-in-plane/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Ellipse in Plane">
 <meta name="twitter:description" content="lay a correct ellipse onto the face — a daily art drill">
-<meta name="twitter:image" content="https://artdaily.sadeali.com/og.png">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og/ellipse-in-plane.png">
 <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🥏&lt;/text&gt;&lt;/svg&gt;">
 <link rel="stylesheet" href="css/style.css">
 <script>
@@ -80,7 +80,7 @@
         <p>Studio tip: the minor axis runs down the axle — on a wheel, straight out along the hub. Nail that direction before you touch the size.</p>
       </div>
 
-      <noscript><p class="hint">This drill needs JavaScript — nothing else, no trackers, no accounts.</p></noscript>
+      <noscript><p class="hint">This drill needs JavaScript — nothing else, and no account needed.</p></noscript>
     </div>
   </div>
 </main>
@@ -90,8 +90,8 @@
   <p>A box in two-point perspective arrives with one face highlighted, and you lay the ellipse belonging to that face onto it. Sweep the whole way round; lifting does not end the attempt, since a press near where you stopped joins the pieces — no trackpad crosses a 250px closed arc in one contact. The stroke is fitted, and handles appear to nudge centre, length, tilt and width; handles mode skips the sweep. Three faces per round, each turned further away.</p>
   <p>This is the plate-on-a-table, wheel-on-an-axle problem: a circle only reads as lying on a surface when its ellipse belongs to that surface. The reveal draws the axle — the face’s real 3D normal projected through the same camera, not your minor axis extended — because the minor axis runs down the axle, straight out along the hub of a wheel. It prints the true ellipse’s degree — the number templates are sold in — and names whichever of placement, tilt or size you missed by most, so you leave with a direction, not just a mark.</p>
   <h3>What a locked plate is marked on</h3>
-  <p>The truth is not sampled and fitted: the face’s inscribed circle lives in 3D and its conic is pushed straight through the plane-to-screen homography, so the revealed ellipse is that circle’s image to floating-point precision. Your attempt is scored on three errors: centre offset, normalized by the face’s mean projected diagonal; axis angle, which counts for less the rounder the truth is, since a near-circle points nowhere in particular; and size, which is scale plus the error in the degree itself, capped so it cannot zero an otherwise sound ellipse. Anything inside the full-credit zone reads 100; that zone is 2% of the face diagonal on a pen, doubled on a trackpad, and floored at five eased pixels, since 2% of a 150px phone face is smaller than a fingertip’s jitter.</p>
-  <p class="about-more">More form &amp; perspective drills: <a href="../cylinder-ends/">Cylinder Ends</a> · <a href="../cast-shadow/">Cast Shadow</a> · <a href="../horizon-read/">Horizon Read</a> · <a href="../">all 42 drills</a></p>
+  <p>The truth is not sampled and fitted: the face’s inscribed circle lives in 3D and its conic is pushed straight through the plane-to-screen homography, so the revealed ellipse is that circle’s image to floating-point precision. Your attempt is scored on three errors: centre offset, normalized by the face’s mean projected diagonal; axis angle, which counts for less the rounder the truth is, since a near-circle points nowhere in particular; and size, which is scale plus the error in the degree itself, capped so it cannot zero an otherwise sound ellipse. Anything inside the full-credit zone reads 100; that zone is 2% of the face diagonal on a pen, doubled on a trackpad, and floored at five eased pixels, since 2% of a 150px phone face is smaller than a fingertip’s jitter. No model reads the sweep: your ellipse is reduced to a centre, two axes and a tilt, and those numbers are compared with the true ones.</p>
+  <p class="about-more">More form &amp; perspective drills: <a href="../cylinder-ends/">Cylinder Ends</a> · <a href="../cast-shadow/">Cast Shadow</a> · <a href="../horizon-read/">Horizon Read</a> · <a href="../">the whole catalogue</a></p>
 </section>
 
 <footer class="footer">
@@ -103,9 +103,13 @@
     <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
     <span aria-hidden="true">·</span>
     <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/for-teachers/">For teachers</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/privacy/">Privacy</a>
     <span id="supportLinks"></span>
   </nav>
-  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no tracking</p>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no account needed</p>
 </footer>
 
 <script src="../sdk/artdaily-sdk.js"></script>

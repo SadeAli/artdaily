@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Value Studies — how to practise seeing light and dark</title>
+<meta name="description" content="What value is, how light lands on a sphere, and how to build a three-value thumbnail — with the real tolerances five drills score by. Free, no account needed.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Value Studies — seeing light and dark">
+<meta property="og:description" content="How to read value, shade a sphere and build a notan thumbnail — with the real numbers the drills score by.">
+<meta property="og:site_name" content="Art Daily · SadeAli">
+<meta property="og:url" content="https://artdaily.sadeali.com/practice/value/">
+<!-- The site card. The guides have no art of their own; tools/build-og.js
+     builds per-drill cards from the registry and has no guide template yet. -->
+<meta property="og:image" content="https://artdaily.sadeali.com/og/practice-value.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Art Daily — the value practice guide">
+<link rel="canonical" href="https://artdaily.sadeali.com/practice/value/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Value Studies — seeing light and dark">
+<meta name="twitter:description" content="How to read value, shade a sphere and build a notan thumbnail — with the real numbers the drills score by.">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og/practice-value.png">
+<link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🌗&lt;/text&gt;&lt;/svg&gt;">
+<link rel="preload" href="../../fonts/caveat-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../css/style.css">
+<style>
+/* ---- /practice/ prose ----
+   NOT in css/style.css on purpose: that file is the shared sketchbook theme
+   every one of the 42 drills loads too, and these seven pages are the only
+   long-form copy on the site. Tokens only, so both themes come free.
+   This block is byte-identical on every page in the section — see
+   /practice/_TEMPLATE.md. Change it there and here together, or the six
+   guides stop looking like one section. */
+.guide { width: 100%; max-width: 44rem; margin: 0 auto; padding: 6px 20px 4px; overflow-wrap: break-word; }
+.guide h1 {
+  margin: 4px 0 8px;
+  font-family: var(--hand);
+  font-size: clamp(2rem, 7vw, 2.9rem);
+  font-weight: 700;
+  line-height: 1.05;
+  text-decoration: underline wavy var(--accent, var(--sunny)) 2px;
+  text-underline-offset: 9px;
+}
+.guide h2 { margin: 34px 0 6px; font-family: var(--hand); font-size: clamp(1.55rem, 5vw, 1.95rem); font-weight: 700; line-height: 1.12; }
+.guide h3 { margin: 22px 0 4px; font-family: var(--hand); font-size: 1.3rem; font-weight: 700; line-height: 1.15; }
+.guide p, .guide li { font-size: 0.95rem; line-height: 1.7; }
+.guide p { margin: 0 0 12px; }
+.guide ul, .guide ol { margin: 0 0 14px; padding-left: 1.35em; }
+.guide li { margin: 0 0 7px; }
+.guide a { color: var(--link); font-weight: 700; }
+.guide code { font-size: 0.86rem; padding: 1px 5px; border-radius: 4px; background: color-mix(in srgb, var(--ink) 8%, transparent); }
+.guide .lede { margin: 0 0 18px; font-family: var(--hand); font-size: 1.35rem; line-height: 1.35; color: var(--muted); }
+/* the one thing no other article about these subjects can print: the real
+   constant, lifted out of the drill's own scoring function */
+.guide .measured {
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+  border-left: 3px solid color-mix(in srgb, var(--accent, var(--sunny)) 60%, transparent);
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
+  border-radius: 0 8px 8px 0;
+}
+.guide .measured b { font-family: var(--hand); font-size: 1.1rem; font-weight: 700; display: block; }
+.guide .guide-more { margin-top: 20px; padding-top: 12px; border-top: 1px dashed var(--line); font-size: 0.86rem; color: var(--muted); }
+/* .section is 1080px wide for a 42-card catalogue. Narrow it to the prose
+   column so a page of guide text and a block of cards share one left edge. */
+.section.guide-cards { max-width: 44rem; }
+</style>
+<script>
+(function(){var q=null,t=null;try{q=new URLSearchParams(location.search).get('theme');}catch(e){}try{t=localStorage.getItem('sadeali-theme');}catch(e){}var v=(q==='light'||q==='dark')?q:t;document.documentElement.dataset.theme=(v==='dark')?'dark':'light';})();
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Art Daily", "item": "https://artdaily.sadeali.com/"}, {"@type": "ListItem", "position": 2, "name": "Practice", "item": "https://artdaily.sadeali.com/practice/"}, {"@type": "ListItem", "position": 3, "name": "Value & light", "item": "https://artdaily.sadeali.com/practice/value/"}]}
+</script>
+</head>
+<body>
+<div class="topbar">
+  <a class="backlink" href="../" aria-label="practice">← practice</a>
+  <div class="topbar-spacer"></div>
+  <button class="iconbtn" id="themeToggle" aria-label="Toggle light or dark theme" title="Toggle theme" hidden>
+    <svg class="ic-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/></svg>
+    <svg class="ic-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+  </button>
+</div>
+
+<main>
+
+<section class="guide accent-sunny">
+  <h1>Value: the picture you can still see with your eyes half shut</h1>
+  <p class="lede">How light or dark a thing is, colour set aside — and five drills that measure it.</p>
+  <p>Value is how light or dark something is once you set its colour aside. Photograph a lemon and a ripe tomato in black and white: the lemon comes out pale, the tomato near mid-grey. That difference is the value, and it is what tells them apart at thumbnail size.</p>
+  <p>Squinting is the trick, and it is not a metaphor. Half-shut your eyes at a painting and the detail blurs, the colour drops out, and a few flat lights and darks survive. That pattern does most of the work: right values under wrong colours still reads, and lovely colour over flat values does not.</p>
+  <p>Five drills here measure value. Every threshold below was read out of the drill’s own <code>js/game.js</code>.</p>
+</section>
+
+<section class="guide accent-sunny">
+  <h2>A colour picker's "lightness" is not value</h2>
+  <p>Most colour pickers give you hue, saturation and lightness. That third slider is not value. Run the conversion the drill uses — <code>colorLstar</code> in <code>values/js/game.js</code>: HSL → sRGB → relative luminance → CIE L*. A blue at HSL 240°, 77%, 50% lands on <b>L* 31</b>; a yellow at the same 77%, 50% lands on <b>L* 87</b>. Identical sliders, 56 points apart.</p>
+  <p>So a saturated yellow is a light and a saturated blue is a dark, and that is how colour wrecks a value structure. The old fix — set a grey beside the colour and drive it until the two hold the same value — is the second half of <a href="../../values/">Value Squint</a>.</p>
+  <p class="measured"><b>What a value match is worth</b>Both swatches convert to CIE L*, then score <code>100 × clamp(1 − max(0, |ΔL*| − 1) / 22)</code>, the first 1 L* forgiven for slider granularity. A 6 L* miss still pays 77, and it takes a miss of <em>23 L*</em> — a fifth of the black-to-white scale — to score nothing at all. Value judgement is allowed to be that coarse.</p>
+  <p>The drill’s first half is the same skill with the colour removed: six grey chips dealt out of order, swapped until they run light to dark. Ladder one spans L* 9 to 91, chips 16 apart, and anyone can sort it. Ladder three spans <b>L* 38 to 68: six chips, six points apart.</b> You do not need a nine-step scale in your head, only to be right about which broad band a thing falls in.</p>
+  <p class="measured"><b>Why a shuffled deal is worth nothing</b>Ladders score on Kendall tau across the fifteen chip pairs: <code>100 × max(0, 2 × ordered/15 − 1)</code>. A shuffle already has half its pairs in the right order, so tau is what puts chance at 0 and a perfect run at 100. One swapped adjacent pair costs 13.3 — an 87 on the third ladder is one confusion between greys six L* apart.</p>
+  <p>If colour specifically is what fools you, <a href="../../value-trap/">Value Trap</a> drills it alone, in <a href="../colour/">the colour chapter</a>.</p>
+</section>
+
+<section class="guide accent-sky">
+  <h2>Notan: the whole picture in three values</h2>
+  <p>Notan is a Japanese term — literally dark-light — for the design a picture makes when it is reduced to flat masses with no modelling in them. In practice: a two- or three-value thumbnail, made in ninety seconds before anything is committed.</p>
+  <p>Three values is deliberately not enough resolution to describe an object. You cannot render a tree with three flats — you have to decide whether it belongs with the hill behind it or the ground in front. Those merges <em>are</em> the composition.</p>
+  <p><a href="../../value-thumbnail/">Value Thumbnail</a> makes the check scoreable: a fresh scene, a 12×8 grid of 96 cells, three flat values.</p>
+  <p class="measured"><b>Where the three bands come from</b>The scene renders offscreen at 360×240, thirty pixels per cell, and each cell averages to one luminance. The two cuts come from exact Fisher–Jenks natural-breaks clustering with k = 3, so they belong to <em>that scene</em> rather than to arbitrary thirds. An exact cell scores 1, one value off 0.15, a flipped cell 0, and a cell within 0.015 of a cut takes either neighbour.</p>
+  <p>The score is not a percentage: the mean credit is rescaled so the best possible <em>flat</em> grid — every cell one value, zero observation — lands on exactly <b>30</b>. Forty-something means you found the largest mass and stopped; seventy means you found the merges.</p>
+</section>
+
+<section class="guide accent-lilac">
+  <h2>What light actually does to a sphere</h2>
+  <p>A sphere under one light contains the whole vocabulary. Five things to find; beginners draw two.</p>
+  <h3>The terminator</h3>
+  <p>The line where the surface turns away from the light. It is not the edge of the cast shadow on the floor, and confusing the two is the commonest error in the subject. On a sphere it is a great circle — every point facing side-on to the light — which <a href="../../sphere-shade/">Shade a Sphere</a> derives as the circle perpendicular to the light vector. So <b>on the paper, the terminator’s axis is the light direction turned 90°, always.</b></p>
+  <h3>The core shadow</h3>
+  <p>Just past the terminator is the darkest part of the form — darker than the far edge of the sphere, because it gets no direct light <em>and</em> the least bounce off the floor. Beginners run the dark steadily out to the outline; real form goes darkest a little way in, then lightens toward the rim. The drill fixes the band 22° past the terminator: radius <code>R × cos 22° = 0.93R</code>, centre pushed <code>R × sin 22° = 0.37R</code> into the shadow.</p>
+  <h3>Bounce light</h3>
+  <p>The lit floor throws light back up. The drill builds it as a real vector — anti-light flattened onto the ground, then pushed downward — so it arrives from below, away from the sun, and a shadow side is never one flat dark. There is a case where that breaks down: with the sun exactly 45° over the floor, the bounce returns exactly opposite the light and every point along the core catches the same amount, so “where is the core darkest” has no answer. The drill will not deal that sun.</p>
+  <h3>The cast shadow, and the contact under it</h3>
+  <p>A point at height <em>h</em> drops its shadow <code>h / tan(altitude)</code> away from the sun — the whole of “long shadows mean a low sun”, and the same expression in <a href="../perspective/">the perspective chapter</a>’s <a href="../../cast-shadow/">cast-shadow drill</a>. For a sphere the shadow is an ellipse of semi-major axis <code>R / sin(altitude)</code>: 3.9 radii under a 15° sun, 1.04 under a 74° one. Where the sphere touches the floor nothing reaches at all, and that contact is the darkest, hardest mark in the picture.</p>
+  <p class="measured"><b>What Shade a Sphere weighs</b>Only placement is judged; rendering never counts. A sphere scores <code>0.4 × terminator + 0.25 × core + 0.2 × contact + 0.15 × bounce</code>. Each angle gets a grace band of 3° on a pen, 4.5° on a finger, 6° on a mouse, then a linear falloff — 75° for the terminator, 60° for the core, 70° for the bounce, while the contact is judged in pixels. Those ramps are identical on every device: knowing where the light is is not a motor skill. The terminator term is at zero by 78° off, so drawing it <em>along</em> the light arrow is the worst answer available.</p>
+  <p>The card marks this one <em>curated</em> rather than math-scored for a narrow reason: two conventions are chosen by hand — the core band at 22°, the contact pool at 0.22 of a radius. The four targets themselves are geometry, derived from the light vector in the page. Nothing here is scored by a model.</p>
+</section>
+
+<section class="guide accent-mint">
+  <h2>Reading the light backwards</h2>
+  <p>Shading a form when you are told where the light is, is the easy direction; being handed a shaded form and asked where the light <em>was</em> is the one that proves you understood. <a href="../../light-direction/">Light Direction</a> asks it six times a round. Two cues do the work: a line from the terminator through the brightest point runs back at the light, and shadow length gives the sun’s height.</p>
+  <p class="measured"><b>Degrees off, and what they cost</b><code>100 × clamp(1 − max(0, angErr − 3°) / 42°)</code>, angErr being the 3D angle between the light you placed and the real one. Inside 3° it is a flat 100; 10° off pays 83, 20° off pays 60, 45° off is zero. Unlike nearly everything else here it gets no hardware allowance — your device changes only the aiming ring’s grab band, 34 pixels for a mouse and 1.7× that for a pen. Aiming at a light is knowledge, not steadiness.</p>
+  <p>Across the six forms the darkest tone rises from 0.08 to 0.30 and the lightest falls from 0.97 to 0.88, so the range left to read shrinks from 0.89 of black-to-white down to 0.58. That is what an overcast day does to you: harder to read with your eyes, not harder in principle.</p>
+</section>
+
+<section class="guide accent-sunny">
+  <h2>Making a value, not just seeing it</h2>
+  <p>Judging that a shape is a mid-dark and producing a mid-dark with a pencil are separate skills, and the second is where drawings betray people. Hatching lets the spacing of short parallel strokes carry the tone: hold length and angle steady, change only the gap. <a href="../../hatch-ramp/">Hatch a Ramp</a> is three panels of that.</p>
+  <p class="measured"><b>How a hatched panel becomes a number</b>The panel is read back in 24 bands along the ramp axis — mean ink density from the alpha channel only, so theme colours cannot move the score. Both curves get the same blur — squinting — and yours is divided by its own darkest band: <strong>a light hand and a heavy hand score identically.</strong> The ramp is <code>100 × clamp(1 − max(0, meanAbsError − 0.035) / 0.22)</code>, that 0.22 eased so a trackpad’s zero is 0.44. It is 85% of a panel; the rest is parallelism, with about 2.9° of angle wobble free.</p>
+  <p>Two beginner errors have their own thresholds, named out loud. <b>Too dark too fast</b> fires when your first 35% averages more than 0.13 above the target — the near-universal one, and it comes of starting with pressure instead of bare paper. <b>Too flat</b> fires when your lightest-to-darkest span is under 55% of the target’s.</p>
+  <p>Over-hatching gets no penalty; it just flattens the top of the ramp. One pass lays 32% opacity, so crossing a spot three times puts you at 69% and the fourth adds ten more points, until the darks saturate into one flat black. Darks come from packing strokes closer, not pressing harder — the same lesson as the hatch pad in <a href="../../values/">Value Squint</a>, where the window is 22 L* on a pen, 27 on a finger, 32 on a trackpad.</p>
+</section>
+
+<section class="guide accent-coral">
+  <h2>What a browser drill cannot teach you</h2>
+  <p>These are four-minute exercises in a web page. What they cannot reach:</p>
+  <ul>
+    <li><b>Pressure.</b> Every stroke here lands at one fixed opacity. Graphite gives you a second axis that takes months to control.</li>
+    <li><b>Material.</b> Charcoal, a kneaded eraser used as a drawing tool, the tooth of real paper.</li>
+    <li><b>Scale and the arm.</b> Nothing here teaches you to shade from the shoulder across a sheet of A2.</li>
+    <li><b>Edges.</b> Soft against hard is a value painter’s main tool; everything here is a hard cut or one fixed blur.</li>
+    <li><b>Real light.</b> One computed sun on matte white — no bounce off a red wall, no second window, no sliding highlight.</li>
+  </ul>
+  <p>They sharpen the decision, not the mark. The exercise that builds the skill is one object, one lamp, one hour.</p>
+</section>
+
+<section class="guide accent-sunny">
+  <h2>How to practise this week</h2>
+  <p>Six sittings, two to four minutes each, in this order.</p>
+  <ol>
+    <li><b>Two days of <a href="../../values/">Value Squint</a>.</b> Ignore the total; watch the third ladder, where the greys are six L* apart. On the matches the reveal prints your miss in L* — under 6 is the goal, not zero.</li>
+    <li><b><a href="../../value-thumbnail/">Value Thumbnail</a>.</b> Squint before touching the grid; lay the biggest mass first. Near 30 means you painted objects, not masses.</li>
+    <li><b><a href="../../sphere-shade/">Shade a Sphere</a>.</b> Draw the terminator first, perpendicular to the light arrow. It is 40% of the sphere, and the other marks come easier once it is right.</li>
+    <li><b><a href="../../light-direction/">Light Direction</a>.</b> Find the terminator, run a line through the brightest spot, check it against the shadow’s length, then lock in. Errors near 20° mean you have the direction and are missing the tilt.</li>
+    <li><b><a href="../../hatch-ramp/">Hatch a Ramp</a>.</b> Start the light end at almost bare paper and hold off longer than feels right. If the verdict says too dark too fast, start the next panel with strokes twice as far apart.</li>
+    <li><b>The real one.</b> An egg, a lamp, a sheet of paper. Squint, decide the three masses, put the darkest mark where the object meets the table.</li>
+  </ol>
+  <p>Five points of movement between sessions is noise. A score that has not moved in ten sessions is the real signal: the drill has taught you what it can, and those minutes belong to item six.</p>
+  <p class="guide-more">Next: <a href="../colour/">the colour chapter</a> picks up where value stops; <a href="../perspective/">the perspective chapter</a> constructs cast shadows rather than judging them. · <a href="../">All six guides</a> · <a href="../../">The catalogue, 42 drills</a></p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <nav class="footnav" aria-label="Site links">
+    <a href="https://artdaily.sadeali.com/">More drills</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://sadeali.com/">More experiments</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
+    <span aria-hidden="true">·</span>
+    <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span id="supportLinks"></span>
+  </nav>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no account needed</p>
+</footer>
+
+<script src="../../js/support-config.js"></script>
+<script src="../../js/main.js"></script>
+</body>
+</html>

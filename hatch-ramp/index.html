@@ -3,25 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hatch a Ramp — a hatching and value gradient drill</title>
+<title>Hatching Practice — build a smooth value gradient by hand</title>
 <meta name="description" content="Hatch three panels of short parallel strokes into a smooth light-to-dark ramp. Practice for pencil hatching, stroke spacing and value control.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Hatch a Ramp">
 <meta property="og:description" content="make a gradient with your own hand — a daily art drill">
 <meta property="og:site_name" content="Art Daily · SadeAli">
 <meta property="og:url" content="https://artdaily.sadeali.com/hatch-ramp/">
-<!-- The page's own card, deliberately: the drills have no per-drill art, and a
-     share with no image at all renders as a grey box. 1200x630, declared so a
-     scraper can lay out the card before it has fetched the file. -->
-<meta property="og:image" content="https://artdaily.sadeali.com/og.png">
+<!-- This drill's own card, built by tools/build-og.js from the registry entry
+     (icon, category, name, tagline, URL). 1200x630, declared so a scraper can
+     lay out the card before it has fetched the file. -->
+<meta property="og:image" content="https://artdaily.sadeali.com/og/hatch-ramp.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Art Daily — tiny daily drills for artists">
+<meta property="og:image:alt" content="Hatch a Ramp — make a gradient with your own hand — artdaily.sadeali.com/hatch-ramp">
 <link rel="canonical" href="https://artdaily.sadeali.com/hatch-ramp/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Hatch a Ramp">
 <meta name="twitter:description" content="make a gradient with your own hand — a daily art drill">
-<meta name="twitter:image" content="https://artdaily.sadeali.com/og.png">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og/hatch-ramp.png">
 <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🖍️&lt;/text&gt;&lt;/svg&gt;">
 <link rel="stylesheet" href="css/style.css">
 <script>
@@ -79,7 +79,7 @@
         <p>Studio tip: keep every stroke the same length and the same angle, and let <b>spacing</b> do the work — a smooth ramp is a spacing problem, not a pressure problem.</p>
       </div>
 
-      <noscript><p class="hint">This drill needs JavaScript — nothing else, no trackers, no accounts.</p></noscript>
+      <noscript><p class="hint">This drill needs JavaScript — nothing else. Free, no ads, no account needed.</p></noscript>
     </div>
   </div>
 </main>
@@ -89,8 +89,8 @@
   <p>Three panels make a round, about three minutes. Each is a sheet of paper with the target ramp printed on a swatch strip beside it, and you hatch inside the paper: short parallel strokes, packed tighter wherever the strip is darker. Ink accumulates live, so overlapping strokes really do darken. Panel one is a wide light-to-dark ramp, panel two a tall one running top to bottom, panel three a narrow two-stop shape — up to a mid tone, hold it, into the core dark, then a light band at the end. Fifteen strokes is the floor; undo and clear cost nothing.</p>
   <p>For most people this is the first gradient built with a hand rather than a slider, and the error it corrects is going dark too fast. One idea holds the drill together: hold length and angle steady from stroke to stroke, and let the distance you leave between them decide the value. Over-hatching gets no special penalty — it saturates the ink and flattens the top of your ramp. After each panel the sheet is redrawn as flat bands with your hatching ghosting through, and your density curve is graphed against the target with the miss shaded between them.</p>
   <h3>How 24 bands become a score</h3>
-  <p>The finished panel is read back in 24 bands along the ramp axis — mean ink density per band, taken from the alpha channel, so the paper and pencil colours of your theme cannot shift the number. Your curve and the target get the same small blur, a stand-in for squinting, and yours is divided by its own darkest band, so a light hand and a heavy hand score the same shape. That ramp score is 85% of the panel; the rest is parallelism, read from the doubled principal angle of each stroke, since hatching has no head or tail. The round is the mean of the three.</p>
-  <p class="about-more">More value & light drills: <a href="../light-direction/">Light Direction</a> · <a href="../values/">Value Squint</a> · <a href="../sphere-shade/">Shade a Sphere</a> · <a href="../">all 42 drills</a></p>
+  <p>The finished panel is read back in 24 bands along the ramp axis — mean ink density per band, taken from the alpha channel, so the paper and pencil colours of your theme cannot shift the number. Your curve and the target get the same small blur, a stand-in for squinting, and yours is divided by its own darkest band, so a light hand and a heavy hand score the same shape. That ramp score is 85% of the panel; the rest is parallelism, read from the doubled principal angle of each stroke, since hatching has no head or tail. The round is the mean of the three. Both parts are arithmetic on measurements of your own ink &mdash; a mean absolute error between 24 numbers, and a circular spread of stroke angles &mdash; so no model is looking at your hatching.</p>
+  <p class="about-more">More value & light drills: <a href="../light-direction/">Light Direction</a> · <a href="../values/">Value Squint</a> · <a href="../sphere-shade/">Shade a Sphere</a> · <a href="../">the whole catalogue</a></p>
 </section>
 
 <footer class="footer">
@@ -102,9 +102,13 @@
     <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
     <span aria-hidden="true">·</span>
     <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/for-teachers/">For teachers</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/privacy/">Privacy</a>
     <span id="supportLinks"></span>
   </nav>
-  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no tracking</p>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no account needed</p>
 </footer>
 
 <script src="../sdk/artdaily-sdk.js"></script>

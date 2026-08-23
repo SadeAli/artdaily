@@ -246,7 +246,55 @@
      palette + scene generation
      ============================================================ */
 
-  function rand(lo, hi) { return lo + Math.random() * (hi - lo); }
+  /* ---- where a scene comes from ---------------------------------------
+     THE ROUND'S CONTENT IS A SEQUENCE OF NORMALISED DRAWS, and in this
+     drill that sequence is unusually complete: the palette, the
+     composition and the 48-chip sheet all come out of rand() below, and
+     every op it produces is stored as a FRACTION of the canvas (see the
+     note on ASPECT), so the same draws lay out as the same painting on a
+     390px phone and a 900px desktop. This is the one drill in the colour
+     chapter where "the same round" really does mean the same picture.
+
+     Round 1 of a sitting is dealt from ArtDaily.roundRandom(1) — seeded
+     from today and this slug — so everyone reading Palette Pick today is
+     reading the same three scenes off the same three chip sheets. Round 2
+     and on are practice: same generator, same distribution, unshared seed.
+
+     EVERY DRAW IN THIS SECTION IS CONTENT, INCLUDING THE DAB JITTER, and
+     that is a judgement worth writing down. The jitter looks cosmetic —
+     it is what makes a flat field read as painted — but this drill's item
+     IS the painted field: the player scores by naming the colours they
+     see in it, and a ±10 swing in hue, saturation or lightness on a
+     hundred dabs is a real difference in what the eye is being asked to
+     read. Nothing here is drawn per frame either; makeScene() runs once
+     per scene and bakes its ops, so seeding all of it costs the sequence
+     nothing and cannot shift a later content draw. (draw() and the resize
+     handler contain no draws at all — they only re-paint stored ops.)
+
+     NOTHING NEEDS CACHING for the same reason: makeScene(sceneIdx) is
+     called exactly once per scene, from startScene(). A resize re-paints;
+     it does not re-deal. So a plain rolling generator can never walk out
+     from under the player mid-scene.
+
+     GUARDED, and the guard is load-bearing. index.html cache-busts its own
+     scripts with ?v= but every drill loads ../sdk/artdaily-sdk.js BARE, so
+     the two files cache independently: a returning visitor holding a warm
+     OLD SDK plus a cold copy of this file would call a function that does
+     not exist, inside newRound(), before the first scene is ever built —
+     "Loading…" forever, blank canvas. Falling back to Math.random costs
+     today's player nothing but a non-comparable round, which is what they
+     had yesterday.
+
+     ONLY THE BARE CALL FORM IS USED — rng(), never rng.range()/.chance() —
+     because Math.random carries no helpers, so the fallback path would
+     need a shim, and a shim is a second copy of the arithmetic that can
+     drift from the first. Every converted line below is the line it always
+     was with Math.random() swapped for rng(): both are uniform on [0,1),
+     so every value downstream keeps precisely the shape it had, and a
+     seeded round is not an easier or a harder round. */
+  var rng = Math.random;
+
+  function rand(lo, hi) { return lo + rng() * (hi - lo); }
 
   function rgbCss(c) { return 'rgb(' + c.r + ',' + c.g + ',' + c.b + ')'; }
 
@@ -281,7 +329,7 @@
     var attempt, h0, flip, sat, secOff, accOff, wd, ws, wa, minorTotal, total, twoMinors, m1;
     for (attempt = 0; attempt < 120; attempt++) {
       h0 = rand(0, 360);
-      flip = Math.random() < 0.5 ? -1 : 1;
+      flip = rng() < 0.5 ? -1 : 1;
       sat = SAT_BASE[d] + rand(-5, 5);
       secOff = (d === 2) ? rand(35, 75) : rand(70, 160); /* subtle scenes go analogous */
       accOff = rand(140, 220);
@@ -295,7 +343,7 @@
         makeCluster('secondary', h0 + flip * secOff, sat * rand(0.8, 1.1), rand(36, 52), ws / total),
         makeCluster('accent', h0 + flip * accOff, Math.min(88, sat + ACC_SAT_LIFT[d] + rand(0, 8)), rand(48, 64), wa / total),
       ];
-      twoMinors = Math.random() < 0.4;
+      twoMinors = rng() < 0.4;
       m1 = twoMinors ? minorTotal * 0.6 : minorTotal;
       pal.push(makeCluster('minor', h0 + rand(-35, 35), sat * 0.45, rand(16, 30), m1 / total));
       if (twoMinors) {
@@ -350,14 +398,14 @@
     }
 
     /* accent object: sun in the sky or a bush on the foreground */
-    var isSun = Math.random() < 0.55;
+    var isSun = rng() < 0.55;
     var rFrac = Math.sqrt(acc.weight / Math.PI) * 0.62 * Math.sqrt(ASPECT); /* fraction of W */
     var rH = rFrac / ASPECT;
     var ax, ay, k, rr, th;
     function accentOps() {
       ops.push({ t: 'circle', x: ax, y: ay, r: rFrac, c: rgbCss(acc.rgb) });
       for (k = 0; k < 26; k++) {
-        rr = rFrac * Math.sqrt(Math.random()) * 0.9;
+        rr = rFrac * Math.sqrt(rng()) * 0.9;
         th = rand(0, Math.PI * 2);
         ops.push(dabOp(ax + rr * Math.cos(th), ay + (rr * Math.sin(th)) / ASPECT, 0.014, 0.032, 0.014, 0.03, jitterCss(acc, jit)));
       }
@@ -388,7 +436,7 @@
     /* foreground band: minor cluster(s) */
     ops.push({ t: 'rect', x: 0, y: 1 - fgH, w: 1, h: fgH, c: rgbCss(minors[0].rgb) });
     for (i = 0; i < 46; i++) {
-      mc = minors[(minors.length > 1 && Math.random() < 0.4) ? 1 : 0];
+      mc = minors[(minors.length > 1 && rng() < 0.4) ? 1 : 0];
       ops.push(dabOp(rand(0, 1), rand(1 - fgH, 1), 0.03, 0.07, 0.016, 0.03, jitterCss(mc, jit)));
     }
 
@@ -837,6 +885,14 @@
        can never double-report (the same guard the sibling drills keep). */
     if (state === 'reveal' && sceneScores.length >= SCENES_PER_ROUND) finishRound();
     round += 1;
+    /* THE ONE LINE THAT MAKES A SCORE COMPARABLE. Re-seeded per round —
+       round 1 is today's shared three scenes, every "new round" (and every
+       mid-round restart) after it is practice. Nothing else needs clearing
+       with it: no draw is cached, the whole scene is rebuilt by
+       startScene() below. See the block above rand() for the guard. */
+    rng = (window.ArtDaily && ArtDaily.roundRandom)
+      ? ArtDaily.roundRandom(round)
+      : Math.random;
     sceneIdx = 0;
     sceneScores = [];
     hudRound.textContent = String(round);
@@ -890,7 +946,14 @@
     setBtnLabel(btnLock, 'round done');
     btnLock.disabled = true;
     setRoundBtnLabel(false);
-    showToast((res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100', res.isNewBest);
+    /* A first-ever round has no previous best, so isNewBest is trivially
+       true and "new best!" celebrates nothing — on the one round where the
+       number most needs saying what it IS. The SDK marks that round with
+       isFirst; where it is undefined the old wording stands. */
+    showToast(res.isFirst
+      ? 'first score ' + res.score + ' / 100 — your mark to beat'
+      : (res.isNewBest ? 'new best! ' : 'score ') + res.score + ' / 100',
+      res.isNewBest && !res.isFirst);
   }
 
   var toastTimer = null;

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free Art Sub Plans and Bell Ringers — 42 drawing warm-ups</title>
+<meta name="description" content="Free art bell ringers, sub plans and early-finisher warm-ups: 42 scored drawing drills, 2-4 minutes each. No account needed, runs on a school Chromebook.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Art Bell Ringers and Sub Plans — Art Daily">
+<meta property="og:description" content="42 scored drawing drills, 2-4 minutes each. Free, no account needed, runs on a school Chromebook. Bell ringers, early finishers and sub plans.">
+<meta property="og:site_name" content="Art Daily · SadeAli">
+<meta property="og:url" content="https://artdaily.sadeali.com/for-teachers/">
+<!-- The site card. There is no teacher-specific artwork; tools/build-og.js builds
+     per-drill cards from the registry and has no template for a section page, and a
+     share with no image renders as a grey box in every staffroom group chat. -->
+<meta property="og:image" content="https://artdaily.sadeali.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Art Daily — tiny daily drills for artists">
+<link rel="canonical" href="https://artdaily.sadeali.com/for-teachers/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Art Bell Ringers and Sub Plans — Art Daily">
+<meta name="twitter:description" content="42 scored drawing drills, 2-4 minutes each. Free, no account needed, runs on a school Chromebook.">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og.png">
+<link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🍎&lt;/text&gt;&lt;/svg&gt;">
+<link rel="preload" href="../fonts/caveat-latin.woff2" as="font" type="font/woff2" crossorigin>
+<!-- ONE level up — this page is /for-teachers/, like /privacy/ and /practice/. -->
+<link rel="stylesheet" href="../css/style.css">
+<style>
+/* ---- /for-teachers/ ----
+   Three things this page needs that css/style.css does not carry, and should
+   not: that file is the shared sketchbook theme all 42 drills load, and none
+   of them has a table, a room-by-room playbook or a block of text written to
+   be selected and pasted into a helpdesk ticket. Tokens only, so both themes
+   come free and neither needs a second definition.
+
+   The table is a real <table> because it is a lookup — a teacher arrives with
+   "this week is perspective" and leaves with a URL — and because that is the
+   markup a search engine can read as one. Below 700px it stops being a grid
+   and becomes six cards: a three-column table on a phone in a corridor is a
+   horizontal scrollbar, and this page gets opened on a phone in a corridor. */
+.tablewrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 6px 14px 8px 12px;
+  background: var(--card);
+  box-shadow: 0 2px 0 var(--shadow), 0 12px 28px -18px var(--shadow);
+}
+table.chapters { border-collapse: collapse; width: 100%; min-width: 660px; font-size: 0.82rem; line-height: 1.65; }
+.chapters th, .chapters td { text-align: left; vertical-align: top; padding: 11px 13px; border-bottom: 1px solid var(--line); }
+.chapters thead th { font-family: var(--hand); font-size: 1.2rem; font-weight: 700; border-bottom: 2px solid var(--line); }
+.chapters tbody tr:last-child td { border-bottom: 0; }
+.chapters .ch { width: 11rem; }
+.chapters .ch a { display: block; font-family: var(--hand); font-size: 1.35rem; font-weight: 700; line-height: 1.15; color: var(--accent-ink, var(--link)); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--accent, var(--sunny)) 60%, transparent); text-underline-offset: 4px; }
+.chapters .chn { display: block; margin-top: 3px; font-size: 0.7rem; font-weight: 700; color: var(--muted); }
+.chapters .teaches { width: 24rem; color: var(--muted); }
+.chapters .drills a { color: var(--link); font-weight: 700; }
+.chapters .m { color: var(--muted); font-weight: 400; font-size: 0.74rem; }
+@media (max-width: 700px) {
+  .tablewrap { overflow-x: visible; border: 0; background: none; box-shadow: none; }
+  table.chapters, .chapters tbody, .chapters tr, .chapters td { display: block; width: auto; min-width: 0; }
+  /* the header row carries no information once the cells are stacked — the
+     chapter name is the heading, the rest reads in order — but it still has to
+     exist for anyone reading the table with a screen reader in table mode */
+  .chapters thead { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .chapters tr { margin: 0 0 12px; padding: 13px 15px; background: var(--card); border: 1px solid var(--line); border-radius: 6px 14px 8px 12px; box-shadow: 0 2px 0 var(--shadow); }
+  /* these three out-specify `.chapters td` above (0,2,0 beats 0,1,1), so the
+     column widths survived the stack and pushed the text off the right edge
+     of a 360px screen. Reset them at the same specificity. */
+  .chapters .ch, .chapters .teaches, .chapters .drills { width: auto; }
+  .chapters td { border: 0; padding: 3px 0; }
+  .chapters .teaches { margin-bottom: 4px; }
+}
+
+/* css/style.css styles no <code> — none of the 42 drills has any — so the two
+   inline URLs in the projector section came out a size larger than the prose
+   around them. Same treatment the /practice/ guides give theirs. */
+.cat-note code { font-family: var(--mono); font-size: 0.78rem; padding: 1px 5px; border-radius: 4px; background: color-mix(in srgb, var(--ink) 8%, transparent); overflow-wrap: break-word; }
+.cat-note { overflow-wrap: break-word; }
+
+/* The room playbook: four named moves, each with a heading. .cat-head h2 is the
+   section heading, and the shared theme styles h3 only inside .about, so a playbook
+   heading needs its own rule. */
+.room h3 { margin: 22px 0 2px; font-family: var(--hand); font-size: 1.45rem; font-weight: 700; line-height: 1.15; }
+.room h3:first-of-type { margin-top: 6px; }
+.room .say {
+  margin: 6px 0 12px;
+  padding: 9px 13px;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  line-height: 1.6;
+  border-left: 3px solid color-mix(in srgb, var(--accent, var(--sunny)) 60%, transparent);
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
+  border-radius: 0 8px 8px 0;
+}
+.room .say b { display: block; font-family: var(--hand); font-size: 1.05rem; font-weight: 700; color: var(--muted); }
+
+/* The ticket block is meant to be dragged over and copied, so it is set in the
+   mono face at a size a helpdesk field will not mangle, not in the hand face the
+   rest of the prose uses. */
+.ticket {
+  margin: 4px 0 14px;
+  padding: 13px 15px;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  line-height: 1.7;
+  background: var(--card);
+  border: 1px dashed var(--line);
+  border-radius: 6px 14px 8px 12px;
+}
+.ticket p { margin: 0 0 10px; }
+.ticket p:last-child { margin: 0; }
+.ticket b { border-bottom: 2px solid color-mix(in srgb, var(--sunny) 55%, transparent); }
+.ticket a { color: var(--link); font-weight: 700; }
+</style>
+<script>
+(function(){var q=null,t=null;try{q=new URLSearchParams(location.search).get('theme');}catch(e){}try{t=localStorage.getItem('sadeali-theme');}catch(e){}var v=(q==='light'||q==='dark')?q:t;document.documentElement.dataset.theme=(v==='dark')?'dark':'light';})();
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Art Daily", "item": "https://artdaily.sadeali.com/"}, {"@type": "ListItem", "position": 2, "name": "For teachers", "item": "https://artdaily.sadeali.com/for-teachers/"}]}
+</script>
+</head>
+<body>
+<div class="topbar">
+  <a class="backlink" href="../" aria-label="Art Daily">← artdaily</a>
+  <div class="topbar-spacer"></div>
+  <button class="iconbtn" id="themeToggle" aria-label="Toggle light or dark theme" title="Toggle theme" hidden>
+    <svg class="ic-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/></svg>
+    <svg class="ic-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+  </button>
+</div>
+
+<!-- This page is written to be FORWARDED — to a colleague, to a head of
+     department, into a helpdesk ticket — which is why it names its own limits
+     out loud in the last section and why nothing on it asks the reader for
+     anything. See the footer for the one deliberate difference from every
+     other page on the site. -->
+<main class="hero">
+  <div class="sheet hero-sheet">
+    <p class="hero-eyebrow">for teachers · art rooms · no prep</p>
+    <h1 class="hero-title">warm-ups for the <span class="tilt">art room</span></h1>
+    <p class="hero-sub">Bell ringers, early finishers, warm-ups and sub plans: 42 short drawing drills that mark themselves in a browser tab. Free, no account needed, runs on a school Chromebook, and one drill takes two to four minutes.</p>
+  </div>
+
+  <section class="section" aria-labelledby="whatHead">
+    <div class="cat-head"><h2 id="whatHead" class="accent-mint" style="text-decoration-color: var(--mint);">what it actually is</h2></div>
+    <p class="cat-note">A student opens a page and draws — a straight line between two dots, an ellipse inside a plane, a colour mixed to match a target. The site draws the correct answer over the attempt, gives a mark out of 100 and gets out of the way. That is the whole loop, and it is over in two to four minutes.</p>
+    <p class="cat-note">Nothing is scored by a model. Every drill grades the marks with plain geometry or a fixed answer key, which is exactly why it can show a student the right line on top of their wrong one.</p>
+    <p class="cat-note">Nothing is asked of you or of them on the way in: no sign-in, no email, no code to type, no class to create. Type the address, draw, close the tab.</p>
+  </section>
+
+  <section class="section" aria-labelledby="projHead">
+    <div class="cat-head"><h2 id="projHead" class="accent-sky" style="text-decoration-color: var(--sky);">today's warm-up, on the board</h2></div>
+    <p class="cat-note">Put <b>artdaily.sadeali.com</b> on the projector. The first thing on the page is a list of three drills for the day, and it is the whole lesson plan.</p>
+    <p class="cat-note">On a browser with nothing on record — a freshly wiped Chromebook, a guest window, a lab machine that resets itself — those three are always the same curated set: <a href="../value-trap/">Value Trap</a> (2 min), <a href="../colors/">Color Mixer</a> (4 min) and <a href="../lines/">Steady Lines</a> (3 min). Nine minutes for all three, and none of them needs anything better than a trackpad. That is the safest thing to hand a class you have never sat with before.</p>
+    <p class="cat-note">Once a day has been logged in that browser, the list rotates instead. The three are picked from the date and spread across different chapters, so it is a different corner of the subject each morning, and it leans away from whatever that browser did in the last six days.</p>
+    <p class="cat-note">Two projector notes. Whoever used the machine last may have left it in dark mode — every drill page accepts <code>?theme=light</code> on the end of the URL to force the paper theme for one load, as in <code>artdaily.sadeali.com/lines/?theme=light</code>. And every drill also has its own address, so you can skip the front page entirely and put one straight on the board.</p>
+  </section>
+<!-- </main> used to close here, after the hero — which left the chapter table, the
+     room playbook, the IT paragraph and the limits section in no landmark at all.
+     Landmark jumping is how a screen reader user crosses a page this long, and the
+     two sections that most need reaching that way were the two stranded. Same bug
+     index.html:189 records having already fixed once. -->
+
+<section class="section" aria-labelledby="tableHead">
+  <div class="cat-head"><span class="cat-icon" aria-hidden="true">📚</span><h2 id="tableHead" class="accent-sunny" style="text-decoration-color: var(--sunny);">match a drill to this week's lesson</h2><span class="cat-count">6 chapters · 42 drills</span></div>
+  <p class="cat-note">Chapter names link to a written guide; drill names link straight to the drill. Minutes are the estimate the drill itself prints on its card.</p>
+  <div class="tablewrap">
+    <table class="chapters">
+      <caption class="visually-hidden" style="position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;">The six chapters, what each teaches, and the drills in it with their length in minutes</caption>
+      <thead>
+        <tr><th scope="col">Chapter</th><th scope="col">What it teaches</th><th scope="col">Drills</th></tr>
+      </thead>
+      <tbody>
+      <tr class="accent-coral">
+        <td class="ch"><a href="../practice/colour/"><span aria-hidden="true">🎨</span> colour</a><span class="chn">8 drills &middot; 2–4 min each</span></td>
+        <td class="teaches">Mixing a colour by eye, hue error against chroma error, warm versus cool as a relationship, and why a shadow is not just the local colour turned down.</td>
+        <td class="drills"><a href="../colors/">Color Mixer</a>&nbsp;<span class="m">4m</span> &middot; <a href="../palette-pick/">Palette Pick</a>&nbsp;<span class="m">3m</span> &middot; <a href="../mix-to-target/">Mix to Target</a>&nbsp;<span class="m">3m</span> &middot; <a href="../value-trap/">Value Trap</a>&nbsp;<span class="m">2m</span> &middot; <a href="../neutral-hunt/">Neutral Hunt</a>&nbsp;<span class="m">2m</span> &middot; <a href="../temperature-sort/">Temperature Sort</a>&nbsp;<span class="m">3m</span> &middot; <a href="../colour-constancy/">Colour Constancy</a>&nbsp;<span class="m">3m</span> &middot; <a href="../sun-and-sky/">Sun &amp; Sky</a>&nbsp;<span class="m">3m</span></td>
+      </tr>
+      <tr class="accent-sunny">
+        <td class="ch"><a href="../practice/value/"><span aria-hidden="true">🌗</span> value &amp; light</a><span class="chn">5 drills &middot; 2–4 min each</span></td>
+        <td class="teaches">How light or dark a thing is once the colour is argued away: value scales, the shaded sphere, three-value thumbnails, hatching a gradient by hand.</td>
+        <td class="drills"><a href="../values/">Value Squint</a>&nbsp;<span class="m">3m</span> &middot; <a href="../sphere-shade/">Shade a Sphere</a>&nbsp;<span class="m">4m</span> &middot; <a href="../value-thumbnail/">Value Thumbnail</a>&nbsp;<span class="m">4m</span> &middot; <a href="../hatch-ramp/">Hatch a Ramp</a>&nbsp;<span class="m">3m</span> &middot; <a href="../light-direction/">Light Direction</a>&nbsp;<span class="m">2m</span></td>
+      </tr>
+      <tr class="accent-mint">
+        <td class="ch"><a href="../practice/line/"><span aria-hidden="true">✏️</span> line &amp; hand</a><span class="chn">10 drills &middot; 2–4 min each</span></td>
+        <td class="teaches">Confident strokes pulled from the shoulder, ellipses, steady spacing and deliberate line weight. The closest thing here to a newsprint warm-up.</td>
+        <td class="drills"><a href="../warm-up/">Warm Up</a>&nbsp;<span class="m">2m</span> &middot; <a href="../superimposed/">Superimposed Lines</a>&nbsp;<span class="m">3m</span> &middot; <a href="../lines/">Steady Lines</a>&nbsp;<span class="m">3m</span> &middot; <a href="../ellipses/">Ellipse Orbit</a>&nbsp;<span class="m">3m</span> &middot; <a href="../draw-through/">Draw Through</a>&nbsp;<span class="m">3m</span> &middot; <a href="../symmetry/">Mirror Mirror</a>&nbsp;<span class="m">4m</span> &middot; <a href="../angle-snap/">Angle Snap</a>&nbsp;<span class="m">3m</span> &middot; <a href="../steady-tunnel/">Steady Tunnel</a>&nbsp;<span class="m">3m</span> &middot; <a href="../even-spacing/">Even Spacing</a>&nbsp;<span class="m">3m</span> &middot; <a href="../line-weight/">Line Weight</a>&nbsp;<span class="m">3m</span></td>
+      </tr>
+      <tr class="accent-sky">
+        <td class="ch"><a href="../practice/perspective/"><span aria-hidden="true">📦</span> form &amp; perspective</a><span class="chn">11 drills &middot; 2–4 min each</span></td>
+        <td class="teaches">Perspective the practical way: boxes and planes, finding the vanishing points and the horizon, cylinders in space, constructing a cast shadow.</td>
+        <td class="drills"><a href="../perspective/">Vanishing Act</a>&nbsp;<span class="m">4m</span> &middot; <a href="../cube-from-plane/">Cube From Plane</a>&nbsp;<span class="m">4m</span> &middot; <a href="../box-check/">Box Check</a>&nbsp;<span class="m">4m</span> &middot; <a href="../vp-hunt/">Vanishing Point Hunt</a>&nbsp;<span class="m">3m</span> &middot; <a href="../rotate-place/">Rotate &amp; Place</a>&nbsp;<span class="m">3m</span> &middot; <a href="../ellipse-in-plane/">Ellipse in Plane</a>&nbsp;<span class="m">3m</span> &middot; <a href="../cylinder-ends/">Cylinder Ends</a>&nbsp;<span class="m">2m</span> &middot; <a href="../cast-shadow/">Cast Shadow</a>&nbsp;<span class="m">4m</span> &middot; <a href="../horizon-read/">Horizon Read</a>&nbsp;<span class="m">2m</span> &middot; <a href="../cross-contour/">Wrap the Form</a>&nbsp;<span class="m">3m</span> &middot; <a href="../down-the-row/">Down the Row</a>&nbsp;<span class="m">3m</span></td>
+      </tr>
+      <tr class="accent-bubblegum">
+        <td class="ch"><a href="../practice/composition/"><span aria-hidden="true">🖼️</span> composition</a><span class="chn">3 drills &middot; 2–3 min each</span></td>
+        <td class="teaches">Where the subject sits inside the frame — cropping, focal placement, and balance as leverage rather than symmetry.</td>
+        <td class="drills"><a href="../crop-it/">Crop It</a>&nbsp;<span class="m">3m</span> &middot; <a href="../focal-place/">Focal Placement</a>&nbsp;<span class="m">2m</span> &middot; <a href="../counterweight/">Counterweight</a>&nbsp;<span class="m">2m</span></td>
+      </tr>
+      <tr class="accent-lilac">
+        <td class="ch"><a href="../practice/observation/"><span aria-hidden="true">👁️</span> observation</a><span class="chn">5 drills &middot; 2–4 min each</span></td>
+        <td class="teaches">Proportion judged by eye, drawing the negative shape instead of the object, holding a form in memory, and catching a gesture fast.</td>
+        <td class="drills"><a href="../contour-memory/">Contour Memory</a>&nbsp;<span class="m">3m</span> &middot; <a href="../proportion-eye/">Proportion Eye</a>&nbsp;<span class="m">2m</span> &middot; <a href="../negative-space/">Negative Space</a>&nbsp;<span class="m">3m</span> &middot; <a href="../anatomy-spot/">Anatomy Spot</a>&nbsp;<span class="m">2m</span> &middot; <a href="../gesture-capture/">Gesture Capture</a>&nbsp;<span class="m">4m</span></td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="cat-note" style="margin-top:14px;">The guides are the half that explains why. Each one quotes the actual tolerance the drill scores against, so when a student asks why a line that looked fine came back at 61, there is an answer with a number in it. Start at <a href="../practice/">how to practice drawing</a>.</p>
+</section>
+
+<section class="section room accent-coral" aria-labelledby="roomHead">
+  <div class="cat-head"><h2 id="roomHead" class="accent-coral" style="text-decoration-color: var(--coral);">four ways to run it</h2></div>
+  <p class="cat-note">Timings below are the registry's own estimates, added up.</p>
+
+  <h3>As a bell ringer</h3>
+  <p class="cat-note">Have the front page on the board before the bell. Students open the same address on their own machine and do the first drill in the list, once. It takes two to four minutes, which is roughly how long a class takes to settle anyway, and it ends by itself — the score appears and there is nothing more to do.</p>
+  <p class="say"><b>what to say</b>One round. When your number comes up, write it in the corner of your page and turn it over. We start when the last one is down.</p>
+  <p class="cat-note">The written-down number is doing real work here, because the site cannot report anything to you (see the last section). A number in the corner of a page is a record you own, on paper, with nothing to sign into.</p>
+
+  <h3>As an early-finisher station</h3>
+  <p class="cat-note">One bookmark on the classroom machine, or one address on a card taped to it. A student who is done has somewhere to go that is one drill long rather than open-ended.</p>
+  <p class="say"><b>what to say</b>Observation chapter. Any two. Then come back.</p>
+  <p class="cat-note">Naming a chapter rather than the whole catalogue matters — 42 cards is a browsing decision and a student will spend the spare four minutes making it. A chapter is three to eleven drills and the choice takes seconds.</p>
+
+  <h3>As a five-minute warm-up before life drawing</h3>
+  <p class="cat-note">Three drills line up almost exactly with what a warm-up on newsprint is for: <a href="../warm-up/">Warm Up</a> (2 min, loosen the arm, speed over accuracy), <a href="../superimposed/">Superimposed Lines</a> (3 min, the same line four times) and <a href="../gesture-capture/">Gesture Capture</a> (4 min, the line of action in seconds). Run one or two of them, then close the laptops and pick up charcoal. Nine minutes for all three if you want the full set.</p>
+  <p class="say"><b>what to say</b>Screens for four minutes, from the shoulder, not the wrist. Then they shut and we do the same thing on paper.</p>
+
+  <h3>As a sub plan</h3>
+  <p class="cat-note">Write one line on the board and nothing else is needed. There is no login for the substitute to explain, nothing to hand out, no code to distribute and nothing to collect at the end.</p>
+  <p class="say"><b>on the board</b>artdaily.sadeali.com<br>Do the three warm-ups at the top of the page.<br>Then pick a chapter and do two more drills from it.<br>Write your best score for each one on your sheet.</p>
+  <p class="cat-note">Be honest with yourself about the arithmetic: the three at the top are about nine minutes and two more are four to eight, so that is a quarter of a period, not a period. It is the front half of a cover lesson. Pair it with something on paper — the still life on your desk, a page of thumbnails — and the screen part is the bit that needs no supervision.</p>
+</section>
+
+<section class="section" aria-labelledby="itHead">
+  <div class="cat-head"><h2 id="itHead" class="accent-mint" style="text-decoration-color: var(--mint);">for school IT</h2></div>
+  <p class="cat-note">Written to be selected and pasted into a ticket as it stands.</p>
+  <div class="ticket">
+    <p>Art Daily is a static website of short drawing exercises. To allow it: one domain, <b>artdaily.sadeali.com</b>, HTTPS only. There is no second domain, no media host and no sign-in provider to allow alongside it.</p>
+    <p>There is nothing to install — no app, no extension, no plugin and no download. It asks for no camera, microphone or location permission. JavaScript needs to be enabled, because the drawing and the scoring both happen in the browser; with JavaScript off the pages still load and still link to each other, but the drills will not run.</p>
+    <p>It runs in current Chrome, Edge, Safari and Firefox, on a Chromebook, iPad, Windows or Mac, and takes input from a mouse, a trackpad, a finger or a stylus. No account is needed and there is no sign-in, so there is nothing to provision, no roster to upload and no licence to buy.</p>
+    <p>On the data question: nothing is collected from a student using the drills, so there is nothing for a student to consent to. The one field on the site that takes an email address is an optional newsletter sign-up in the front page footer, for adults who want to hear when new drills ship; if you would rather a class never saw it, send them straight to a drill URL such as <code>artdaily.sadeali.com/lines/</code>, which has none. Nothing a student draws leaves the browser, and no score is transmitted anywhere. The full detail — every key written to the device, what the page-view counter records, and what is never collected — is at <a href="../privacy/">artdaily.sadeali.com/privacy/</a>, which is written for exactly this review.</p>
+  </div>
+  <p class="cat-note">This page claims no compliance certifications, because a website cannot hold one — those acronyms name laws that bind schools and vendors, not badges a site earns. A tool that advertises them is telling you something about itself. The fact underneath them is the one worth having, and it is in the paragraph above.</p>
+  <p class="cat-note">One practical note for shared machines: a student's practice record lives in that browser's own storage, so on a shared Chromebook the next student inherits it. Clearing site data removes all of it. The <b>reset it</b> button on the front page does less — it asks for confirmation, then clears the practice record, streak and skill totals, and leaves each drill's personal best behind. For a shared machine, clear site data.</p>
+</section>
+
+<section class="section" aria-labelledby="notHead">
+  <div class="cat-head"><h2 id="notHead" class="accent-lilac" style="text-decoration-color: var(--lilac);">what it does not do</h2></div>
+  <p class="cat-note">Worth knowing before you show it to anyone else, because none of this is coming next week.</p>
+  <ul class="plainlist">
+    <li><b>No class management.</b> No rosters, no groups, no assignments, no due dates.</li>
+    <li><b>No teacher view.</b> You cannot see a student's score from your own machine. The site cannot see it either — it never leaves their browser. If you want a record, they write the number down.</li>
+    <li><b>Nothing to hand out.</b> No account is needed, which is the point on a shared Chromebook &mdash; and it is also the reason there is no way to attach a score to a name.</li>
+    <li><b>No printable worksheets.</b> Every drill is drawn on screen. There is nothing to photocopy.</li>
+    <li><b>No curriculum sequencing.</b> The six chapters are a subject order, not a scope and sequence. Nothing unlocks, nothing is gated behind a prerequisite, and no drill assumes you did another one first.</li>
+    <li><b>No standards codes.</b> This page prints no National Core Arts Standards codes, because they have not been checked against the published standards. A decorative code in front of a head of department is worse than an honest gap.</li>
+  </ul>
+  <p class="cat-note">What it is instead: a warm-up instrument. It does one thing, which is to put a short scored drawing exercise in front of a student about ten seconds after they decide to do one, with nothing between them and the drawing. The sequencing, the feedback, the assessment and the record are yours — this is the two minutes at the start.</p>
+  <p class="cat-note">If it turns out to be useful in your room, the most helpful thing you can do is say which drill and which lesson it landed in. That is on <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>, and it is the only thing this page asks for.</p>
+</section>
+
+<!-- The footer is the one place this page deliberately differs from every other
+     page on the site: the "Support ♥" link and the <span id="supportLinks"> slot
+     that main.js fills with donation platforms are BOTH removed here.
+     Two reasons, and the second is the load-bearing one:
+       1. District content filters score commercial and donation surfaces, and a
+          teacher page is the one that gets read by a filter before a human.
+       2. This whole page works because nothing is asked of the reader. A tip jar
+          under a sub plan converts a resource into a pitch in one line of markup.
+     supportLinks is currently empty anyway (every payout key in
+     js/support-config.js is blank) — but the moment one is filled in, main.js
+     would inject a Ko-fi link into every footer that carries the slot. Omitting
+     the element is what makes this page's exemption survive that day.
+     main.js is still loaded: the theme toggle lives in it, and it no-ops on a
+     missing slot (`var slot = ...; if (slot) {`). -->
+</main>
+
+<footer class="footer">
+  <nav class="footnav" aria-label="Site links">
+    <a href="https://artdaily.sadeali.com/">More drills</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/practice/">The guides</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/privacy/">Privacy</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+  </nav>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no account needed</p>
+</footer>
+
+<script src="../js/support-config.js"></script>
+<script src="../js/main.js"></script>
+</body>
+</html>

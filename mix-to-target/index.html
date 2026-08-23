@@ -3,25 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mix to Target — a daily colour-mixing ratio drill</title>
+<title>Colour Mixing Practice — blend pigments to hit the target</title>
 <meta name="description" content="Blend base pigments until your mix matches the target colour. A browser colour mixing exercise that trains ratio judgement and reading a hue by its value.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Mix to Target">
 <meta property="og:description" content="blend base pigments into the target colour — a daily art drill">
 <meta property="og:site_name" content="Art Daily · SadeAli">
 <meta property="og:url" content="https://artdaily.sadeali.com/mix-to-target/">
-<!-- The page's own card, deliberately: the drills have no per-drill art, and a
-     share with no image at all renders as a grey box. 1200x630, declared so a
-     scraper can lay out the card before it has fetched the file. -->
-<meta property="og:image" content="https://artdaily.sadeali.com/og.png">
+<!-- This drill's own card, built from its registry entry by tools/build-og.js:
+     name, tagline and the drill's URL, so a screenshot of the share is also
+     directions. 1200x630, declared so a scraper can lay out the card before it
+     has fetched the file. -->
+<meta property="og:image" content="https://artdaily.sadeali.com/og/mix-to-target.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Art Daily — tiny daily drills for artists">
+<meta property="og:image:alt" content="Art Daily card: Mix to Target — blend base pigments into the target colour — artdaily.sadeali.com/mix-to-target">
 <link rel="canonical" href="https://artdaily.sadeali.com/mix-to-target/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Mix to Target">
 <meta name="twitter:description" content="blend base pigments into the target colour — a daily art drill">
-<meta name="twitter:image" content="https://artdaily.sadeali.com/og.png">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og/mix-to-target.png">
 <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;⚗️&lt;/text&gt;&lt;/svg&gt;">
 <link rel="stylesheet" href="css/style.css">
 <script>
@@ -95,7 +96,7 @@
         <p>Studio tip: get the lightness right first. “squint ◐” drops the colour out of both halves and leaves only light and dark — it is available the whole time, not just after you lock in.</p>
       </div>
 
-      <noscript><p class="hint">This drill needs JavaScript — nothing else, no trackers, no accounts.</p></noscript>
+      <noscript><p class="hint">This drill needs JavaScript. Nothing to install, and no account needed.</p></noscript>
     </div>
   </div>
 </main>
@@ -105,8 +106,8 @@
   <p>The bench holds two swatches side by side — the target colour, and whatever your current blend reads as — with one ratio slider beneath it for each base pigment, named for what it looks like rather than given a bare letter. A round is four colours: two bases to begin with, a third pigment for the last two, and a closing pair of hues so near each other that the only dependable way to separate them is by value. Every colour opens on a deliberately wrong blend, at least ΔE 12 from the target, so no colour ever opens on an accidental match.</p>
   <p>What the drill measures is ratio judgement — not which pigments belong in a mix, but how much of each one it really takes. Sliders are relative shares, so 80/40 makes the same colour as 40/20, and the percentage beside each row reports the balance you have actually set. Mixing runs on a subtractive, pigment-style model, and every target is generated through that same model, so an exact match always exists on the sliders. After a lock-in the true ratios appear beside yours, and the Lab deltas are read back as plain direction — too light, a touch too warm.</p>
   <h3>Where the ΔE number comes from</h3>
-  <p>Each colour is scored on ΔE (CIE76), the distance in Lab between your mix and the target, converted by 100 × (1 − ΔE/26). Below about 3 the two halves stop reading as different colours; 26 apart is worth nothing. A round's score is the mean of its four, carried live in the HUD as you work. Because the true ratios are rounded to whole percents, the correct answer always lands on a notch a hand can actually reach, which is what keeps 100 attainable; locking the opening blend without moving anything averages around 18.</p>
-  <p class="about-more">More colour drills: <a href="../value-trap/">Value Trap</a> · <a href="../neutral-hunt/">Neutral Hunt</a> · <a href="../temperature-sort/">Temperature Sort</a> · <a href="../">all 42 drills</a></p>
+  <p>Each colour is scored on ΔE (CIE76), the distance in Lab between your mix and the target, converted by 100 × (1 − ΔE/26). That is the whole judge — a formula, not a model, which is also why the true ratios can be printed beside yours. Below about 3 the two halves stop reading as different colours; 26 apart is worth nothing. A round's score is the mean of its four, carried live in the HUD as you work. Because the true ratios are rounded to whole percents, the correct answer always lands on a notch a hand can actually reach, which is what keeps 100 attainable; locking the opening blend without moving anything averages around 18.</p>
+  <p class="about-more">More colour drills: <a href="../value-trap/">Value Trap</a> · <a href="../neutral-hunt/">Neutral Hunt</a> · <a href="../temperature-sort/">Temperature Sort</a> · <a href="../">the whole catalogue</a></p>
 </section>
 
 <footer class="footer">
@@ -118,9 +119,13 @@
     <a href="https://sadeali.com/support/">Support <span class="heart-ink" aria-hidden="true">♥</span></a>
     <span aria-hidden="true">·</span>
     <a href="https://github.com/SadeAli" rel="me noopener">GitHub</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/for-teachers/">For teachers</a>
+    <span aria-hidden="true">·</span>
+    <a href="https://artdaily.sadeali.com/privacy/">Privacy</a>
     <span id="supportLinks"></span>
   </nav>
-  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no tracking</p>
+  <p class="fineprint"><span aria-hidden="true"># </span>© SadeAli · free · no ads · no account needed</p>
 </footer>
 
 <script src="../sdk/artdaily-sdk.js"></script>
