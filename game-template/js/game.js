@@ -305,6 +305,7 @@
       muted: cs.getPropertyValue('--muted').trim(),
       accent: accent,
       mark: cs.getPropertyValue('--canvas-accent').trim() || accent,
+      card: cs.getPropertyValue('--card').trim(),   /* the habit panel's ground */
     };
     if (c.ink && c.muted && accent) { inkCache = c; inkTheme = t; }
     return c;
@@ -368,6 +369,10 @@
      you, and the dotted ring — the scale the printed number is measured on
      — was never named at all, on the one screen where it is new. */
   var revealsSeen = 0;
+  /* The habit panel is named once per SITTING, like the dotted ring — an
+     unexplained box of stacked dots is jargon that happens to be drawn.
+     Same rule as revealsSeen: never reset by newRound(). */
+  var habitPanelNamed = false;
   /* THE BEAT MUST OUTLAST THE READING, or the reveal is decoration.
      Budget it against the text that is NEW on that screen, at ~200 words
      per minute — a beginner reading unfamiliar copy while also looking at
@@ -644,7 +649,17 @@
     describeSheet();       /* the name and the picture leave from the same place */
     /* The reveal owns the canvas while it is up: one live target and one
        ghost of the last would just be two rings to choose between. */
-    if (reveal) { drawReveal(c, reveal); return; }
+    if (reveal) {
+      drawReveal(c, reveal);
+      /* Round end only (`playing` is false the moment the last tap files):
+         the habit panel stacks every scored offset on one shared centre, so
+         the round-end sentence's claim — "most taps landed low and right" —
+         is a picture the player can check instead of a thing to take on
+         faith. Drawn AFTER the reveal so it sits on top, in the corner
+         farthest from the reveal's own target. */
+      if (!playing && marks.length >= 2) drawHabitPanel(c);
+      return;
+    }
     if (!playing) return;
     var t = targetAt(target);
     if (t) drawTarget(c, t);
@@ -749,6 +764,78 @@
     ctx.beginPath();
     ctx.arc(px, py, 6, 0, Math.PI * 2);
     ctx.stroke();
+  }
+
+  /* THE HABIT PANEL — the round's five offsets stacked on one shared
+     centre, drawn at round end beside the last reveal (never instead of
+     it: the last attempt is owed its correction like any other, and the
+     panel answers a different question — "is this one habit or five
+     accidents?", which is a SHAPE question).
+
+     Decisions, deliberate:
+     - A corner inset, in whichever corner is farthest from the reveal's
+       own target, so it works at phone width without covering the mark
+       the printed number describes.
+     - It shows on a SCATTERED round too, when roundBias has nothing to
+       say in words — the picture of the scatter is itself the lesson
+       (steadiness, not aim).
+     - SCALE-TO-FIT, not pixel-true: the largest offset spans the panel,
+       so no mark is ever clamped and the spread is honest. The per-tap
+       reveals answered the size question five times already; this panel
+       answers only the shape one.
+     - It draws from `marks` — the offsets that were SCORED, kept in the
+       resize-proof form the reveal already uses — so a rotation or a
+       hardware change redraws the same shape under the same sentence:
+       history does not get re-judged, in pictures any more than numbers.
+     - Earlier taps in `muted`, the last in `mark` (the AA-safe accent):
+       quieter by COLOUR, not by alpha, so every dot still clears the 3:1
+       a meaning-bearing mark owes on both sheets. */
+  function habitPanelSide() {
+    return Math.max(72, Math.min(140, Math.round(Math.min(W, H) * 0.30)));
+  }
+  /* Shared by the painter and the naming clause in finishRound, so the
+     sentence can never name a box the sheet was too small to hold. */
+  function habitPanelFits() {
+    return habitPanelSide() * 2 <= Math.min(W, H);
+  }
+
+  function drawHabitPanel(c) {
+    var t = reveal ? targetAt(reveal.tf, reveal.r) : null;
+    if (!habitPanelFits()) return;   /* a sheet too small for an inset keeps the reveal */
+    var S = habitPanelSide();
+    var PAD = 10;
+    var left = (!t || t.x > W / 2) ? PAD : W - PAD - S;
+    var top = (!t || t.y > H / 2) ? PAD : H - PAD - S;
+    ctx.save();
+    if (c.card) { ctx.fillStyle = c.card; ctx.fillRect(left, top, S, S); }
+    ctx.strokeStyle = c.muted;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(left + 0.5, top + 0.5, S - 1, S - 1);
+    var cx = left + S / 2, cy = top + S / 2;
+    /* the shared centre every offset is measured from */
+    ctx.fillStyle = c.ink;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+    var maxMag = 0, i, m, mag;
+    for (i = 0; i < marks.length; i++) {
+      m = marks[i];
+      mag = Math.hypot(isFinite(m.dx) ? m.dx : 0, isFinite(m.dy) ? m.dy : 0);
+      if (mag > maxMag) maxMag = mag;
+    }
+    var scale = maxMag > 1e-6 ? (S / 2 - 10) / maxMag : 0;
+    for (i = 0; i < marks.length; i++) {
+      m = marks[i];
+      var dx = (isFinite(m.dx) ? m.dx : 0) * scale;
+      var dy = (isFinite(m.dy) ? m.dy : 0) * scale;
+      var last = i === marks.length - 1;
+      ctx.strokeStyle = last ? c.mark : c.muted;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(cx + dx, cy + dy, last ? 4.5 : 3.5, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.restore();
   }
 
   /* ---- input → accuracy → score ----
@@ -979,8 +1066,17 @@
        the bias line would then re-judge five finished taps against a
        tolerance none of them were scored with: the same "history does not
        get re-judged" rule the reveal's dotted ring already follows. */
+    /* The habit panel's one-time naming rides the round-end sentence — the
+       screen it describes is up right now, and this sentence has no beat to
+       outlast (a round-end reveal stays until "new round"). Named only when
+       the panel actually drew (marks + a sheet big enough to hold it). */
+    var panelNote = '';
+    if (!habitPanelNamed && marks.length >= 2 && habitPanelFits()) {
+      habitPanelNamed = true;
+      panelNote = ' The small box stacks the round’s taps on one centre — that lean is the habit.';
+    }
     hint.textContent = roundWords(res, reveal && tapWords(reveal.words, reveal.acc),
-                                  roundBias(marks, (reveal && reveal.zero) || zeroPoint()));
+                                  roundBias(marks, (reveal && reveal.zero) || zeroPoint())) + panelNote;
     showToast(res.isFirst ? 'first score ' + res.score + ' / 100'
             : res.isNewBest ? 'new best! ' + res.score + ' / 100'
             : 'score ' + res.score + ' / 100',
