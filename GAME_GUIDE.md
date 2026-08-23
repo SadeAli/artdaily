@@ -129,6 +129,12 @@ of a sitting, in the order `[hand-off bar][copy the sheet][daily note]`:
 Styles for both ride in from the SDK as token-based CSS, not from your
 `css/style.css`; the suite for all of it is `tools/sdk-suite.js`.
 
+One more injected line, from `js/main.js` rather than the SDK: on any page
+where `window.ArtDaily` exists, the footer's `#supportLinks` slot gains an
+"Embed this drill" link to the for-teachers iframe walkthrough. Keep the
+`<span id="supportLinks"></span>` in your footer nav (the template has it)
+and the link takes care of itself; there is nothing per-drill to write.
+
 ## The first thirty seconds (the only thirty a beginner gives you)
 
 Almost every drill that loses a player loses them here, and almost never
