@@ -2618,7 +2618,13 @@
          reader player pressed "reset it", answered the confirm, and then
          had no way to know whether anything happened. Queued after
          clearToasts so it is the only thing in the queue. */
-      toastPage('progress cleared — streak, ticks and paint tubes are back to empty');
+      /* In the memory fallback the saved copy could not actually be
+         deleted (the same browsers that refuse setItem refuse removeItem),
+         so "cleared" is only true for this sitting — say so, or the next
+         visit reads as the reset silently failing. */
+      toastPage(storageOk
+        ? 'progress cleared — streak, ticks and paint tubes are back to empty'
+        : 'progress cleared for this sitting — this browser would not let the page delete the saved copy, so it may come back on your next visit');
     });
   }
 

@@ -254,6 +254,9 @@ console.log('\n[3] denied storage — reset wipes the memory store too');
   p.reset();
   const slotsAfterReset = p.slots();
   check('after reset nothing done', slotsAfterReset.every(s => !s[1]), JSON.stringify(slotsAfterReset));
+  const resetToast = p.toastWrites.filter(t => /cleared for this sitting/.test(t));
+  check('reset toast admits the saved copy may return', resetToast.length === 1,
+    JSON.stringify(p.toastWrites.slice(-3)));
   p.fire('colors', 80);
   const slots = p.slots();
   const doneCount = slots.filter(s => s[1]).length;
