@@ -685,10 +685,14 @@
 
   /* Rank live games by hash, take distinct categories first so the
      warmup never doubles up a chapter; top back up if needed.
-     Pure function of the DATE LABEL (seedForKey is Date.UTC of the parsed
-     Y/M/D since the 2026-08-23 migration), so the same calendar date names
-     the same rotation in every timezone, tomorrow's plan can be shown
-     today, and a day nobody played still previews correctly. Days that WERE
+     A function of the DATE LABEL plus the six days played before it: the
+     seed (Date.UTC of the parsed Y/M/D since the 2026-08-23 migration) is
+     the same for a given calendar date in every timezone, but the recency
+     bias below reads THIS browser's last six days, so two players' triples
+     still differ with their histories — the label-pure part is the hash
+     ranking, and what is truly shared across players is each drill's own
+     round-1 content, not the triple. Tomorrow's plan can be shown today,
+     and a day nobody played still previews correctly. Days that WERE
      played never come back here — picksForKey serves their pinned triple —
      which is exactly what made the seed and the weights below safe to
      change at all. */
