@@ -49,8 +49,9 @@
   var TURN_GAMMA = 1.25;   /* >1: a wobbly hand keeps partial credit longer */
   var START_BASE = 30;     /* base radius of the start dot's zone */
   var SNAP_MULT = 3;       /* a press this many start-radii out still snaps */
-  var RESUME_BASE = 50;    /* press this close to where you lifted = same repeat */
-  var RESUME_MS = 4000;    /* …and this soon after it */
+  var RESUME_BASE = 50;    /* press this close to where you lifted = same repeat —
+                              no time limit: a press out there can mean nothing
+                              else, and the how-to says "as often as you like" */
   var MIN_COVER = 0.45;    /* a repeat must trace this much of the guide */
   var COVER_GUARD = 0.30;  /* below this, "the same line" isn't a line yet */
   var PEN_LOCK_MS = 700;   /* a finger is inert this long after the pen speaks */
@@ -749,9 +750,12 @@
      and must not append a jump-back zigzag to the repeat in flight. */
   function isResume(p) {
     if (!pending.length) return false;
+    /* The dot outranks the lift: when the line was abandoned NEAR the dot,
+       a press ON the dot used to read as "same repeat carried on" and
+       appended exactly the jump-back zigzag this comment forbids — the
+       documented start-over gesture must win that tie. */
+    if (guide && Math.hypot(p.x - guide.a.x, p.y - guide.a.y) <= startZone()) return false;
     var lift = pending[pending.length - 1];
-    var gap = (p.t || 0) - (lift.t || 0);
-    if (gap < 0 || gap > RESUME_MS) return false;
     return Math.hypot(p.x - lift.x, p.y - lift.y) <= ArtDaily.startRadius(RESUME_BASE);
   }
 
@@ -766,7 +770,12 @@
          nothing, and a press that stays down holds the reveal for as long
          as the hand does. */
       ev.preventDefault();
-      if (Date.now() - revealAt < SKIP_GUARD_MS) return;
+      /* EVERY press holds — the guard now decides what the RELEASE means
+         (see endContact): a quick in-rhythm tap still cannot skip a reveal
+         it never read, but a press kept down truly holds for as long as
+         the hand does, which is what the how-to promises. A press inside
+         the guard used to be swallowed whole, and the reveal advanced
+         under the still-held finger. */
       clearTimeout(revealTimer);
       revealTimer = null;
       holdPointer = ev.pointerId;
@@ -878,7 +887,16 @@
        branch in pointerdown; a reveal press never sets `drawing`. */
     if (holdPointer !== null && ev.pointerId === holdPointer) {
       holdPointer = null;
-      if (playing && revealing) nextStep();
+      if (playing && revealing) {
+        if (Date.now() - revealAt < SKIP_GUARD_MS) {
+          /* the guarded tap: down and up again inside the first beat is
+             the drill's own drawing rhythm, not a request to move on —
+             hand the beat back in full instead of advancing */
+          if (revealTimer === null) revealTimer = setTimeout(nextStep, REVEAL_MS);
+        } else {
+          nextStep();
+        }
+      }
       return;
     }
     if (!drawing || ev.pointerId !== activePointer) return;

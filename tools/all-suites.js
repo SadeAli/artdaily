@@ -6,7 +6,7 @@
 const { execFileSync } = require('child_process');
 const path = require('path');
 
-const SUITES = ['storage-suite.js', 'pick-suite.js', 'trend-suite.js', 'sdk-suite.js', 'hold-suite.js'];
+const SUITES = ['storage-suite.js', 'pick-suite.js', 'trend-suite.js', 'sdk-suite.js', 'box-suite.js', 'hold-suite.js'];
 
 for (const s of SUITES) {
   process.stdout.write('\n=== ' + s + ' ===\n');

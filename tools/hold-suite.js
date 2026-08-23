@@ -218,6 +218,12 @@ function runLightDirection() {
 
   /* -- round 3: held press freezes the beat; cancel on a hidden tab parks it -- */
   els.btnRound.click();
+  lock();
+  fire(canvas, 'pointerdown', { pointerId: 6 });
+  fire(canvas, 'pointerup', { pointerId: 6 });
+  ok(phase() === 'reveal', 'a tap inside the skip-lock cannot eat the reveal — it re-arms the beat');
+  tick(REVEAL);
+  ok(phase() === 'aim', 'and the re-armed beat advances in full');
   lock(); tick(SKIP);
   fire(canvas, 'pointerdown', { pointerId: 7 });
   tick(60000);
@@ -234,7 +240,7 @@ function runLightDirection() {
   fire(canvas, 'pointerdown', { pointerId: 9 });
   fire(canvas, 'pointerup', { pointerId: 9 });
   ok(phase() === 'aim', 'a tap after returning advances the parked reveal');
-  for (let i = 0; i < 3; i++) { lock(); advanceBtn(); }
+  for (let i = 0; i < 2; i++) { lock(); advanceBtn(); }
   lock();
   ok(reports.length === 3, 'round 3 reported exactly once through both hold paths');
   advanceBtn();
@@ -367,9 +373,10 @@ function runSuperimposed() {
   playSet();
   ok(revealing(), 'four traced repeats score the set and raise its reveal');
   fire(canvas, 'pointerdown', { pointerId: 90, isPrimary: true, clientX: 5, clientY: 5 });
-  ok(revealing(), 'a press inside the 600ms guard window is ignored');
+  fire(canvas, 'pointerup', { pointerId: 90, isPrimary: true, clientX: 5, clientY: 5 });
+  ok(revealing(), 'a tap inside the 600ms guard cannot skip the reveal');
   tick(REVEAL);
-  ok(!revealing(), 'the unheld reveal advances on the beat');
+  ok(!revealing(), 'and the beat it re-armed advances in full');
   playSet();                              /* set 2 */
   tick(GUARD);
   fire(canvas, 'pointerdown', { pointerId: 91, isPrimary: true, clientX: 5, clientY: 5 });

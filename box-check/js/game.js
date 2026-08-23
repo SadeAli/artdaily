@@ -42,6 +42,8 @@
      a first-ever visit, and withheld entirely when the grouper starved
      a family on otherwise tidy lines (see analyzeBox). */
   var NOT_A_BOX = 30;
+  var HATCH_SPAN_DEG = 15; /* three family directions all inside this span
+                              = one pencil of hatch strokes, never a box */
   /* A diverging set keeps the tier it always had. The audit's objection
      to it was how OFTEN it fired on honest work and how it was worded,
      not the number: the frequency is handled by cameraNearMiss and the
@@ -875,16 +877,30 @@
      toward (their oriented direction, so a shallow box still gets an
      honest "left set" and "right set"). Shared sides get steeper/flatter
      suffixes so no two rows read identically. */
-  function assignLabels(means, phis) {
+  function assignLabels(means, phis, fams, cx) {
     var i, j, vIdx = -1, vBest = 31, d, labels = [];
     for (i = 0; i < means.length; i++) {
       d = angleDistDeg(means[i], 90);
       if (d < vBest) { vBest = d; vIdx = i; }
     }
     for (i = 0; i < means.length; i++) {
-      if (i === vIdx) labels.push({ key: 'v', label: '↕ verticals' });
-      else if (phis[i] > 90 && phis[i] < 270) labels.push({ key: 'l', label: '← left set' });
-      else labels.push({ key: 'r', label: '→ right set' });
+      if (i === vIdx) { labels.push({ key: 'v', label: '↕ verticals' }); continue; }
+      /* The side a set recedes toward IS the side its vanishing point
+         is on — read it from the VP whenever the set converges to one.
+         The orientation heuristic below stays for parallel sets, but on
+         a full box a horizontal family straddles the centroid, its
+         oriented resultant cancels, and the mod-180 fallback angle can
+         never exceed 180 — so left/right degenerated to line slope and
+         the full 12-edge box wore swapped arrows. */
+      var side = null;
+      if (fams && fams[i] && fams[i].verdict === 'converging' &&
+          fams[i].vp && isFinite(fams[i].vp.x)) {
+        side = fams[i].vp.x < cx ? 'l' : 'r';
+      }
+      if (side === null) side = (phis[i] > 90 && phis[i] < 270) ? 'l' : 'r';
+      labels.push(side === 'l'
+        ? { key: 'l', label: '← left set' }
+        : { key: 'r', label: '→ right set' });
     }
     /* Two or three sets can land on the same side; rank them steepest
        first and suffix so no two rows ever read identically. */
@@ -997,7 +1013,22 @@
     var crossCount = 0;
     for (i = 0; i < fams.length; i++) if (fams[i].crossing) crossCount++;
     if (crossCount >= 2 && !(starved && tidy)) notABox = true;
-    labels = assignLabels(means, phis);
+    /* Three families that all run the SAME way on the page are one
+       pencil of hatch strokes, not a box — a box's three edge
+       directions can never collapse onto one image direction. The
+       grouper's force-split of a parallel bundle manufactures three
+       tidy pseudo-families that dodge the camera test (no finite VPs
+       to trilaterate) and the starved-and-tidy mercy at once; this
+       check is exact like the crossing test, so it takes no mercy. */
+    var hatchPencil = false;
+    if (fams.length === 3 && Math.max(
+          angleDistDeg(means[0], means[1]),
+          angleDistDeg(means[0], means[2]),
+          angleDistDeg(means[1], means[2])) < HATCH_SPAN_DEG) {
+      hatchPencil = true;
+      notABox = true;
+    }
+    labels = assignLabels(means, phis, fams, cx);
     for (i = 0; i < fams.length; i++) {
       fams[i].key = labels[i].key;
       fams[i].label = labels[i].label;
@@ -1046,6 +1077,10 @@
        belong to one box" as somebody's first result ends the habit
        before it starts. The critique still says it either way. */
     if (notABox && o.capHard) total = Math.min(total, NOT_A_BOX);
+    /* the first-visit mercy on that cap exists for an honest box the
+       camera test rejects — a fan of hatching is not that, and paying
+       it 100 on any visit falsifies the page's own no-box sentence */
+    if (hatchPencil) total = Math.min(total, NOT_A_BOX);
     if (!isFinite(total)) total = 0;
     /* ghost box only when the two anchor VPs are honestly tight —
        a corrected box fitted to sprayed VPs teaches nothing */

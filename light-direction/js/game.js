@@ -1192,11 +1192,12 @@
          holds the two small forms side by side for as long as the hand
          does, which is the entire lesson. The palm guard above already
          returned for a touch in the pen's shadow. */
-      if (Date.now() - revealAt >= SKIP_LOCK_MS) {
-        clearTimeout(revealTimer);
-        revealTimer = null;
-        holdPointer = ev.pointerId;
-      }
+      /* EVERY press holds; SKIP_LOCK_MS now guards the RELEASE (see
+         endDrag) — a press inside the window used to be swallowed whole,
+         so the reveal advanced under a finger that was holding it. */
+      clearTimeout(revealTimer);
+      revealTimer = null;
+      holdPointer = ev.pointerId;
       return;
     }
     if (phase !== 'aim') return;
@@ -1249,8 +1250,13 @@
             revealAt = Date.now();
             revealTimer = setTimeout(advance, REVEAL_MS);
           }
-        } else {
+        } else if (Date.now() - revealAt >= SKIP_LOCK_MS) {
           advance();
+        } else if (revealTimer === null && autoAdvances() && !document.hidden) {
+          /* the guarded tap — too quick to have read the reveal; hand the
+             beat back in full, exactly like a cancelled hold */
+          revealAt = Date.now();
+          revealTimer = setTimeout(advance, REVEAL_MS);
         }
       }
       return;
