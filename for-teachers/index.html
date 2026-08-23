@@ -98,6 +98,27 @@ table.chapters { border-collapse: collapse; width: 100%; min-width: 660px; font-
 /* The ticket block is meant to be dragged over and copied, so it is set in the
    mono face at a size a helpdesk field will not mangle, not in the hand face the
    rest of the prose uses. */
+/* The embed snippet: one tap selects the whole line (user-select: all), so
+   it can be copied without a copy button — this page ships no JS of its own
+   beyond the shared theme toggle, and a button that needs a script would be
+   the first. Wraps rather than scrolls; a sideways-scrolling code box on a
+   phone hides the end of the line, which is the part with the height in it. */
+.embed-snippet {
+  display: block;
+  margin: 10px 0;
+  padding: 12px 14px;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--card);
+  border: 1px dashed color-mix(in srgb, var(--muted) 60%, transparent);
+  border-radius: 4px 10px 5px 9px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: all;
+  -webkit-user-select: all;
+}
 .ticket {
   margin: 4px 0 14px;
   padding: 13px 15px;
@@ -230,6 +251,13 @@ table.chapters { border-collapse: collapse; width: 100%; min-width: 660px; font-
   <p class="cat-note">Write one line on the board and nothing else is needed. There is no login for the substitute to explain, nothing to hand out, no code to distribute and nothing to collect at the end.</p>
   <p class="say"><b>on the board</b>artdaily.sadeali.com<br>Do the three warm-ups at the top of the page.<br>Then pick a chapter and do two more drills from it.<br>Write your best score for each one on your sheet.</p>
   <p class="cat-note">Be honest with yourself about the arithmetic: the three at the top are about nine minutes and two more are four to eight, so that is a quarter of a period, not a period. It is the front half of a cover lesson. Pair it with something on paper — the still life on your desk, a page of thumbnails — and the screen part is the bit that needs no supervision.</p>
+</section>
+
+<section class="section" aria-labelledby="embedHead">
+  <div class="cat-head"><h2 id="embedHead" class="accent-sky" style="text-decoration-color: var(--sky);">put a drill inside your own page</h2></div>
+  <p class="cat-note">Any drill embeds in an LMS page, a class blog or a school portal with one line — Canvas, Schoology and Google Sites all take a plain iframe. Tap the line once to select all of it:</p>
+  <code class="embed-snippet">&lt;iframe src="https://artdaily.sadeali.com/lines/" title="Steady Lines — a free drawing drill" width="100%" height="760" style="border:0" loading="lazy"&gt;&lt;/iframe&gt;</code>
+  <p class="cat-note">Swap <code>/lines/</code> for any drill's address and put its name in the title. Students draw and get scored exactly as on the drill's own page, the drill keeps its own header and footer inside the frame so the site stays credited, and the data facts below hold unchanged — nothing a student draws leaves the browser, embedded or not. A height around 760 fits the sheet and the controls; there is no embed code to request and no key to issue, because the pages simply allow being framed.</p>
 </section>
 
 <section class="section" aria-labelledby="itHead">
