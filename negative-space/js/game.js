@@ -475,6 +475,13 @@
   var itemKinds = [];
   var strokes = [], cur = [], drawingNow = false, activePtr = null, activeType = '';
   var revealing = null, revealTimer = null, pulsing = null, roundResult = null;
+  /* The pointer pressed during the reveal: the auto-advance is cancelled and
+     the screen is theirs until they press again (the beat-is-a-floor rule in
+     the pointerdown handler). Distinct from a PARKED timer (hidden tab), so
+     the visibility re-arm never un-holds a held reveal. Cleared by nextItem
+     and newRound. The round is banked in onDone before the last reveal, so
+     nothing on this path can file or lose a score. */
+  var revealHeld = false;
 
   /* ---- where the three compositions come from --------------------------
      THE ROUND'S CONTENT IS A SEQUENCE OF NORMALISED DRAWS. Round 1 of a
@@ -890,6 +897,21 @@
   }
 
   canvas.addEventListener('pointerdown', function (ev) {
+    /* THE BEAT IS A FLOOR, NOT A DEADLINE (WCAG 2.2.1). A press during the
+       reveal used to be thrown away; it now HOLDS the lesson — the first
+       press cancels the pending advance, the next asks for the next space.
+       Never scored, never counted; a palm (touch in the pen's shadow) can
+       neither hold nor advance; the round-end reveal has playing=false and
+       never enters this branch. On the LAST item's reveal the second press
+       reaches finishRound, which is presentation-only — the round was
+       banked in onDone — and sets playing=false, so it cannot re-run. */
+    if (playing && revealing && ev.isPrimary !== false) {
+      if (!claimAllowed(ev)) return;
+      ev.preventDefault();
+      if (revealTimer !== null) { clearTimeout(revealTimer); revealTimer = null; revealHeld = true; return; }
+      nextItem();
+      return;
+    }
     if (!playing || revealing || !item) return;
     if (!claimAllowed(ev)) return;
     if (drawingNow) {
@@ -1018,6 +1040,7 @@
   function nextItem() {
     clearTimeout(revealTimer);
     revealTimer = null;
+    revealHeld = false;
     if (itemIdx + 1 >= ITEMS_PER_ROUND) { finishRound(); return; }
     revealing = null;
     itemIdx += 1;
@@ -1033,6 +1056,7 @@
   function newRound() {
     clearTimeout(revealTimer);
     revealTimer = null;
+    revealHeld = false;
     /* A round whose third item is scored but still sitting on its 1.7s
        reveal was already banked at that score (onDone reports on the
        spot) — but finishRound() never ran, so the round-end coaching and
@@ -1142,7 +1166,7 @@
       if (revealTimer !== null) { clearTimeout(revealTimer); revealTimer = null; }
       return;
     }
-    if (playing && revealing && revealTimer === null) {
+    if (playing && revealing && revealTimer === null && !revealHeld) {
       revealTimer = setTimeout(nextItem, REVEAL_MS);
       return;
     }
