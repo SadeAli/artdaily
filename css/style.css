@@ -1077,7 +1077,13 @@ a.card:hover, a.card:focus-visible {
 
 /* ===== Footer ===== */
 
-.footer { text-align: center; padding: 44px 20px 28px; color: var(--muted); }
+/* Solid --bg, deliberately: the body paints a 1px dot grid, and --muted
+   over a dot that passes under a glyph measures 4.26 — under the 4.5 the
+   bold footnav links and the fineprint owe. "Measure against what is
+   actually behind the mark" is this project's own rule; a clean ground
+   behind the footer is the cheapest way to keep it. (The drills' vendored
+   footer rules belong to the central chrome re-sync, not to this file.) */
+.footer { text-align: center; padding: 44px 20px 28px; color: var(--muted); background: var(--bg); }
 .footnav {
   display: flex;
   flex-wrap: wrap;
