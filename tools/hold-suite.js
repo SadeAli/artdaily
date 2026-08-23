@@ -16,9 +16,10 @@
    to reach the filing path directly), game-template (the canonical
    hold-then-tap that every new drill copies) and superimposed (the
    pre-banking launch drill — its repeats are drawn as real pointer
-   strokes along the guide the drill itself painted) and lines (six
-   pulled strokes, filed synchronously at the sixth). The harness is
-   generic; a sibling joins by adding a runner beside these. */
+   strokes along the guide the drill itself painted), lines (six
+   pulled strokes, filed synchronously at the sixth) and negative-space
+   (banked in onDone at the third space; hold-then-tap reveal). The
+   harness is generic; a sibling joins by adding a runner beside these. */
 'use strict';
 const fs = require('fs');
 const vm = require('vm');
@@ -147,7 +148,10 @@ function boot(slug, ids) {
     getComputedStyle: () => ({ getPropertyValue: () => '#808080' }),
     setTimeout: (fn, ms) => { const id = timerSeq++; timers.set(id, { fn, at: now + (ms || 0) }); return id; },
     clearTimeout: (id) => { timers.delete(id); },
+    requestAnimationFrame(fn) { return this.setTimeout(() => fn(now), 16); },
+    cancelAnimationFrame(id) { this.clearTimeout(id); },
     Date: { now: () => now },
+    performance: { now: () => now },
     Math, JSON, Object, Array, String, Number, Boolean, isFinite, isNaN,
     parseInt, parseFloat, Uint8ClampedArray,
     addEventListener(t, fn) { (this._winListeners[t] = this._winListeners[t] || []).push(fn); },
@@ -487,10 +491,67 @@ function runLines() {
   ok(reports.every((sc) => isFinite(sc) && sc >= 0 && sc <= 100), 'every reported score is a real 0-100');
 }
 
+/* ============================================================
+   negative-space — pre-banks in onDone; hold-then-tap on the reveal
+   ============================================================ */
+function runNegativeSpace() {
+  console.log('== negative-space: three traced spaces, banked at the third done ==');
+  const IDS = ['gameCanvas', 'hint', 'toast', 'hudRound', 'hudScore', 'hudBest',
+    'btnDone', 'btnUndo', 'btnAgain', 'btnClear', 'btnRound', 'btnHow', 'howTo', 'inputMode'];
+  const p = boot('negative-space', IDS);
+  const { els, tick, reports, fire } = p;
+  const canvas = els.gameCanvas;
+  const REVEAL = 1700;
+  let pid = 300;
+
+  function scribble() {
+    const id = pid++;
+    fire(canvas, 'pointerdown', { pointerId: id, isPrimary: true, clientX: 80, clientY: 80 });
+    for (let i = 1; i <= 30; i++) {
+      fire(canvas, 'pointermove', { pointerId: id, isPrimary: true,
+        clientX: 80 + i * 8, clientY: 80 + ((i % 5) - 2) * 12 });
+    }
+    fire(canvas, 'pointerup', { pointerId: id, isPrimary: true, clientX: 320, clientY: 80 });
+  }
+  const inReveal = () => /— \d+ ·/.test(els.hint.textContent);
+  const roundDone = () => els.hint.textContent.indexOf('round done') !== -1;
+
+  els.btnDone.click();
+  ok(reports.length === 0 && !inReveal(), 'done before any trace scores nothing');
+  /* -- round 1 -- */
+  for (let i = 0; i < 2; i++) { scribble(); els.btnDone.click(); tick(REVEAL); }
+  scribble(); els.btnDone.click();          /* third space: the bank */
+  ok(reports.length === 1, 'the round is banked the instant the third space scores (reports=' + reports.length + ')');
+  ok(inReveal() && !roundDone(), 'while its reveal is still on screen');
+  tick(REVEAL);
+  ok(reports.length === 1 && roundDone(), 'closing the last reveal is presentation only');
+  tick(120000);
+  ok(roundDone() && reports.length === 1, 'the round-end reveal stays up and never re-files');
+
+  /* -- round 2: hold-then-tap -- */
+  els.btnRound.click();
+  scribble(); els.btnDone.click();
+  ok(inReveal(), 'a traced space scores and raises its reveal');
+  fire(canvas, 'pointerdown', { pointerId: 95, isPrimary: true, clientX: 5, clientY: 5 });
+  fire(canvas, 'pointerup', { pointerId: 95, isPrimary: true, clientX: 5, clientY: 5 });
+  tick(60000);
+  ok(inReveal(), 'a press holds the reveal open (tap-up does not advance in the hold-then-tap design)');
+  fire(canvas, 'pointerdown', { pointerId: 96, isPrimary: true, clientX: 5, clientY: 5 });
+  fire(canvas, 'pointerup', { pointerId: 96, isPrimary: true, clientX: 5, clientY: 5 });
+  ok(!inReveal(), 'the next press advances to the next space');
+  for (let i = 0; i < 2; i++) { scribble(); els.btnDone.click(); if (i === 0) tick(REVEAL); }
+  ok(reports.length === 2, 'round 2 banked exactly once (reports=' + reports.length + ')');
+  tick(REVEAL);
+  ok(reports.length === 2 && roundDone(), 'and closes presentation-only');
+
+  ok(reports.every((sc) => isFinite(sc) && sc >= 0 && sc <= 100), 'every reported score is a real 0-100');
+}
+
 runLightDirection();
 runTemplate();
 runSuperimposed();
 runLines();
+runNegativeSpace();
 
 console.log('');
 if (failures) { console.log(failures + ' FAILURE(S)'); process.exit(1); }
