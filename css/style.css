@@ -834,6 +834,29 @@ a.card:hover, a.card:focus-visible {
 }
 .meter-lv { min-width: 4.5ch; text-align: right; font-size: 0.74rem; color: var(--muted); }
 
+/* ===== Per-drill trends (renderTrends) ===== */
+
+.trends { margin-top: 18px; }
+.trends-head { margin: 0; font-family: var(--hand); font-size: 1.3rem; font-weight: 700; }
+.trends-list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+/* flex on the <li> removes its list-item box, so renderTrends marks each
+   row role="listitem" — the same double-cover the meters carry. */
+.trend { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.trend-name { font-weight: 700; font-size: 0.82rem; }
+.trend-words { flex: 1 1 16rem; font-size: 0.78rem; color: var(--muted); }
+.trend-svg { flex: 0 1 180px; min-width: 120px; height: 32px; align-self: center; }
+.trend-base { stroke: var(--line); stroke-width: 1; }
+/* --accent-ink comes from the row's .accent-* class: already AA-deepened
+   per hue in light mode, the raw accent in the night studio. */
+.trend-dot { fill: var(--accent-ink); }
+
 .storenote { margin: 14px 0 0; font-size: 0.76rem; color: var(--muted); }
 /* "reset it" sits inside a sentence at 0.76rem, so its line box is only
    ~19px tall — half a fingertip. It cannot be padded without shoving the

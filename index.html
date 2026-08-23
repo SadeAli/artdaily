@@ -304,6 +304,10 @@
        <li> itself, which takes away the list-item box outright, so buildMeters
        marks each row role="listitem" too. -->
   <ul class="meters" id="skillMeters" role="list" hidden></ul>
+  <!-- Per-drill trends, rendered by renderTrends() for drills with three or
+       more logged days: the sentence is the content, the sparkline is
+       aria-hidden decoration — same pattern as the record's dot strip. -->
+  <div class="trends" id="trends" hidden></div>
   <p class="storenote">progress lives in this browser's localStorage — no account needed, and nothing is sent to a server · <button class="resetlink" id="resetBtn" type="button">reset it</button></p>
 </section>
 

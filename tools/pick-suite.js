@@ -121,6 +121,7 @@ function boot(diskObj) {
     getElementById: (id) => els[id] || null,
     createElement: makeEl,
     createTextNode: (s) => ({ nodeType: 3, textContent: String(s) }),
+    createElementNS: (ns, tag) => makeEl(tag),
     querySelector: () => null,
     addEventListener() {},
   };

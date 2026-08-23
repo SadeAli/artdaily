@@ -115,6 +115,7 @@ function boot(opts) {
     getElementById(id) { return els[id] || null; },
     createElement: makeEl,
     createTextNode(s) { return { nodeType: 3, textContent: String(s) }; },
+    createElementNS(ns, tag) { return makeEl(tag); },
     querySelector() { return null; },
     addEventListener(t, fn) { (winListeners['doc:' + t] = winListeners['doc:' + t] || []).push(fn); },
   };

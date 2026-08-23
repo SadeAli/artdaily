@@ -1245,6 +1245,143 @@
     return { lv: base + 1, pct: Math.max(0, Math.min(100, pct)) };
   }
 
+  /* ---- per-drill trends ----
+     The legend line promises "you are only ever compared with your own past
+     rounds", and the page kept 30+ days of per-drill history while surfacing
+     exactly one number out of it: the all-time max. A player who went
+     40 → 55 → 62 → 71 at Steady Lines over three weeks was told only
+     "best 88/100" from a lucky day in week one, and every round since read
+     as failure. The one shape that keeps a beginner practising — the
+     trajectory — was on disk and never drawn. The SENTENCE is the point;
+     the sparkline is decoration (aria-hidden, like the record's dot strip),
+     and the y-scale is a fixed 0–100 so a sparse drill cannot flatter
+     itself. Pure read of store.days; nothing stored changes meaning. */
+
+  /* slug -> [{k, v}] in day order: each drill's kept score per logged day. */
+  function trendData() {
+    var per = Object.create(null);
+    Object.keys(store.days).sort().forEach(function (k) {
+      var d = dayScores(k);
+      Object.keys(d).forEach(function (s) {
+        (per[s] = per[s] || []).push({ k: k, v: d[s] });
+      });
+    });
+    return per;
+  }
+
+  /* PURE: the chronological list -> the trend sentence, or null under 3
+     logged days (two points are a coincidence, not a trend). The windows
+     are DAYS PLAYED, not calendar days, and they may never overlap —
+     w = floor(len/2) capped at 5 — so "up 21" can never compare a day
+     with itself. Down-trends are named plainly and kindly; a line that
+     punishes coming back is a line that stops them coming back. */
+  function trendWords(list) {
+    if (!list || list.length < 3) return null;
+    var w = Math.min(5, Math.floor(list.length / 2));
+    function avg(from) {
+      var t = 0;
+      for (var i = 0; i < w; i++) t += list[from + i].v;
+      return Math.round(t / w);
+    }
+    var first = avg(0);
+    var last = avg(list.length - w);
+    var d = last - first;
+    if (w === 1) {
+      if (d > 0) return 'latest ' + last + ' — up ' + d + ' on your first day';
+      if (d < 0) return 'latest ' + last + ' — ' + (-d) + ' under your first day · dips are part of it';
+      return 'holding at ' + last;
+    }
+    if (d > 0) return 'last ' + w + ' days played average ' + last + ' — up ' + d + ' on your first ' + w;
+    if (d < 0) return 'last ' + w + ' days played average ' + last + ' — ' + (-d) + ' under your first ' + w + ' · dips are part of it';
+    return 'holding at ' + last + ' across your first and last ' + w;
+  }
+
+  /* A 30-day window of dots on a fixed 0–100 baseline. Normally the window
+     ends today; a lapsed drill whose last play is older than the window
+     would draw an empty chart, so the window slides back to end at the last
+     played day instead — 30 days of your last activity, which is what the
+     note above the list says. Decoration only (aria-hidden): the sentence
+     beside it is the accessible content, the pattern the record's dot strip
+     already uses. */
+  function trendSvg(list) {
+    if (typeof document.createElementNS !== 'function') return null;
+    var NS = 'http://www.w3.org/2000/svg';
+    var byKey = Object.create(null);
+    list.forEach(function (e) { byKey[e.k] = e.v; });
+    var endKey = todayKey();
+    function windowDots(end) {
+      var p = DAY_RE.exec(end);
+      var out = [];
+      for (var i = 0; i < 30; i++) {
+        var k = dateKey(new Date(+p[1], +p[2] - 1, +p[3] - (29 - i)));
+        if (typeof byKey[k] === 'number') out.push({ i: i, v: byKey[k] });
+      }
+      return out;
+    }
+    var dots = windowDots(endKey);
+    if (dots.length < 2) {
+      endKey = list[list.length - 1].k;
+      dots = windowDots(endKey);
+    }
+    var svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('class', 'trend-svg');
+    svg.setAttribute('viewBox', '0 0 130 32');
+    svg.setAttribute('aria-hidden', 'true');
+    var base = document.createElementNS(NS, 'line');
+    base.setAttribute('class', 'trend-base');
+    base.setAttribute('x1', '2'); base.setAttribute('x2', '128');
+    base.setAttribute('y1', '28.5'); base.setAttribute('y2', '28.5');
+    svg.appendChild(base);
+    dots.forEach(function (d) {
+      var c = document.createElementNS(NS, 'circle');
+      c.setAttribute('class', 'trend-dot');
+      c.setAttribute('cx', String(Math.round((4 + d.i * (122 / 29)) * 10) / 10));
+      c.setAttribute('cy', String(Math.round((28 - (d.v / 100) * 24) * 10) / 10));
+      c.setAttribute('r', '2.2');
+      svg.appendChild(c);
+    });
+    return svg;
+  }
+
+  function renderTrends() {
+    var box = $('trends');
+    if (!box) return;
+    var per = trendData();
+    var rows = Object.keys(per).map(function (s) {
+      return { slug: s, list: per[s] };
+    }).filter(function (r) {
+      return r.list.length >= 3 && gameBySlug(r.slug);  /* a retired drill keeps its history, loses its row */
+    });
+    if (!rows.length) { box.textContent = ''; box.hidden = true; return; }
+    /* Most-played first; the slug tiebreak keeps the order stable so rows
+       do not swap places between renders. */
+    rows.sort(function (a, b) {
+      return b.list.length - a.list.length || (a.slug < b.slug ? -1 : 1);
+    });
+    var more = rows.length > 5;
+    rows = rows.slice(0, 5);
+    box.textContent = '';
+    box.appendChild(el('h3', 'trends-head', 'drill by drill'));
+    box.appendChild(el('p', 'cat-note trends-note',
+      'your kept score for each day you played — dots are the last 30 days of it' +
+      (more ? ' · showing the 5 you have practised most' : '')));
+    var ul = el('ul', 'trends-list');
+    ul.setAttribute('role', 'list');
+    rows.forEach(function (r) {
+      var g = gameBySlug(r.slug);
+      var li = el('li', 'trend accent-' + g.accent);
+      /* flex removes the list-item box, same as the meters — say it */
+      li.setAttribute('role', 'listitem');
+      li.appendChild(el('span', 'trend-name', g.name));
+      li.appendChild(el('span', 'trend-words', trendWords(r.list)));
+      var svg = trendSvg(r.list);
+      if (svg) li.appendChild(svg);
+      ul.appendChild(li);
+    });
+    box.appendChild(ul);
+    box.hidden = false;
+  }
+
   /* ---- practice record ----
      Not needing an account should not mean not being remembered.
      Everything here is already on disk in store.days; it just was
@@ -1518,6 +1655,7 @@
     renderStreak();
     renderMeters();
     renderRecord();
+    renderTrends();
     fillMeta(g);
     /* The status line is the OPEN DRILL'S foot, not a general notice board.
        Results reach recordResult from three places, and two of them are not
@@ -2350,6 +2488,7 @@
     renderStreak();
     renderMeters();
     renderRecord();
+    renderTrends();
     liveGames.forEach(fillMeta);
   }
 
@@ -2369,6 +2508,7 @@
   renderStreak();
   renderMeters();
   renderRecord();
+  renderTrends();
   syncThemeLabel();
   wireFooterSignup();
   consumeLogHash();
