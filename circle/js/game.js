@@ -1042,6 +1042,13 @@
   var activePointer = null, activeType = null;
   var pending = null;        /* a stroke that stopped short, waiting to carry on */
   var reveal = null, revealTimer = null;
+  /* The pointer currently HOLDING the reveal (the beat-is-a-floor rule in
+     the pointerdown handler): press cancels the pending advance, release
+     advances — so a quick tap is the same skip this drill always had, and
+     keeping the finger down keeps the screen (WCAG 2.2.1). Cleared by the
+     release/cancel handlers, nextItem and newRound; the visibilitychange
+     re-arm checks it so a hidden tab cannot un-hold a held reveal. */
+  var holdPointer = null;
   /* Reveals shown this SITTING. Never reset by newRound(): everything
      taught once — the long beat, the naming of the dotted band, the
      opening clause about how the drill marks you — hangs off this, so a
@@ -1077,6 +1084,7 @@
   function newRound() {
     clearTimeout(revealTimer);
     revealTimer = null;
+    holdPointer = null;
     round += 1;
     idx = 0;
     scores = [];
@@ -1371,10 +1379,14 @@
     if (ArtDaily.isPalm(ev)) return;
     if (!playing) return;
     if (reveal) {
-      /* tap to skip the rest of the beat — never scored, never counted */
+      /* THE BEAT IS A FLOOR, NOT A DEADLINE (WCAG 2.2.1). The press
+         cancels the pending advance and the RELEASE moves on — a quick
+         tap is exactly the skip this drill always had, and a press that
+         stays down holds the screen for as long as the hand does. Never
+         scored, never counted; a palm already returned above. */
       clearTimeout(revealTimer);
       revealTimer = null;
-      nextItem();
+      holdPointer = ev.pointerId;
       return;
     }
     if (drawing) {
@@ -1427,6 +1439,14 @@
   });
 
   function endStroke(ev) {
+    /* The release of a reveal-holding press advances the item — see the
+       hold branch in pointerdown. Before the drawing guard, because a
+       reveal press never sets `drawing`. */
+    if (holdPointer !== null && ev.pointerId === holdPointer) {
+      holdPointer = null;
+      if (playing && reveal) nextItem();
+      return;
+    }
     if (!drawing || ev.pointerId !== activePointer) return;
     if (ev.cancelable) ev.preventDefault();
     drawing = false;
@@ -1489,6 +1509,15 @@
   canvas.addEventListener('lostpointercapture', endStroke);
 
   function cancelStroke(ev) {
+    /* A CANCELLED holding press is not an "advance" — the player did not
+       lift on purpose. Drop the hold and hand the beat back, full. */
+    if (holdPointer !== null && ev.pointerId === holdPointer) {
+      holdPointer = null;
+      if (playing && reveal && revealTimer === null) {
+        revealTimer = setTimeout(nextItem, (reveal && reveal.beat) || REVEAL_MIN_MS);
+      }
+      return;
+    }
     if (!drawing || ev.pointerId !== activePointer) return;
     abortStroke();
     if (playing && !reveal) {
@@ -1569,13 +1598,14 @@
       if (revealTimer !== null) { clearTimeout(revealTimer); revealTimer = null; }
       return;
     }
-    if (playing && reveal && revealTimer === null) {
+    if (playing && reveal && revealTimer === null && holdPointer === null) {
       revealTimer = setTimeout(nextItem, (reveal && reveal.beat) || REVEAL_MIN_MS);
     }
   });
 
   function nextItem() {
     revealTimer = null;
+    holdPointer = null;
     if (!playing || !reveal) return;
     ghosts.push(reveal.points);
     if (ghosts.length > GHOSTS_KEPT) ghosts.shift();
