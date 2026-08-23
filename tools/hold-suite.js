@@ -13,10 +13,11 @@
    clicks, keydown, pointer press/release/cancel on the reveal.
 
    Covered today: light-direction (the riskiest refactor — its timer used
-   to reach the filing path directly) and game-template (the canonical
-   hold-then-tap that every new drill copies: held reveals, hidden-tab
-   parking, synchronous filing on the last tap). The harness is generic;
-   a sibling joins by adding a runner beside these two. */
+   to reach the filing path directly), game-template (the canonical
+   hold-then-tap that every new drill copies) and superimposed (the
+   pre-banking launch drill — its repeats are drawn as real pointer
+   strokes along the guide the drill itself painted). The harness is
+   generic; a sibling joins by adding a runner beside these. */
 'use strict';
 const fs = require('fs');
 const vm = require('vm');
@@ -56,7 +57,7 @@ function makeEl(tag) {
 /* ---- 2d context: every method a no-op, every property writable, plus the
    few that must return something real (image data, text metrics). ---- */
 function makeCtx(canvas) {
-  const store = { canvas };
+  const store = { canvas, _arcs: [] };
   return new Proxy({}, {
     get(t, prop) {
       if (prop in store) return store[prop];
@@ -64,6 +65,7 @@ function makeCtx(canvas) {
         return (w, h) => ({ data: new Uint8ClampedArray(Math.max(1, w * h * 4)), width: w, height: h });
       }
       if (prop === 'measureText') return () => ({ width: 8 });
+      if (prop === 'arc') return (x, y, r) => { store._arcs.push({ x, y, r }); };
       return () => {};
     },
     set(t, prop, v) { store[prop] = v; return true; },
@@ -73,7 +75,9 @@ function makeCtx(canvas) {
 function makeCanvas() {
   const c = makeEl('canvas');
   c.width = 720; c.height = 450;
-  c.getContext = () => makeCtx(c);
+  const ctx = makeCtx(c);
+  c._ctx = ctx;
+  c.getContext = () => ctx;
   c.getBoundingClientRect = () => ({ left: 0, top: 0, width: 720, height: 450 });
   c.setPointerCapture = () => {};
   c.releasePointerCapture = () => {};
@@ -314,8 +318,94 @@ function runTemplate() {
   ok(reports.every((sc) => isFinite(sc) && sc >= 0 && sc <= 100), 'every reported score is a real 0-100');
 }
 
+/* ============================================================
+   superimposed — pre-banking launch drill; strokes drawn for real
+   ============================================================ */
+function runSuperimposed() {
+  console.log('== superimposed: four traced repeats a set, banked at the fourth set ==');
+  const IDS = ['gameCanvas', 'hint', 'toast', 'hudRound', 'hudScore', 'hudBest',
+    'btnFinish', 'btnUndo', 'btnRound', 'btnHow', 'howTo', 'inputMode'];
+  const p = boot('superimposed', IDS);
+  const { els, tick, reports, fire, doc } = p;
+  const canvas = els.gameCanvas;
+  const GUARD = 601;   /* > SKIP_GUARD_MS (600) */
+  const REVEAL = 2400; /* REVEAL_MS */
+  let pid = 100;
+
+  /* The guide's endpoints, recovered from the drill's own drawing calls:
+     drawGuide strokes the end ring at r=7 and drawStartDot fills the dot
+     at r=6.5 — both constants unique on the sheet. Latest occurrence wins
+     (the guide is redrawn on every draw()). */
+  function guideEnds() {
+    const arcs = canvas._ctx._arcs;
+    let a = null, b = null;
+    for (let i = arcs.length - 1; i >= 0 && (!a || !b); i--) {
+      if (!b && arcs[i].r === 7) b = arcs[i];
+      if (!a && arcs[i].r === 6.5) a = arcs[i];
+    }
+    return { a, b };
+  }
+
+  function traceRepeat() {
+    const { a, b } = guideEnds();
+    const id = pid++;
+    fire(canvas, 'pointerdown', { pointerId: id, isPrimary: true, clientX: a.x, clientY: a.y });
+    for (let i = 1; i <= 24; i++) {
+      fire(canvas, 'pointermove', { pointerId: id, isPrimary: true,
+        clientX: a.x + (b.x - a.x) * i / 24, clientY: a.y + (b.y - a.y) * i / 24 });
+    }
+    fire(canvas, 'pointerup', { pointerId: id, isPrimary: true, clientX: b.x, clientY: b.y });
+  }
+  const revealing = () => els.hint.textContent.indexOf('Tap for the next set') !== -1 ||
+                         els.hint.textContent.indexOf('The band is your spread') !== -1;
+  const roundDone = () => els.hint.textContent.indexOf('round done') !== -1;
+  const playSet = () => { for (let i = 0; i < 4; i++) traceRepeat(); };
+
+  /* -- round 1 -- */
+  playSet();
+  ok(revealing(), 'four traced repeats score the set and raise its reveal');
+  fire(canvas, 'pointerdown', { pointerId: 90, isPrimary: true, clientX: 5, clientY: 5 });
+  ok(revealing(), 'a press inside the 600ms guard window is ignored');
+  tick(REVEAL);
+  ok(!revealing(), 'the unheld reveal advances on the beat');
+  playSet();                              /* set 2 */
+  tick(GUARD);
+  fire(canvas, 'pointerdown', { pointerId: 91, isPrimary: true, clientX: 5, clientY: 5 });
+  tick(60000);
+  ok(revealing(), 'a held press keeps the set reveal up for a minute');
+  fire(canvas, 'pointerup', { pointerId: 91, isPrimary: true, clientX: 5, clientY: 5 });
+  ok(!revealing(), 'the release moves to the next set');
+  playSet();                              /* set 3 */
+  tick(GUARD);
+  fire(canvas, 'pointerdown', { pointerId: 92, isPrimary: true, clientX: 5, clientY: 5 });
+  doc.hidden = true;
+  fire(canvas, 'pointercancel', { pointerId: 92, isPrimary: true, clientX: 5, clientY: 5 });
+  tick(60000);
+  ok(revealing(), 'a cancelled hold on a hidden tab parks the reveal');
+  doc.hidden = false;
+  fire(canvas, 'pointerdown', { pointerId: 93, isPrimary: true, clientX: 5, clientY: 5 });
+  fire(canvas, 'pointerup', { pointerId: 93, isPrimary: true, clientX: 5, clientY: 5 });
+  ok(!revealing(), 'a tap after returning advances the parked reveal');
+  playSet();                              /* set 4: the bank */
+  ok(reports.length === 1, 'the round is banked the instant the fourth set scores (reports=' + reports.length + ')');
+  ok(!roundDone(), 'while its reveal is still on screen');
+  tick(REVEAL);
+  ok(reports.length === 1 && roundDone(), 'closing the last reveal is presentation only');
+
+  /* -- round 2: impatient "new round" during the fourth reveal -- */
+  els.btnRound.click();
+  for (let i = 0; i < 4; i++) { playSet(); if (i < 3) tick(REVEAL); }
+  ok(reports.length === 2, 'round 2 banked at its fourth set');
+  els.btnRound.click();                   /* mid-reveal: flushes, then deals */
+  ok(reports.length === 2, 'flushing a banked round through "new round" does not report again');
+  ok(!roundDone() && !revealing(), 'and a fresh round is dealt');
+
+  ok(reports.every((sc) => isFinite(sc) && sc >= 0 && sc <= 100), 'every reported score is a real 0-100');
+}
+
 runLightDirection();
 runTemplate();
+runSuperimposed();
 
 console.log('');
 if (failures) { console.log(failures + ' FAILURE(S)'); process.exit(1); }
