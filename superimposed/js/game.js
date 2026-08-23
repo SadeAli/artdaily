@@ -406,6 +406,13 @@
   var drawing = false, activePointer = null, activeType = '';
   var lastPenAt = -Infinity;
   var revealing = null, revealTimer = null, revealAt = 0;
+  /* The pointer currently HOLDING the reveal: press cancels the pending
+     advance, release advances — a quick tap is the same tap-to-continue
+     this drill always had (still behind SKIP_GUARD_MS), and a press kept
+     down keeps the screen (WCAG 2.2.1, the beat as a floor). Cleared by
+     the release/cancel handlers, nextStep and newRound; the visibility
+     re-arm checks it so a hidden tab cannot un-hold a held reveal. */
+  var holdPointer = null;
   /* A tap on the sheet skips the reveal — but the reveal opens the instant
      the FOURTH repeat is lifted, and by then the player is in a rhythm of
      press-the-dot, pull, lift, press-the-dot. That next press is the rhythm,
@@ -516,6 +523,7 @@
   function newRound() {
     clearTimeout(revealTimer);
     revealTimer = null;
+    holdPointer = null;
     /* A round whose fourth set is scored but still sitting on its reveal was
        already banked at that score — close it out on screen (coaching line and
        toast included) before the reset, so an impatient press is never a
@@ -751,13 +759,17 @@
     if (ev.pointerType === 'pen') lastPenAt = Date.now();
     if (!playing) return;
     if (revealing) {
-      /* tap-to-continue, but not the press that was already coming as part
-         of the drill's own rhythm (see SKIP_GUARD_MS) */
+      /* THE BEAT IS A FLOOR (WCAG 2.2.1): the press cancels the pending
+         advance and the RELEASE continues — a quick tap is the same
+         tap-to-continue as before, still behind SKIP_GUARD_MS so the press
+         that was already coming as part of the drill's own rhythm changes
+         nothing, and a press that stays down holds the reveal for as long
+         as the hand does. */
       ev.preventDefault();
       if (Date.now() - revealAt < SKIP_GUARD_MS) return;
       clearTimeout(revealTimer);
       revealTimer = null;
-      nextStep();
+      holdPointer = ev.pointerId;
       return;
     }
     if (!guide) return;
@@ -862,6 +874,13 @@
   }
 
   function endContact(ev) {
+    /* The release of a reveal-holding press continues — see the hold
+       branch in pointerdown; a reveal press never sets `drawing`. */
+    if (holdPointer !== null && ev.pointerId === holdPointer) {
+      holdPointer = null;
+      if (playing && revealing) nextStep();
+      return;
+    }
     if (!drawing || ev.pointerId !== activePointer) return;
     ev.preventDefault();
     drawing = false;
@@ -888,6 +907,16 @@
   window.addEventListener('pointerup', endContact);
 
   function cancelContact(ev) {
+    /* A CANCELLED holding press is not a deliberate lift — drop the hold
+       and hand the beat back in full, guard window included. */
+    if (holdPointer !== null && ev.pointerId === holdPointer) {
+      holdPointer = null;
+      if (playing && revealing && revealTimer === null) {
+        revealAt = Date.now();
+        revealTimer = setTimeout(nextStep, REVEAL_MS);
+      }
+      return;
+    }
     /* interrupted contact (system gesture etc.) — keep the ink already
        drawn, end the contact, no penalty */
     if (!drawing || ev.pointerId !== activePointer) return;
@@ -960,6 +989,7 @@
   function nextStep() {
     clearTimeout(revealTimer);
     revealTimer = null;
+    holdPointer = null;
     if (!revealing) return;
     setIdx += 1;
     /* the last set keeps its reveal painted — a round should end on the
@@ -1077,7 +1107,7 @@
       if (revealTimer !== null) { clearTimeout(revealTimer); revealTimer = null; }
       return;
     }
-    if (playing && revealing && revealTimer === null) {
+    if (playing && revealing && revealTimer === null && holdPointer === null) {
       /* the beat starts over, and so does the guard that stops the
          returning press from being read as "skip this" */
       revealAt = Date.now();
