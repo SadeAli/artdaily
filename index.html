@@ -30,10 +30,10 @@
      (?v=) and a drill loads them bare, so one file sits in the cache twice.
      That is the deliberate trade — versioning them from a drill would mean
      bumping ?v= inside 43 folders on every deploy. -->
-<!-- ?v=11 busts the CDN/browser cache on deploy: registry.js is served
+<!-- ?v=12 busts the CDN/browser cache on deploy: registry.js is served
      with a 4h max-age, so without this a returning visitor keeps an old
      catalogue. Bump V in every asset URL below when css/js changes. -->
-<link rel="stylesheet" href="css/style.css?v=11">
+<link rel="stylesheet" href="css/style.css?v=12">
 <!-- The footer newsletter's styles live HERE, not in css/style.css, because
      that file is the shared sketchbook theme every drill folder loads too and
      the form exists on this one page. Values mirror the .ask-* rules in it so
@@ -393,9 +393,9 @@
   <p class="fineprint">© SadeAli · free · no ads · no account needed</p>
 </footer>
 
-<script src="js/support-config.js?v=11"></script>
-<script src="js/registry.js?v=11"></script>
-<script src="js/main.js?v=11"></script>
-<script src="js/app.js?v=11"></script>
+<script src="js/support-config.js?v=12"></script>
+<script src="js/registry.js?v=12"></script>
+<script src="js/main.js?v=12"></script>
+<script src="js/app.js?v=12"></script>
 </body>
 </html>

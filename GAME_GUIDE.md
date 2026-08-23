@@ -135,6 +135,14 @@ where `window.ArtDaily` exists, the footer's `#supportLinks` slot gains an
 `<span id="supportLinks"></span>` in your footer nav (the template has it)
 and the link takes care of itself; there is nothing per-drill to write.
 
+`js/main.js` also owns the dark-extension callout: when a dark-mode
+browser extension is detected repainting the page (Dark Reader's own
+markers, or a colour probe that comes back rewritten), a small dismissible
+tip appears under `#themeToggle` pointing at the site's real dark mode.
+Top window only, light theme only, never after it has been dismissed
+(`sadeali-darkhint`, listed on /privacy/). Nothing per-drill to write —
+keep the `#themeToggle` button in the topbar and it takes care of itself.
+
 ## The first thirty seconds (the only thirty a beginner gives you)
 
 Almost every drill that loses a player loses them here, and almost never
