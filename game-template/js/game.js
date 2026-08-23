@@ -739,6 +739,35 @@
       ctx.beginPath();
       ctx.arc(t.x, t.y, zr, 0, Math.PI * 2);
       ctx.stroke();
+      /* THE SCALE, ALONG THE MISS. The ring alone runs off the sheet on
+         most phone reveals — measured at 61% of reveals part-cut at 390px,
+         69% at 340px, because targets are placed knowing only the AIM
+         ring's radius and the zero-ring is 2–4× bigger. Rather than shrink
+         the spread by insetting placement, extend the gap line's own
+         geometry: a dashed radial from the mark out to the zero radius,
+         ending in a short cross-tick at exactly the zero-point. It is the
+         same dashed-muted vocabulary as the ring — one scale, two marks —
+         and along the one direction that matters for THIS attempt it stays
+         readable even when the ring is three-quarters gone. Skipped for a
+         dead-centre mark: no direction, and no scale needed to read a 100.
+         For a zero-score tap beyond the ring the segment simply runs
+         inward from the mark to the ring — "zero is back here". */
+      var mdx = px - t.x, mdy = py - t.y;
+      var mmag = Math.hypot(mdx, mdy);
+      if (mmag > 1) {
+        var ux = mdx / mmag, uy = mdy / mmag;
+        var ex = t.x + ux * zr, ey = t.y + uy * zr;
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.lineTo(ex, ey);
+        ctx.stroke();
+        /* the cross-tick that says "the score runs out exactly here" */
+        var TICK = 6;
+        ctx.beginPath();
+        ctx.moveTo(ex - uy * TICK, ey + ux * TICK);
+        ctx.lineTo(ex + uy * TICK, ey - ux * TICK);
+        ctx.stroke();
+      }
       ctx.restore();
     }
     ctx.lineWidth = 2;
