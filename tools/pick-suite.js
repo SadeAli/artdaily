@@ -279,5 +279,31 @@ if (!migrated) {
   }
 }
 
+console.log('\n[F] level field: every live entry tagged, rotation served easiest-first');
+{
+  const { games } = loadRegistry();
+  check('every live entry has level 1|2|3',
+    games.every((g) => g.level === 1 || g.level === 2 || g.level === 3),
+    games.filter((g) => ![1, 2, 3].includes(g.level)).map((g) => g.slug).join(','));
+  /* a non-newcomer store: one past day logged, so today comes from the
+     formula — the checklist must list today's three easiest-first */
+  const lv = {};
+  games.forEach((g) => { lv[g.slug] = g.level; });
+  const yd = new Date(); yd.setDate(yd.getDate() - 1);
+  const yk = dateKey(yd);
+  const days = {}; days[yk] = { lines: 60 };
+  const p = boot({ 'artdaily-progress-v1': JSON.stringify(
+    { days, streak: { count: 1, last: yk, freezes: 0, longest: 1 }, skills: {}, badges: {}, seen: {}, picks: {} }) });
+  const slots = p.els.todayList.children.map((li) => li.children[0].getAttribute('data-slug'));
+  const lvs = slots.map((s) => lv[s]);
+  check('three rotation slots render', slots.length === 3, JSON.stringify(slots));
+  check('served easiest-first (levels non-decreasing)',
+    lvs.every((v, i) => i === 0 || lvs[i - 1] <= v), JSON.stringify(slots) + ' -> ' + JSON.stringify(lvs));
+  /* the newcomer's starter session keeps its hand-tuned order */
+  const q = boot({});
+  const startSlots = q.els.todayList.children.map((li) => li.children[0].getAttribute('data-slug'));
+  check('starter order untouched', JSON.stringify(startSlots) === JSON.stringify(['value-trap', 'colors', 'lines']), JSON.stringify(startSlots));
+}
+
 console.log('\n' + (failures ? failures + ' FAILURE(S)' : 'all green'));
 process.exit(failures ? 1 : 0);

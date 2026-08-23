@@ -44,9 +44,11 @@ step-by-step ship checklist). The folder name is the slug and the slug is
 the address — `/<slug>/` — so there is no URL to keep in sync anywhere.
 Finishing move: one new entry in `js/registry.js` — the card, category
 spread, jump nav, daily warmup and meters all derive from it. Each entry
-also carries `cat` (which chapter) and `tag` (how it's scored: `auto` pure
+also carries `cat` (which chapter), `tag` (how it's scored: `auto` pure
 math · `fit` comparison algorithm · `soft` curated answer key — shown as
-the little pencil mark on the card).
+the little pencil mark on the card) and `level` (1 tap-judgement · 2
+standard stroke · 3 construction — the day's warmup is served
+easiest-first off it; rubric in the registry header).
 
 ## What gets stored (and where)
 

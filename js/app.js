@@ -658,6 +658,16 @@
     ranked.forEach(function (g) {
       if (picked.length < 3 && picked.indexOf(g) === -1) picked.push(g);
     });
+    /* Serve the three easiest-first. Simulated day 2 used to OPEN the
+       checklist with Box Check — the drill the starter comment says a
+       first-timer must not meet first — and the player-foot offered it as
+       "next:" too. The sort changes only the ORDER of the same three (sort
+       is stable, so equal levels keep their pick order): membership, and
+       with it any future shared-triple comparability, is untouched. Runs
+       before the cache and before the pin is written, so a served day is
+       remembered in the order it was served. The starter session never
+       reaches this function and keeps its hand-tuned order. */
+    picked.sort(function (a, b) { return (a.level || 2) - (b.level || 2); });
     /* Cache today and the past; never a FUTURE day. Tomorrow's preview on the
        closing card is the one pick a round played TODAY really does change —
        today becomes tomorrow's "yesterday" in the recency bias above — and it
