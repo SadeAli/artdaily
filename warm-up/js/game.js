@@ -510,6 +510,12 @@
   var round = 0, setIdx = 0, setScores = [], state = 'idle';
   var strokes = [], cur = null, activePtr = null, activeType = '', dist = 0;
   var deadline = 0, rafId = 0, revealTimer = null, reveal = null, revealAt = 0;
+  /* The pointer currently HOLDING the reveal: press cancels the pending
+     advance, release advances — the quick tap-to-continue is unchanged
+     (still behind SKIP_GUARD_MS), and a press kept down keeps the screen
+     (WCAG 2.2.1, the beat as a floor). Cleared by endStroke, nextStep and
+     newRound; the visibility re-arm checks it. */
+  var holdPointer = null;
   /* A tap on the sheet skips the reveal — but this is a 25-second fast
      scribbling drill, so the clock almost always runs out MID-SCRIBBLE and
      the very next contact is the hand carrying on, not a request to skip.
@@ -562,6 +568,7 @@
   function newRound() {
     clearTimeout(revealTimer);
     revealTimer = null;
+    holdPointer = null;
     stopLoop();
     /* A round whose third set is scored but still sitting on its reveal was
        already banked at that score — close it out on screen (toast included)
@@ -885,13 +892,16 @@
   canvas.addEventListener('pointerdown', function (ev) {
     notePen(ev);
     if (state === 'reveal') {
-      /* tap-to-continue, but not the scribble that was already in flight
-         when the clock ran out (see SKIP_GUARD_MS) */
+      /* THE BEAT IS A FLOOR (WCAG 2.2.1): the press cancels the pending
+         advance and the RELEASE continues — the quick tap is unchanged
+         (still behind SKIP_GUARD_MS, so the scribble already in flight
+         when the clock ran out changes nothing), and a press kept down
+         holds the reveal for as long as the hand does. */
       ev.preventDefault();
       if (Date.now() - revealAt < SKIP_GUARD_MS) return;
       clearTimeout(revealTimer);
       revealTimer = null;
-      nextStep();
+      holdPointer = ev.pointerId;
       return;
     }
     if (state !== 'ready' && state !== 'run') return;
@@ -946,6 +956,23 @@
   });
 
   function endStroke(ev) {
+    /* The release of a reveal-holding press continues the round; this
+       handler serves pointercancel too, and a CANCELLED hold is not a
+       deliberate lift — it hands the beat back instead of advancing. */
+    if (holdPointer !== null && ev.pointerId === holdPointer) {
+      holdPointer = null;
+      if (state === 'reveal') {
+        if (ev.type === 'pointercancel') {
+          if (revealTimer === null) {
+            revealAt = Date.now();
+            revealTimer = setTimeout(nextStep, REVEAL_MS);
+          }
+        } else {
+          nextStep();
+        }
+      }
+      return;
+    }
     if (ev.pointerId !== activePtr) return;
     commitCur();
     draw();
@@ -1031,6 +1058,7 @@
   }
 
   function nextStep() {
+    holdPointer = null;
     if (state !== 'reveal') return;
     clearTimeout(revealTimer);
     revealTimer = null;
@@ -1123,7 +1151,7 @@
       if (revealTimer !== null) { clearTimeout(revealTimer); revealTimer = null; }
       return;
     }
-    if (state === 'reveal' && revealTimer === null) {
+    if (state === 'reveal' && revealTimer === null && holdPointer === null) {
       /* the beat starts over, and so does the guard that stops the
          returning contact from being read as "skip this" */
       revealAt = Date.now();

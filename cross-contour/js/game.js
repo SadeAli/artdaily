@@ -664,6 +664,11 @@
   var pending = [], pendingPress = null, pendingMissed = false, segStart = 0;
   var drawing = false, activePointer = null, activeType = '', lastPenAt = -Infinity;
   var revealing = null, revealTimer = null, roundResult = null;
+  /* The pointer currently HOLDING the reveal: press cancels the pending
+     advance, release advances — a quick tap is the drill's existing skip,
+     and a press kept down keeps the screen (WCAG 2.2.1, the beat as a
+     floor). Cleared by the release/cancel handlers, nextStep and newRound. */
+  var holdPointer = null;
   var formCache = null;
 
   /* ---- where the round's form comes from -------------------------------
@@ -1116,12 +1121,15 @@
     if (ev.pointerType === 'pen') lastPenAt = Date.now();
     if (!playing || !scene) return;
     if (revealing) {
-      /* a mark made while the reveal holds the sheet has nothing honest to
-         be judged against — the next wrap is not drawn yet. It skips the
-         hold instead, and is never counted. */
+      /* THE BEAT IS A FLOOR (WCAG 2.2.1): a mark made while the reveal
+         holds the sheet has nothing honest to be judged against — the next
+         wrap is not drawn yet — so the press cancels the pending advance
+         and the RELEASE skips instead: a quick tap is the skip this drill
+         always had, a press kept down holds the reveal. Never counted. */
       ev.preventDefault();
       clearTimeout(revealTimer);
-      nextStep();
+      revealTimer = null;
+      holdPointer = ev.pointerId;
       return;
     }
     /* palm rejection: a touch inside the pen's shadow is the hand resting */
@@ -1188,6 +1196,13 @@
   });
 
   function endContact(ev) {
+    /* The release of a reveal-holding press advances — a reveal press
+       never sets `drawing`, so this sits before that guard. */
+    if (holdPointer !== null && ev.pointerId === holdPointer) {
+      holdPointer = null;
+      if (playing && revealing) nextStep();
+      return;
+    }
     if (!drawing || ev.pointerId !== activePointer) return;
     ev.preventDefault();
     endContactState();
@@ -1211,6 +1226,15 @@
   window.addEventListener('pointerup', endContact);
 
   function cancelContact(ev) {
+    /* A CANCELLED holding press is not a deliberate lift — drop the hold
+       and hand the beat back in full. */
+    if (holdPointer !== null && ev.pointerId === holdPointer) {
+      holdPointer = null;
+      if (playing && revealing && revealTimer === null) {
+        revealTimer = setTimeout(nextStep, REVEAL_MS);
+      }
+      return;
+    }
     if (!drawing || ev.pointerId !== activePointer) return;
     endContactState();
     if (pending.length - segStart < MIN_SEGMENT) {
@@ -1266,6 +1290,7 @@
 
   function nextStep() {
     revealTimer = null;
+    holdPointer = null;
     if (!revealing || !playing) return;
     itemIdx += 1;
     if (itemIdx >= WRAPS_PER_ROUND) { finishRound(); return; }
@@ -1304,6 +1329,7 @@
   function newRound() {
     clearTimeout(revealTimer);
     revealTimer = null;
+    holdPointer = null;
     /* A round whose fourth wrap was scored but is still sitting on its
        reveal was already banked at that score — close it out on screen
        before the reset, so an impatient press is never a silent loss. */
