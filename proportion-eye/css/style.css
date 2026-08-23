@@ -485,3 +485,7 @@ a { color: inherit; }
   font-size: 1.1rem;
 }
 .btn-undo:disabled { opacity: 0.35; }
+
+/* the canvas sits above the fold, so a downward drag begun on the hint
+   line or the HUD band pulls-to-refresh and destroys the round */
+html, body { overscroll-behavior-y: contain; }

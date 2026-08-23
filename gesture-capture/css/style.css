@@ -566,3 +566,7 @@ a { color: inherit; }
   font-weight: 700;
   color: var(--muted);
 }
+
+/* the canvas sits above the fold, so a downward drag begun on the hint
+   line or the HUD band pulls-to-refresh and destroys the round */
+html, body { overscroll-behavior-y: contain; }

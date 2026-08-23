@@ -538,3 +538,7 @@ button.crit-row:focus-visible { outline: 2px solid var(--game-accent); outline-o
 .crit-meh  { color: var(--muted); font-weight: 700; }
 :root[data-theme="dark"] .crit-good { color: var(--mint); }
 :root[data-theme="dark"] .crit-bad  { color: var(--game-accent); }
+
+/* the canvas sits above the fold, so a downward drag begun on the hint
+   line or the HUD band pulls-to-refresh and destroys the round */
+html, body { overscroll-behavior-y: contain; }

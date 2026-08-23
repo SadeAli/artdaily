@@ -510,3 +510,7 @@ a { color: inherit; }
 .btn,
 .iconbtn,
 .backlink { touch-action: manipulation; }
+
+/* the canvas sits above the fold, so a downward drag begun on the hint
+   line or the HUD band pulls-to-refresh and destroys the round */
+html, body { overscroll-behavior-y: contain; }

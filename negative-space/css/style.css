@@ -476,3 +476,7 @@ a { color: inherit; }
 .gap-controls .btn { min-height: 44px; min-width: 96px; }
 /* the shared chrome buttons meet the same 44px touch bar here */
 .game-controls .btn { min-height: 44px; }
+
+/* the canvas sits above the fold, so a downward drag begun on the hint
+   line or the HUD band pulls-to-refresh and destroys the round */
+html, body { overscroll-behavior-y: contain; }
