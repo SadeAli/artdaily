@@ -1,6 +1,7 @@
 # Box Check 📦
 
-The 250 Box Challenge with a feedback loop. Freehand a 3D box one stroke
+A convergence check for freehand boxes — if you are grinding Drawabox's
+250 Box Challenge, this is that box with a feedback loop. Freehand a 3D box one stroke
 per edge; each stroke is reduced to its dominant line, the lines are
 sorted into three direction families by the vanishing point they share,
 and each family is scored on how honestly it converges. Every edge is

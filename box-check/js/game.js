@@ -1,6 +1,7 @@
 /* ============================================================
-   game.js — Box Check: the 250 Box Challenge with a feedback
-   loop. Freehand a box one stroke per edge; each stroke is
+   game.js — Box Check: a freehand box with a feedback loop
+   (the box Drawabox's 250 Box Challenge is made of).
+   Freehand a box one stroke per edge; each stroke is
    reduced to its dominant line (total-least-squares fit), the
    lines are sorted into 3 direction families by the VANISHING
    POINT they share, and each family is judged on how honestly
