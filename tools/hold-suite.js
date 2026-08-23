@@ -16,7 +16,8 @@
    to reach the filing path directly), game-template (the canonical
    hold-then-tap that every new drill copies) and superimposed (the
    pre-banking launch drill — its repeats are drawn as real pointer
-   strokes along the guide the drill itself painted). The harness is
+   strokes along the guide the drill itself painted) and lines (six
+   pulled strokes, filed synchronously at the sixth). The harness is
    generic; a sibling joins by adding a runner beside these. */
 'use strict';
 const fs = require('fs');
@@ -112,6 +113,7 @@ function boot(slug, ids) {
     onTheme() {},
     onInput() {},
     isPalm: () => false,
+    samples: (ev) => [ev],
     best: () => null,
     ease: (px) => px,
     startRadius: (band) => Math.max(34, band || 34),
@@ -403,9 +405,85 @@ function runSuperimposed() {
   ok(reports.every((sc) => isFinite(sc) && sc >= 0 && sc <= 100), 'every reported score is a real 0-100');
 }
 
+/* ============================================================
+   lines — files synchronously at the sixth stroke, reveal stays up
+   ============================================================ */
+function runLines() {
+  console.log('== lines: six pulled strokes, filed at the sixth, reveal immortal ==');
+  const IDS = ['gameCanvas', 'hint', 'toast', 'hudRound', 'hudScore', 'hudBest',
+    'btnRound', 'btnHow', 'howTo', 'inputMode'];
+  const p = boot('lines', IDS);
+  const { els, tick, reports, fire, doc } = p;
+  const canvas = els.gameCanvas;
+  const REVEAL = 1500; /* REVEAL_MS */
+  let pid = 200;
+
+  /* A and B are the two r=6 dots drawEndpoints fills, A first then B —
+     so scanning the drill's own arc() calls backwards, the last r=6 is B
+     and the one before it is A. */
+  function pairEnds() {
+    const arcs = canvas._ctx._arcs;
+    let b = null, a = null;
+    for (let i = arcs.length - 1; i >= 0; i--) {
+      if (arcs[i].r === 6) { if (!b) b = arcs[i]; else { a = arcs[i]; break; } }
+    }
+    return { a, b };
+  }
+
+  function pullStroke() {
+    const { a, b } = pairEnds();
+    const id = pid++;
+    fire(canvas, 'pointerdown', { pointerId: id, isPrimary: true, clientX: a.x, clientY: a.y });
+    for (let i = 1; i <= 24; i++) {
+      fire(canvas, 'pointermove', { pointerId: id, isPrimary: true,
+        clientX: a.x + (b.x - a.x) * i / 24, clientY: a.y + (b.y - a.y) * i / 24 });
+    }
+    fire(canvas, 'pointerup', { pointerId: id, isPrimary: true, clientX: b.x, clientY: b.y });
+  }
+  const revealing = () => els.hint.textContent.indexOf('tap for next') !== -1;
+  const roundDone = () => els.hint.textContent.indexOf('round done') !== -1;
+
+  /* -- round 1 -- */
+  pullStroke();
+  ok(revealing(), 'a pulled stroke scores and raises its reveal');
+  tick(REVEAL);
+  ok(!revealing(), 'the unheld reveal advances on the beat');
+  pullStroke();                                  /* stroke 2 */
+  fire(canvas, 'pointerdown', { pointerId: 95, isPrimary: true, clientX: 5, clientY: 5 });
+  tick(60000);
+  ok(revealing(), 'a held press keeps the reveal up (no guard window here by design)');
+  fire(canvas, 'pointerup', { pointerId: 95, isPrimary: true, clientX: 5, clientY: 5 });
+  ok(!revealing(), 'the release moves on');
+  pullStroke();                                  /* stroke 3 */
+  fire(canvas, 'pointerdown', { pointerId: 96, isPrimary: true, clientX: 5, clientY: 5 });
+  doc.hidden = true;
+  fire(canvas, 'pointercancel', { pointerId: 96, isPrimary: true, clientX: 5, clientY: 5 });
+  tick(60000);
+  ok(revealing(), 'a cancelled hold on a hidden tab parks the reveal');
+  doc.hidden = false;
+  fire(canvas, 'pointerdown', { pointerId: 97, isPrimary: true, clientX: 5, clientY: 5 });
+  fire(canvas, 'pointerup', { pointerId: 97, isPrimary: true, clientX: 5, clientY: 5 });
+  ok(!revealing(), 'a tap after returning advances it');
+  pullStroke(); tick(REVEAL);                    /* stroke 4 */
+  pullStroke(); tick(REVEAL);                    /* stroke 5 */
+  ok(reports.length === 0, 'nothing filed before the sixth stroke');
+  pullStroke();                                  /* stroke 6: files synchronously */
+  ok(reports.length === 1 && roundDone(), 'the sixth stroke files the round synchronously (reports=' + reports.length + ')');
+  tick(120000);
+  ok(reports.length === 1 && roundDone(), 'the round-end reveal stays up and never re-files');
+  els.btnRound.click();
+  ok(!roundDone(), 'new round deals fresh');
+  pullStroke();
+  for (let i = 0; i < 5; i++) { tick(REVEAL); pullStroke(); }
+  ok(reports.length === 2, 'round 2 files exactly once');
+
+  ok(reports.every((sc) => isFinite(sc) && sc >= 0 && sc <= 100), 'every reported score is a real 0-100');
+}
+
 runLightDirection();
 runTemplate();
 runSuperimposed();
+runLines();
 
 console.log('');
 if (failures) { console.log(failures + ' FAILURE(S)'); process.exit(1); }
