@@ -328,6 +328,24 @@ Non-negotiable for every drill:
   landing exactly on the centre line contradicts nothing — and note the
   printed word can stay *"most"*: a gate stronger than its sentence promises
   is the safe direction for the one line a player is asked to act on.
+- **Draw the habit you just named.** The bias line asserts something about five
+  attempts while the sheet shows only the fifth — the four the sentence is
+  about were wiped as each beat ended, so the drill's most valuable claim was
+  the one a player had to take on faith. The template's answer is the HABIT
+  PANEL (`drawHabitPanel`): at round end, every scored offset stacked on one
+  shared centre in a corner inset — the corner farthest from the last reveal's
+  target, never instead of that reveal, which is owed its correction like any
+  other. Scale-to-fit, deliberately: the panel answers "one habit or five
+  accidents?", a shape question; the per-attempt reveals already answered the
+  size question five times. Show it on a SCATTERED round too — when the bias
+  line has nothing to say, the picture of the scatter is itself the lesson
+  (steadiness, not aim). Draw from the same frozen offsets the reveal keeps
+  (`marks`), so a rotation redraws the same shape under the same sentence;
+  make earlier attempts quieter by COLOUR (`muted` vs the canvas accent),
+  never by alpha, so every dot still clears the 3:1 a meaning-bearing mark
+  owes; name the box once per sitting in the round-end sentence, gated on the
+  same fits-check the painter uses, so the sentence can never name a box the
+  sheet was too small to hold.
 - **If a reveal holds the screen, the drill must not score what lands on
   it.** A tap during the beat has nothing honest to be judged against —
   the next item is not drawn yet. Ignore it, never count it. Finish the
