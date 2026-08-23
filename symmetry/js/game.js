@@ -355,6 +355,12 @@
   var whiskers = [];
   var phase = 'idle'; /* idle | draw | reveal | done */
   var lastFigScore = 0, revealTimer = null;
+  /* The pointer currently HOLDING the reveal: press cancels the pending
+     advance, release advances — the quick tap-skip is unchanged, a press
+     kept down keeps the screen (WCAG 2.2.1, the beat as a floor). Cleared
+     by endStroke, nextFigure and newRound. The round is banked the moment
+     figure 3 is scored, so a lost release can only stall presentation. */
+  var holdPointer = null;
   var lastWords = ''; /* the last scored figure, in words, for the round-done line */
   /* the round's reported result, banked the moment the last figure is
      scored — finishRound() is presentation only (see scoreCurrent) */
@@ -437,6 +443,8 @@
 
   function newRound() {
     clearTimeout(revealTimer);
+    revealTimer = null;
+    holdPointer = null;
     /* "new round" pressed while the LAST figure's reveal is still up: the
        round was banked the moment that figure was scored, so this only
        closes it out on screen (toast + HUD) before resetting. */
@@ -502,6 +510,8 @@
   }
 
   function nextFigure() {
+    revealTimer = null;
+    holdPointer = null;
     figIdx += 1;
     if (figIdx < FIGURES_PER_ROUND) { makeFigure(figIdx); return; }
     finishRound();
@@ -737,11 +747,14 @@
 
   canvas.addEventListener('pointerdown', function (ev) {
     if (ev.pointerType === 'pen') lastPenAt = ev.timeStamp || 0;
-    /* a tap during the reveal skips the wait */
+    /* THE BEAT IS A FLOOR (WCAG 2.2.1): the press cancels the pending
+       advance and the RELEASE skips the wait — a quick tap is the skip
+       this drill always had, a press kept down holds the reveal. */
     if (phase === 'reveal') {
       ev.preventDefault();
       clearTimeout(revealTimer);
-      nextFigure();
+      revealTimer = null;
+      holdPointer = ev.pointerId;
       return;
     }
     if (phase !== 'draw') return;
@@ -825,6 +838,20 @@
   });
 
   function endStroke(ev) {
+    /* The release of a reveal-holding press advances; this handler serves
+       pointercancel too, and a CANCELLED hold hands the beat back rather
+       than advancing. A reveal press never sets activePointer. */
+    if (holdPointer !== null && ev.pointerId === holdPointer) {
+      holdPointer = null;
+      if (phase === 'reveal') {
+        if (ev.type === 'pointercancel') {
+          if (revealTimer === null) revealTimer = setTimeout(nextFigure, REVEAL_MS);
+        } else {
+          nextFigure();
+        }
+      }
+      return;
+    }
     if (ev.pointerId !== activePointer) return;
     activePointer = null;
     activeType = null;

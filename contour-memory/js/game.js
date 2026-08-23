@@ -477,6 +477,14 @@
      parked — see the visibilitychange handler */
   var showFrozen = -1;
   var reveal = null, revealTimer = null, revealAt = 0;
+  /* The pointer currently HOLDING the reveal: press cancels the pending
+     advance, release advances — the quick tap-skip is unchanged (still
+     behind the 350ms stray-touch window), a press kept down keeps the
+     screen (WCAG 2.2.1, the beat as a floor). Cleared by endStroke,
+     nextFigure and newRound (via its reveal teardown); the visibility
+     re-arm checks it. The round is banked in finishFigure before the last
+     reveal, so a lost release can only stall presentation. */
+  var holdPointer = null;
   /* the round's reported result, banked the moment the last figure is
      scored — finishRound() is presentation only (see finishFigure) */
   var roundResult = null;
@@ -571,6 +579,7 @@
     clearTimeout(revealTimer);
     revealTimer = null;   /* null means "no beat armed" — the visibility
                              handler re-arms on exactly that test */
+    holdPointer = null;
     clearTimeout(peekTimer);
     cancelAnimationFrame(rafId);
     rafId = 0;
@@ -705,6 +714,7 @@
   function nextFigure() {
     clearTimeout(revealTimer);
     revealTimer = null;
+    holdPointer = null;
     if (phase !== 'reveal') return;
     figIdx += 1;
     if (figIdx < FIGURES_PER_ROUND) { startFigure(); return; }
@@ -914,9 +924,16 @@
     ev.preventDefault();
     if (phase === 'idle') { newRound(); return; } /* first screen: tap to start */
     if (phase === 'reveal') {
-      /* tap to skip the reveal — but swallow taps in the first 350ms
-         so a stray touch right after "done ✓" never eats the feedback */
-      if (performance.now() - revealAt > 350) nextFigure();
+      /* THE BEAT IS A FLOOR (WCAG 2.2.1): the press cancels the pending
+         advance and the RELEASE skips — a quick tap is the skip this drill
+         always had, still behind the 350ms stray-touch window so a touch
+         right after "done ✓" never eats the feedback, and a press kept
+         down holds the reveal for as long as the hand does. */
+      if (performance.now() - revealAt > 350) {
+        clearTimeout(revealTimer);
+        revealTimer = null;
+        holdPointer = ev.pointerId;
+      }
       return;
     }
     if (phase !== 'draw' || peeking) return;
@@ -941,6 +958,23 @@
   });
 
   function endStroke(ev) {
+    /* The release of a reveal-holding press advances; this handler serves
+       pointercancel too, and a CANCELLED hold hands the beat back rather
+       than advancing. A reveal press never sets activePointer. */
+    if (holdPointer !== null && ev.pointerId === holdPointer) {
+      holdPointer = null;
+      if (phase === 'reveal') {
+        if (ev.type === 'pointercancel') {
+          if (revealTimer === null) {
+            revealAt = performance.now();
+            revealTimer = setTimeout(nextFigure, REVEAL_MS);
+          }
+        } else {
+          nextFigure();
+        }
+      }
+      return;
+    }
     if (activePointer === null || ev.pointerId !== activePointer) return;
     activePointer = null;
     activeType = '';
@@ -1074,7 +1108,7 @@
       cancelAnimationFrame(rafId);
       rafId = requestAnimationFrame(tickShow);
     }
-    if (playing && phase === 'reveal' && revealTimer === null) {
+    if (playing && phase === 'reveal' && revealTimer === null && holdPointer === null) {
       /* the beat starts over, and so does the tap-to-skip guard that
          stops the returning tap from eating it */
       revealAt = performance.now();
