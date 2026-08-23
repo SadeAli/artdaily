@@ -1117,3 +1117,39 @@ a.card:hover, a.card:focus-visible {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ===== Forced colors (Windows High Contrast) =====
+   The UA strips background-color, forces color/border-color to the system
+   palette and drops box-shadow — and almost everything stateful on this page
+   is a background: the habit strip's practised days, the paint tubes' fill,
+   the trend sparkline's SVG inks (SVG is NOT auto-adjusted, so the author
+   accents would sit unreadably on the user's own ground). Re-express each
+   state in a channel forced-colors preserves, using ONLY system colours —
+   never forced-color-adjust: none, which pins the author palette back in
+   over the palette the user chose, a strictly worse failure than the one
+   being fixed. Everything with a border already keeps its bounds (borders
+   survive, forced to the system ink); the toast/aria layers were always
+   words-first, so nothing here is load-bearing for meaning — it restores
+   the visual redundancy layer. Verified by inspection against the spec's
+   preserved-property list; no HCM environment on this machine, so nothing
+   below strays off the guaranteed channels. */
+@media (forced-colors: active) {
+  /* the 30-day habit strip: a practised day becomes a Highlight block, the
+     3-drill day adds a heavier double border — empty stays outline-only */
+  .rdot { background: Canvas; }
+  .rdot.r1 { background: Highlight; }
+  .rdot.r3 { background: Highlight; border: 2px solid CanvasText; }
+
+  /* the paint tubes: gradients may not paint at all in forced mode; a
+     Highlight block is a system colour and therefore legal */
+  .meter-fill { background: Highlight; transition: none; }
+
+  /* trend sparklines: SVG keeps author colours in forced mode, so hand it
+     the system inks explicitly */
+  .trend-dot { fill: CanvasText; }
+  .trend-base { stroke: GrayText; }
+
+  /* the checklist's done state: the ✓/☐ glyph already carries it without
+     colour; a doubled border makes the row itself say it too */
+  .today-slot.done { border-style: double; border-width: 3px; }
+}
