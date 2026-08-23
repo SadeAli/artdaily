@@ -599,6 +599,12 @@
   var playing = false, phase = 'aim';   /* 'aim' | 'reveal' | 'done' */
 
   var reveal = null, revealTimer = null;
+  /* The player pressed during the reveal: the auto-advance is
+     cancelled and the screen is theirs until they press again (the
+     beat-is-a-floor rule in the pointer handler). Distinct from a
+     PARKED timer (hidden tab), so the visibilitychange re-arm below
+     never un-holds a held reveal. */
+  var revealHeld = false;
   /* How many reveals this SITTING has shown. NEVER reset by
      newRound(): the screen that needs the long beat and the one-off
      naming of the tolerance band is the player's FIRST reveal, which
@@ -624,6 +630,7 @@
     clearTimeout(revealTimer);
     revealTimer = null;
     reveal = null;
+    revealHeld = false;
   }
 
   /* ---- the two SDK knobs, which measure different things ----
@@ -1072,10 +1079,9 @@
   }
 
   canvas.addEventListener('pointerdown', function (ev) {
-    /* A second finger must not fight the first, and a press that lands
-       while a reveal holds the screen has nothing to adjust — the next
-       ball is not drawn yet. Ignored, never counted against them. */
-    if (!playing || phase !== 'aim' || !item || dragId !== null || ev.isPrimary === false) return;
+    /* A second finger must not fight the first — and may not hold or
+       advance a reveal either. Ignored, never counted against them. */
+    if (dragId !== null || ev.isPrimary === false) return;
     /* Only a press that MEANS "here". A right-click is a pointerdown
        like any other — primary pointer, real coordinates — so an
        unguarded handler would move the rail wherever the cursor sat
@@ -1085,6 +1091,28 @@
     /* palm rejection: a pen always beats a palm that landed first */
     if (ev.pointerType === 'pen') lastPenAt = Date.now();
     else if (ev.pointerType === 'touch' && Date.now() - lastPenAt < 700) return;
+    /* THE BEAT IS A FLOOR, NOT A DEADLINE (WCAG 2.2.1, Timing
+       Adjustable). The reveal is where this drill does its teaching —
+       two balls to compare and a band to read — and a timed advance
+       wipes it for anyone who reads slower than the budget. The budget
+       stays (it is the pacing for the player who never touches
+       anything), but a press during an item reveal now HOLDS it: the
+       first press cancels the pending advance, the next one asks for
+       the next ball. Never scored, never counted — a held reveal is
+       the player reading, and the drill is not timed. Sits BELOW the
+       palm guard, so a resting wrist can neither hold nor advance;
+       requires `playing`, so the round-end reveal keeps its own rule
+       (it stays until “new round”). The first reveal's band note
+       teaches the gesture in the same breath — see lockItem. */
+    if (playing && phase === 'reveal' && reveal) {
+      ev.preventDefault();
+      if (revealTimer !== null) { clearTimeout(revealTimer); revealTimer = null; revealHeld = true; return; }
+      nextItem();
+      return;
+    }
+    /* A press that lands outside play has nothing to adjust — the
+       next ball is not drawn yet. Ignored, never counted against them. */
+    if (!playing || phase !== 'aim' || !item) return;
     ev.preventDefault();
     var g = geo();
     if (!g) return;
@@ -1194,7 +1222,12 @@
        an unexplained new mark is jargon that happens to be drawn
        instead of typed. Named once, on the only screen where it is new. */
     hint.textContent = itemWords(reveal.words, acc) + '.' +
-      (seen ? '' : ' The dotted band over the rail is where the score runs out.');
+      /* The hold gesture is taught in the same breath as the band, on
+         the one screen where both are new. FIRST_REVEAL_MS is a hand-
+         tuned constant, not measured from this line — but the beat is
+         a floor now, so a reader the longer sentence outlasts simply
+         taps to keep it. */
+      (seen ? '' : ' The dotted band over the rail is where the score runs out. A tap holds this screen; another moves on.');
     draw();
     /* The last ball does NOT wait on the beat: finishing is
        synchronous, so report() can never be raced by "new round"
@@ -1205,6 +1238,7 @@
 
   function nextItem() {
     revealTimer = null;
+    revealHeld = false;
     if (!playing) return;      /* the round was abandoned while the reveal was up */
     reveal = null;
     phase = 'aim';
@@ -1227,7 +1261,7 @@
       if (revealTimer !== null) { clearTimeout(revealTimer); revealTimer = null; }
       return;
     }
-    if (playing && reveal && revealTimer === null) {
+    if (playing && reveal && revealTimer === null && !revealHeld) {
       revealTimer = setTimeout(nextItem, reveal.beat || REVEAL_MS);
     }
   });

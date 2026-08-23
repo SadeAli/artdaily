@@ -579,6 +579,12 @@
      full rather than letting it run out off-screen — see the
      visibilitychange handler */
   var revealJob = null;
+  /* The player pressed during a stroke's reveal: the auto-advance is
+     cancelled and the sheet is theirs until they press again (the
+     beat-is-a-floor rule in pointerdown). Distinct from a PARKED beat
+     (hidden tab, which keeps revealJob), so the visibilitychange re-arm
+     below never un-holds a held reveal. */
+  var revealHeld = false;
 
   function armReveal(fn) {
     revealJob = fn;
@@ -594,6 +600,7 @@
     clearTimeout(revealTimer);
     revealTimer = null;
     revealJob = null;
+    revealHeld = false;
   }
   var att = null;          /* the attempt buffer — see newAttempt() */
   var cursor = null;       /* {x, y} live weight readout while drawing */
@@ -1071,9 +1078,29 @@
   }
 
   canvas.addEventListener('pointerdown', function (ev) {
-    if (!playing || revealing) return;
+    if (!playing) return;
     if (ev.pointerType === 'pen' && (ev.pressure || 0) > 0) penPressureSeen = true;
     if (!penWins(ev)) return;                       /* palm, while a pen is live */
+    /* THE BEAT IS A FLOOR, NOT A DEADLINE (WCAG 2.2.1, Timing Adjustable).
+       The reveal is the only place this drill ever shows the delta it just
+       charged for, and a timed advance wipes it for anyone reading slower
+       than the 1.7s beat — a screen reader behind the hint line, a slow
+       reader, someone who looked away. The beat stays (it is the pacing
+       for the player who never touches anything), but a press during a
+       stroke's reveal now HOLDS it: the first press cancels the pending
+       advance, the next one asks for the next stroke. Never scored, never
+       counted — a held reveal is the player reading, and the drill is not
+       timed. Sits BELOW penWins, so a resting palm can neither hold nor
+       advance; requires `playing`, so the round-end reveal keeps its own
+       rule (it stays until "new round", its timer only swapping the hint
+       for the round's coaching). */
+    if (revealing) {
+      ev.preventDefault();
+      if (ev.isPrimary === false) return;   /* second finger of a two-finger tap */
+      if (revealTimer !== null) { cancelReveal(); revealHeld = true; return; }
+      nextStep();
+      return;
+    }
     if (drawing) {
       /* a pen landing on top of a touch stroke evicts it and takes over,
          discarding what the palm drew in this pass */
@@ -1236,6 +1263,7 @@
     if (!revealing || strokeIdx + 1 >= STROKES_PER_ROUND) return;
     strokeIdx += 1;
     revealing = null;
+    revealHeld = false;
     newAttempt();
     makeSpec(strokeIdx);
     hint.textContent = strokeLabel() + ' — ' + modeHint();
@@ -1306,7 +1334,7 @@
       if (revealTimer !== null) { clearTimeout(revealTimer); revealTimer = null; }
       return;
     }
-    if (revealing && revealJob && revealTimer === null) armReveal(revealJob);
+    if (revealing && revealJob && revealTimer === null && !revealHeld) armReveal(revealJob);
   });
 
   window.addEventListener('resize', function () {

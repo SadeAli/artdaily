@@ -497,6 +497,12 @@
   var round = 0, itemIdx = 0, scores = [], diffs = [];
   var geo = null, ratio = 0, playing = false, phase = 'aim';
   var reveal = null, revealTimer = null;
+  /* The player pressed during a cylinder's reveal: the auto-advance is
+     cancelled and the sheet is theirs until they press again (the
+     beat-is-a-floor rule in pointerdown). Cleared by every path that
+     clears the reveal, so a held flag can never outlive the reveal it
+     held. */
+  var revealHeld = false;
   /* Long enough to read the truth over your own end, short enough that
      four of them do not turn a coffee-break drill into a slideshow. */
   var REVEAL_MS = 850;
@@ -530,6 +536,7 @@
     clearTimeout(revealTimer);
     revealTimer = null;
     reveal = null;
+    revealHeld = false;
   }
 
   /* ---- image space → canvas, recomputed from the canvas each paint ---- */
@@ -772,6 +779,7 @@
 
   function nextItem() {
     revealTimer = null;
+    revealHeld = false;
     if (!playing) return;   /* the round was abandoned while the reveal was up */
     reveal = null;
     startItem();
@@ -871,13 +879,30 @@
 
   canvas.addEventListener('pointerdown', function (ev) {
     /* Second finger of a two-finger tap must not fight the first, and a
-       press that lands while a reveal holds the screen has nothing to
-       adjust — ignored, never counted against them. */
-    if (!playing || phase !== 'aim' || !geo || dragId !== null || ev.isPrimary === false) return;
+       press that lands while the round-end reveal holds the screen has
+       nothing to adjust — ignored, never counted against them. */
+    if (!playing || (phase !== 'aim' && phase !== 'reveal') || !geo || dragId !== null || ev.isPrimary === false) return;
     /* palm rejection: a pen always beats a palm that landed first */
     if (ev.pointerType === 'pen') lastPenAt = Date.now();
     else if (ev.pointerType === 'touch' && Date.now() - lastPenAt < 500) return;
     ev.preventDefault();
+    /* THE BEAT IS A FLOOR, NOT A DEADLINE (WCAG 2.2.1, Timing Adjustable).
+       The reveal is the only place this drill draws the true end over
+       yours, and 850ms of it wipes that lesson for anyone reading slower
+       than the beat — a screen reader behind the hint line, a slow
+       reader, someone who looked away. The beat stays (it is the pacing
+       for the player who never touches anything), but a press during a
+       cylinder's reveal now HOLDS it: the first press cancels the pending
+       advance, the next one asks for the next cylinder. Never scored,
+       never counted — a held reveal is the player reading, and the drill
+       is not timed. Sits BELOW the palm guard, so a resting wrist can
+       neither hold nor advance; `playing` and phase 'reveal' keep the
+       round-end reveal on its own rule (it stays until "new round"). */
+    if (phase === 'reveal') {
+      if (revealTimer !== null) { clearTimeout(revealTimer); revealTimer = null; revealHeld = true; return; }
+      nextItem();
+      return;
+    }
     var p = placement();
     if (!p) return;
     dragId = ev.pointerId;

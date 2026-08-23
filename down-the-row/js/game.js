@@ -487,12 +487,19 @@
      uniform scale and the projection stays the projection. */
   var round = 0, itemIdx = 0, scores = [], marks = [], item = null, playing = false;
   var reveal = null, revealTimer = null;
+  /* The player pressed during a fence's reveal: the auto-advance is
+     cancelled and the sheet is theirs until they press again (the
+     beat-is-a-floor rule in pointerdown). Cleared by every path that
+     clears the reveal, so a held flag can never outlive the reveal it
+     held. */
+  var revealHeld = false;
   var lastScore = null;      /* the round-end number, for the sheet's name only */
 
   function clearReveal() {
     clearTimeout(revealTimer);
     revealTimer = null;
     reveal = null;
+    revealHeld = false;
   }
 
   /* A stroke shorter than this is a stray press, not a post: nothing is
@@ -574,6 +581,7 @@
 
   function nextItem() {
     revealTimer = null;
+    revealHeld = false;
     if (!playing) return;   /* the round was abandoned while the reveal was up */
     reveal = null;
     item = pickScene(itemRandom(itemIdx), itemIdx);
@@ -842,18 +850,39 @@
   }
 
   canvas.addEventListener('pointerdown', function (ev) {
-    /* A second finger must not start a second post, and neither may a
-       press that lands while a reveal still holds the screen — the next
-       fence is not drawn yet, so there is nothing it could honestly be
-       judged against. Ignored, never counted against them. */
-    if (!playing || !item || reveal || ev.isPrimary === false) return;
-    if (activeId !== null) return;
     /* Only a press that MEANS "here". A right-click is a pointerdown like
        any other — primary pointer, real coordinates — so unguarded it
        burns an item and scores wherever the cursor sat while the context
        menu opens over the reveal explaining it. `button` is 0 for a
        finger and for a pen's tip, so this costs touch and pen nothing. */
     if (ev.button > 0) return;
+    /* THE BEAT IS A FLOOR, NOT A DEADLINE (WCAG 2.2.1, Timing Adjustable).
+       The reveal is where this drill does its teaching — the answer,
+       drawn — and a timed advance wipes it for anyone who reads slower
+       than the beat: a screen reader behind the hint line, a slow reader,
+       someone who looked away. The beat stays (it is the pacing for the
+       player who never touches anything), but a press during a fence's
+       reveal now HOLDS it: the first press cancels the pending advance,
+       the next one asks for the next fence. Never scored, never counted —
+       a held reveal is the player reading, and the drill is not timed.
+       Requires `playing`, so the round-end reveal keeps its own rule (it
+       stays until "new round"); the palm test keeps a resting wrist from
+       holding or advancing (typeof-guarded because the SDK caches
+       independently of this file — the same warm-SDK/cold-file split
+       newRound's fallback answers for). */
+    if (playing && reveal && ev.isPrimary !== false) {
+      ev.preventDefault();
+      if (typeof ArtDaily.isPalm === 'function' && ArtDaily.isPalm(ev)) return;
+      if (revealTimer !== null) { clearTimeout(revealTimer); revealTimer = null; revealHeld = true; return; }
+      nextItem();
+      return;
+    }
+    /* A second finger must not start a second post, and neither may a
+       press that lands while a reveal still holds the screen — the next
+       fence is not drawn yet, so there is nothing it could honestly be
+       judged against. Ignored, never counted against them. */
+    if (!playing || !item || reveal || ev.isPrimary === false) return;
+    if (activeId !== null) return;
     ev.preventDefault();
     activeId = ev.pointerId;
     try { canvas.setPointerCapture(ev.pointerId); } catch (e) {}
@@ -954,8 +983,11 @@
        taught — it just happens to be drawn instead of typed. Named once,
        on the one screen where it is new. */
     hint.textContent = postWords(reveal.words, score) + '.' +
+      /* The hold gesture is taught in the same breath as the ticks, on the
+         one screen where both are new — and the beat it names is now a
+         floor, so the reader this line runs long for can hold it. */
       (round === 1 && itemIdx === 1
-        ? ' The short ticks on the guide lines are where the score runs out.' : '');
+        ? ' The short ticks on the guide lines are where the score runs out. A press holds this screen; another moves on.' : '');
     draw();
     /* The last post does NOT wait on the beat: finishing is synchronous,
        so report() can never be raced by "new round" landing during the

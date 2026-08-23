@@ -729,6 +729,11 @@
      with it — a rotated phone or a pen plugged in mid-reveal must not
      redraw the picture under a number that cannot move. */
   var reveal = null, revealTimer = null;
+  /* The player pressed during the reveal: the auto-advance is cancelled and
+     the screen is theirs until they press again (the beat-is-a-floor rule
+     in the pointerdown handler). Distinct from a PARKED timer (hidden tab),
+     so the visibilitychange re-arm below never un-holds a held reveal. */
+  var revealHeld = false;
   /* How many reveals this SITTING has shown. NEVER reset by newRound(): the
      screen that needs the long beat and the one-off naming is the player's
      FIRST reveal, which is not the same thing as round one's first frame
@@ -737,13 +742,14 @@
      understand yet. */
   var revealsSeen = 0;
   var lastScore = null;
-  var NOTE_SCALE = 'The dotted circle is where the score runs out.';
+  var NOTE_SCALE = 'The dotted circle is where the score runs out. A press holds this screen; another moves on.';
   var NOTE_LEVER = 'The thin line is the lever: the middle is the pivot and the dot is where everything else pulls.';
 
   function clearReveal() {
     clearTimeout(revealTimer);
     revealTimer = null;
     reveal = null;
+    revealHeld = false;
   }
 
   /* Says the verb and the goal in the words for the things actually drawn —
@@ -1114,6 +1120,25 @@
        still down. Ignored, never counted against them, and a finger-only
        player is never once tested against a pen. */
     if (ArtDaily.isPalm(ev)) return;
+    /* THE BEAT IS A FLOOR, NOT A DEADLINE (WCAG 2.2.1, Timing Adjustable).
+       The reveal is where the drill does its teaching, and a timed advance
+       wipes it for anyone who reads slower than the budget — a screen
+       reader behind 200wpm, a slow reader, someone who looked away. The
+       budget stays (it is the pacing for the player who never touches
+       anything), but a press during a frame's reveal now HOLDS it: the
+       first press cancels the pending advance, the next one asks for the
+       next frame. Never scored, never counted — a held reveal is the
+       player reading, and the drill is not timed. Sits BELOW the palm
+       guard, so a resting wrist can neither hold nor advance; requires
+       `playing`, so the round-end reveal keeps its own rule (it stays
+       until "new round"). The first reveal's scale note teaches the
+       gesture in the same breath, and revealBeat budgets the longer note
+       automatically. */
+    if (playing && reveal && ev.isPrimary !== false) {
+      if (revealTimer !== null) { clearTimeout(revealTimer); revealTimer = null; revealHeld = true; return; }
+      nextItem();
+      return;
+    }
     /* Second finger of a two-finger tap must not move the shape, and neither
        may a press that lands while the reveal still owns the sheet — the
        next frame is not drawn yet, so there is nothing it could honestly be
@@ -1270,13 +1295,14 @@
     /* `|| REVEAL_MS` because a setTimeout handed `undefined` fires on the
        next tick — a reveal built without a beat would come back from a
        hidden tab and vanish instantly, which is this bug wearing a disguise. */
-    if (playing && reveal && revealTimer === null) {
+    if (playing && reveal && revealTimer === null && !revealHeld) {
       revealTimer = setTimeout(nextItem, reveal.beat || REVEAL_MS);
     }
   });
 
   function nextItem() {
     revealTimer = null;
+    revealHeld = false;
     if (!playing) return;     /* the round was abandoned while the reveal was up */
     reveal = null;
     item = makeItem(itemIdx);

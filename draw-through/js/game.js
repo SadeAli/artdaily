@@ -591,6 +591,12 @@
      number stayed put, and the picture would then argue with the number. */
   var reveal = null;
   var revealTimer = null;
+  /* The player pressed during the reveal: the auto-advance is cancelled
+     and the screen is theirs until they press again (the beat-is-a-floor
+     rule in the pointerdown handler). Distinct from a PARKED timer
+     (hidden tab), so the visibilitychange re-arm below never un-holds a
+     held reveal. */
+  var revealHeld = false;
   /* How many reveals this SITTING has shown. NEVER reset by newRound():
      the screen that needs the long beat and the one-off naming is the
      player's FIRST reveal, which is not the same thing as round one's
@@ -604,6 +610,7 @@
     clearTimeout(revealTimer);
     revealTimer = null;
     reveal = null;
+    revealHeld = false;
   }
 
   /* Two different SDK knobs, and mixing them up quietly inverts the
@@ -1028,17 +1035,38 @@
   }
 
   canvas.addEventListener('pointerdown', function (ev) {
+    /* Only a press that MEANS "here". A right-click is a pointerdown like
+       any other — primary pointer, real coordinates — so an unguarded
+       handler would start a loop and open the context menu over it. Same
+       for a middle-click and a pen's barrel button; `button` is 0 for a
+       finger and for a pen's tip, so this costs touch and pen nothing.
+       Tested FIRST, because it is the one press whose browser default is
+       still wanted. */
+    if (ev.button > 0) return;
+    /* THE BEAT IS A FLOOR, NOT A DEADLINE (WCAG 2.2.1, Timing Adjustable).
+       The reveal is where the drill does its teaching, and a timed advance
+       wipes it for anyone who reads slower than the budget — a screen
+       reader behind 200wpm, a slow reader, someone who looked away. The
+       budget stays (it is the pacing for the player who never touches
+       anything), but a press during a loop's reveal now HOLDS it: the
+       first press cancels the pending advance, the next one asks for the
+       next ellipse. Never scored, never counted — a held reveal is the
+       player reading, and the drill is not timed. Requires `playing`, so
+       the round-end reveal keeps its own rule (it stays until "new
+       round"). The first reveal's corridor note teaches the gesture in
+       the same breath, and revealBeat budgets the longer line
+       automatically. */
+    if (playing && reveal && ev.isPrimary !== false) {
+      ev.preventDefault();
+      if (revealTimer !== null) { clearTimeout(revealTimer); revealTimer = null; revealHeld = true; return; }
+      nextItem();
+      return;
+    }
     /* Second finger of a two-finger tap must not start a second loop, and
        neither may a press that lands while the reveal is still up — there
        is nothing it could honestly be judged against yet. Ignored, never
        counted against them: nothing is punished for a UI reason. */
     if (!playing || !guideF || reveal || activeId !== null || ev.isPrimary === false) return;
-    /* Only a press that MEANS "here". A right-click is a pointerdown like
-       any other — primary pointer, real coordinates — so an unguarded
-       handler would start a loop and open the context menu over it. Same
-       for a middle-click and a pen's barrel button; `button` is 0 for a
-       finger and for a pen's tip, so this costs touch and pen nothing. */
-    if (ev.button > 0) return;
     ev.preventDefault();
     var p = posIn(canvasRect(), ev);
     /* LIFTING IS FREE. A trackpad has a short throw and a phone is small,
@@ -1131,7 +1159,11 @@
        drawn instead of written — named once, on the spot, on the only
        screen where it is new. */
     var line = loopWords(words, acc) + '.' +
-      ((seen || !m.ok) ? '' : ' The bold line is your three laps averaged; the dotted pair is where they stop scoring.');
+      /* The hold gesture is taught in the same breath as the corridor, on
+         the one screen where both are new; revealBeat budgets the longer
+         line automatically, so the extra words buy their own reading
+         time. */
+      ((seen || !m.ok) ? '' : ' The bold line is your three laps averaged; the dotted pair is where they stop scoring. A press holds this screen; another moves on.');
 
     reveal = m.ok ? {
       cxf: g ? g.cx / (W || 1) : 0.5,
@@ -1169,13 +1201,14 @@
       if (revealTimer !== null) { clearTimeout(revealTimer); revealTimer = null; }
       return;
     }
-    if (playing && reveal && revealTimer === null) {
+    if (playing && reveal && revealTimer === null && !revealHeld) {
       revealTimer = setTimeout(nextItem, reveal.beat || REVEAL_MS);
     }
   });
 
   function nextItem() {
     revealTimer = null;
+    revealHeld = false;
     if (!playing) return;     /* the round was abandoned while the reveal was up */
     reveal = null;
     nextGuide(loopIdx);
