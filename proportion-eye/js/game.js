@@ -281,6 +281,15 @@
   var round = 0, itemIdx = 0, itemScores = [], item = null, playing = false;
   var drawing = false, strokePts = [], activeId = null, activeType = '', revealing = null;
   var graceTimer = null, revealTimer = null;
+  /* The pointer currently HOLDING the reveal: press cancels the pending
+     advance, release advances — the quick tap-to-move-on keeps its exact
+     old meaning (still behind the 350ms swallow, so the release that just
+     placed a tick cannot skip its own feedback), and a press kept down
+     holds the lesson for as long as the hand does (WCAG 2.2.1, the beat as
+     a floor). Cleared by the release/cancel handlers, nextStep and
+     newRound. The round is banked in scoreItem the moment the last item
+     scores, so nothing on this path can file or lose a score. */
+  var holdPointer = null;
   var roundResult = null; /* ArtDaily.report() result, set the moment
                              the 6th item scores — so a completed round
                              is reported even if "new round" cuts the
@@ -455,6 +464,8 @@
   function newRound() {
     clearTimeout(graceTimer);
     clearTimeout(revealTimer);
+    revealTimer = null;
+    holdPointer = null;
     graceTimer = null;
     round += 1;
     itemIdx = 0;
@@ -798,10 +809,17 @@
     if (!playing || !item) return;
     dropRect();                  /* a fresh gesture re-measures the sheet */
     if (revealing) {
-      /* tap to move on — the reveal is the lesson, so it is read at the
-         player's pace, not the timer's (350ms swallow so the release
-         that just placed a tick cannot skip its own feedback) */
-      if (performance.now() - revealing.at > 350) nextStep();
+      /* THE BEAT IS A FLOOR (WCAG 2.2.1): the press cancels the pending
+         advance and the RELEASE moves on — a quick tap is the tap-to-
+         move-on this drill always had, still behind the 350ms swallow so
+         the release that just placed a tick cannot skip its own feedback,
+         and a press that stays down holds the reveal for as long as the
+         hand does. */
+      if (performance.now() - revealing.at > 350) {
+        clearTimeout(revealTimer);
+        revealTimer = null;
+        holdPointer = ev.pointerId;
+      }
       return;
     }
     if (!claimAllowed(ev)) return;
@@ -833,6 +851,13 @@
   });
 
   function endTick(ev) {
+    /* The release of a reveal-holding press moves on — a reveal press
+       never sets `drawing`, so this sits before that guard. */
+    if (holdPointer !== null && ev.pointerId === holdPointer) {
+      holdPointer = null;
+      if (playing && revealing) nextStep();
+      return;
+    }
     if (!drawing || ev.pointerId !== activeId) return;
     ev.preventDefault();
     drawing = false;
@@ -876,6 +901,15 @@
   window.addEventListener('pointerup', endTick);
 
   function cancelTick(ev) {
+    /* A CANCELLED holding press is not a deliberate lift — drop the hold
+       and hand the beat back in full, never on a hidden tab. */
+    if (holdPointer !== null && ev && ev.pointerId === holdPointer) {
+      holdPointer = null;
+      if (playing && revealing && revealTimer === null && !document.hidden) {
+        revealTimer = setTimeout(nextStep, REVEAL_MS);
+      }
+      return;
+    }
     /* interrupted stroke (system gesture etc.) — reset, no penalty */
     if (!drawing) return;
     if (ev && ev.pointerId !== undefined && ev.pointerId !== activeId) return;
@@ -958,6 +992,7 @@
   }
 
   function nextStep() {
+    holdPointer = null;
     if (!revealing) return;
     clearTimeout(revealTimer);
     revealing = null;

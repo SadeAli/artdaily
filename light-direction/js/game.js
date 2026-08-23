@@ -278,6 +278,17 @@
   var guess = { az: 90, el: 40 };
   var touched = false;       /* has the player moved their sun yet? */
   var revealTimer = null, revealAt = 0;
+  /* The report, banked the moment the last item scores (see lockIn) so no
+     timer, press or "new round" can ever swallow a finished round — the
+     same pre-banking every sibling drill ships. finishRound is
+     presentation-only when this is set. */
+  var roundResult = null;
+  /* The pointer currently HOLDING the reveal: press cancels the pending
+     advance (behind SKIP_LOCK_MS, unchanged), release advances — the quick
+     tap keeps its exact old meaning and a press kept down keeps the screen
+     (WCAG 2.2.1, the beat as a floor). Cleared by endDrag, advance and
+     newRound. */
+  var holdPointer = null;
   var confirmTimer = null, confirmNew = false;
 
   /* ---- where a round's content comes from ------------------------------
@@ -840,7 +851,8 @@
   }
 
   /* ============================================================
-     round flow — ArtDaily.report fires exactly once, in finishRound
+     round flow — ArtDaily.report fires exactly once, banked in lockIn
+     the moment the sixth item scores; finishRound presents it
      ============================================================ */
 
   /* Moving focus off a control that is about to be disabled. Called only
@@ -886,6 +898,13 @@
 
   function newRound() {
     clearTimeout(revealTimer);
+    revealTimer = null;
+    holdPointer = null;
+    /* "new round" pressed while the LAST reveal is still up: the round was
+       banked in lockIn, so close it out on screen first, exactly as the
+       sibling drills do — report() has already happened, so this cannot
+       double-count (finishRound nulls roundResult and sets phase 'done'). */
+    if (phase === 'reveal' && roundResult) finishRound();
     clearConfirm();
     round += 1;
     idx = 0;
@@ -997,6 +1016,14 @@
     lastErr = angleBetweenDeg(lightVec(guess.az, guess.el), lightVec(it.az, it.el));
     lastAzErr = Math.abs(signedDeltaDeg(guess.az, it.az));
     scores.push(itemScore(lastErr));
+    /* The round is complete right here, not after the last reveal —
+       report now so a timer, an impatient press or "new round" can never
+       swallow it. finishRound() presents this result. */
+    if (scores.length === ITEMS_PER_ROUND) {
+      roundResult = ArtDaily.report(roundScore(scores));
+      hudScore.textContent = String(roundResult.score);
+      hudBest.textContent = roundResult.best === null ? '–' : String(roundResult.best);
+    }
     phase = 'reveal';
     revealAt = Date.now();
     setBtn(idx === ITEMS_PER_ROUND - 1 ? 'finish' : 'next', '→');
@@ -1016,6 +1043,8 @@
 
   function advance() {
     clearTimeout(revealTimer);
+    revealTimer = null;
+    holdPointer = null;
     if (phase !== 'reveal') return;
     if (idx >= ITEMS_PER_ROUND - 1) { finishRound(); return; }
     idx += 1;
@@ -1025,7 +1054,12 @@
   function finishRound() {
     phase = 'done';
     clearConfirm();
-    var res = ArtDaily.report(roundScore(scores));
+    /* Presentation only in the normal flow — the score was banked in
+       lockIn. The fallback report is defensive dead code kept for the
+       same reason the siblings keep theirs: a path that somehow arrives
+       unbanked must still file rather than lose the round. */
+    var res = roundResult || ArtDaily.report(roundScore(scores));
+    roundResult = null;
     hudScore.textContent = String(res.score);
     hudBest.textContent = res.best === null ? '–' : String(res.best);
     setBtn('finished', '✓');
@@ -1152,7 +1186,17 @@
     if (ev.pointerType === 'pen') lastPenAt = Date.now();
     else if (ev.pointerType === 'touch' && Date.now() - lastPenAt < 500) return;
     if (phase === 'reveal') {
-      if (Date.now() - revealAt >= SKIP_LOCK_MS) advance();
+      /* THE BEAT IS A FLOOR (WCAG 2.2.1): the press cancels the pending
+         advance and the RELEASE moves on — a quick tap keeps its exact
+         old meaning, still behind SKIP_LOCK_MS, and a press kept down
+         holds the two small forms side by side for as long as the hand
+         does, which is the entire lesson. The palm guard above already
+         returned for a touch in the pen's shadow. */
+      if (Date.now() - revealAt >= SKIP_LOCK_MS) {
+        clearTimeout(revealTimer);
+        revealTimer = null;
+        holdPointer = ev.pointerId;
+      }
       return;
     }
     if (phase !== 'aim') return;
@@ -1194,6 +1238,23 @@
   });
 
   function endDrag(ev) {
+    /* The release of a reveal-holding press advances; this handler serves
+       pointercancel too, and a CANCELLED hold hands the beat back rather
+       than advancing — never on a hidden tab. */
+    if (holdPointer !== null && ev && ev.pointerId === holdPointer) {
+      holdPointer = null;
+      if (phase === 'reveal') {
+        if (ev.type === 'pointercancel') {
+          if (revealTimer === null && autoAdvances() && !document.hidden) {
+            revealAt = Date.now();
+            revealTimer = setTimeout(advance, REVEAL_MS);
+          }
+        } else {
+          advance();
+        }
+      }
+      return;
+    }
     if (ev && dragId !== null && ev.pointerId !== dragId) return;
     drag = null;
     dragId = null;
