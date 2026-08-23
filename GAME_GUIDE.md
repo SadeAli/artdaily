@@ -105,17 +105,29 @@ store the page keeps the record in, so stay on keys nobody else owns: the
 page holds `artdaily-progress-v1`, the SDK holds `artdaily-best-<slug>` and
 `artdaily-input`, and both read `sadeali-theme`.
 
-One more thing the SDK paints that a drill author should know exists: on a
-**standalone** page, after the first finished round of a sitting, it injects
-a one-line `.daily-note` under the hand-off bar — *"round 1 is today's round
-— the same one for everyone playing today. a fresh one lands at midnight."*
-— but only if the drill has dealt from
-`dailyRandom` / `roundRandom(1)` this sitting, so a drill with no daily seed
-never carries a claim that is false for it. It is a plain `<p>`, deliberately
-not a live region (the hint stays the one spoken channel), and its styles
-ride in from the SDK as token-based CSS, not from your `css/style.css`. Do
-not write your own "come back tomorrow" copy into a drill; this line is the
-one place it lives, so it can stay true (and be retired) everywhere at once.
+Two more things the SDK paints that a drill author should know exist, both
+on **standalone** pages only, both injected after the first finished round
+of a sitting, in the order `[hand-off bar][copy the sheet][daily note]`:
+
+- **The daily note** — a one-line `.daily-note`: *"round 1 is today's round
+  — the same one for everyone playing today. a fresh one lands at
+  midnight."* Only if the drill has dealt from `dailyRandom` /
+  `roundRandom(1)` this sitting, so a drill with no daily seed never
+  carries a claim that is false for it. A plain `<p>`, deliberately not a
+  live region (the hint stays the one spoken channel). Do not write your
+  own "come back tomorrow" copy into a drill; this line is the one place
+  it lives, so it can stay true (and be retired) everywhere at once.
+- **The sheet share** — a `.sheetshare` row with one `.btn`, "copy the
+  sheet 📋": composites `canvas.game-canvas` with the drill's `.game-name`,
+  the round's score and the drill URL burned into a footer strip, and hands
+  it over the native share sheet (phones), the clipboard (desktop) or a
+  download (fallback). Only where a `canvas.game-canvas` with `toBlob`
+  exists — a DOM-based drill gets no button rather than a broken one. So:
+  keep the canvas's class and the `.game-name` on the `<h1>`, and know that
+  whatever your reveal leaves on the canvas is what a player shares.
+
+Styles for both ride in from the SDK as token-based CSS, not from your
+`css/style.css`; the suite for all of it is `tools/sdk-suite.js`.
 
 ## The first thirty seconds (the only thirty a beginner gives you)
 

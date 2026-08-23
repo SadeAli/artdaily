@@ -402,21 +402,177 @@ window.ArtDaily = (function () {
      Styled from here, not from the 44 vendored per-drill stylesheets —
      they have drifted into more than a dozen variants and only tokens can
      be assumed. Colours are tokens, so both themes come for free. */
+  /* Token-based styles for everything this file injects. One copy, from
+     here, never from the 44 vendored per-drill stylesheets — they have
+     drifted into more than a dozen variants and only the tokens can be
+     assumed. */
+  function injectChromeCss() {
+    if (document.getElementById('artdailyDailyNoteCss')) return;
+    var css = document.createElement('style');
+    css.id = 'artdailyDailyNoteCss';
+    css.textContent =
+      '.daily-note{margin:8px 0 0;font-size:0.78rem;color:var(--muted);}' +
+      '.sheetshare{margin:10px 0 0;}';
+    (document.head || document.documentElement).appendChild(css);
+  }
+
   var dailyNoteDone = false;
 
   function showDailyNote(bar) {
     if (dailyNoteDone || !dailyDealt || !bar || !bar.parentNode) return;
     dailyNoteDone = true;
-    if (!document.getElementById('artdailyDailyNoteCss')) {
-      var css = document.createElement('style');
-      css.id = 'artdailyDailyNoteCss';
-      css.textContent = '.daily-note{margin:8px 0 0;font-size:0.78rem;color:var(--muted);}';
-      (document.head || document.documentElement).appendChild(css);
-    }
+    injectChromeCss();
     var note = document.createElement('p');
     note.className = 'daily-note';
     note.textContent = 'round 1 is today’s round — the same one for everyone playing today. a fresh one lands at midnight.';
     bar.parentNode.insertBefore(note, bar.nextSibling);
+  }
+
+  /* ============================================================
+     THE SHEET SHARE — "copy the sheet".
+
+     The reveal — the truth drawn over the attempt — is the most shareable
+     thing on the site and it could not leave the browser. One button,
+     injected here so all canvas drills get it at once: composites the
+     drill's canvas with the drill's name, the round's score and the URL
+     burned into a footer strip, then hands it over the best route the
+     device has — the native share sheet with a file (phones), the
+     clipboard as an image (desktop), a download as the fallback.
+
+     Guards, all deliberate:
+     - Standalone pages only (it rides the hand-off paint), and only where
+       a canvas.game-canvas exists with toBlob — the eight DOM-based colour
+       drills get no button rather than a broken one.
+     - The canvas is same-origin and procedurally drawn, so the composite
+       can never taint; drawImage is still try/caught because a foreign
+       embed could violate that assumption.
+     - A cancelled native share does nothing — cancelling must not punish
+       with a surprise download.
+     - The button's label flashes the outcome ("copied ✓" / "saved ✓") and
+       restores; it is a name change on the focused control, the same
+       pattern the hub's copy-card button uses, never a live region. */
+  var shareWired = false;
+  var shareFlashTimer = null;
+
+  function shareLabel(btn, word, glyphCh) {
+    btn.textContent = word + (glyphCh ? ' ' : '');
+    if (glyphCh) btn.appendChild(glyph(glyphCh));
+  }
+
+  function flashShareLabel(btn, word, glyphCh) {
+    shareLabel(btn, word, glyphCh);
+    if (shareFlashTimer) clearTimeout(shareFlashTimer);
+    shareFlashTimer = setTimeout(function () {
+      shareFlashTimer = null;
+      shareLabel(btn, 'copy the sheet', '📋');
+    }, 1600);
+  }
+
+  function composeSheet(cnv) {
+    var W = cnv.width, H = cnv.height;
+    if (!W || !H) return null;
+    var fh = Math.max(64, Math.round(W * 0.11));
+    var out = document.createElement('canvas');
+    out.width = W; out.height = H + fh;
+    var ctx = out.getContext && out.getContext('2d');
+    if (!ctx) return null;
+    var cs = null;
+    try { cs = getComputedStyle(document.documentElement); } catch (e) {}
+    function tok(name, fb) {
+      var v = cs ? String(cs.getPropertyValue(name)).trim() : '';
+      return v || fb;
+    }
+    var dark = document.documentElement.dataset.theme === 'dark';
+    var card = tok('--card', dark ? '#221D16' : '#FDFAF1');
+    var bg = tok('--bg', dark ? '#191511' : '#F6EFDF');
+    var ink = tok('--ink', dark ? '#EFE7D7' : '#33291E');
+    var muted = tok('--muted', dark ? '#A39682' : '#766850');
+    var line = tok('--line', dark ? '#443A2C' : '#D9CBB2');
+    ctx.fillStyle = card;
+    ctx.fillRect(0, 0, W, H);
+    try { ctx.drawImage(cnv, 0, 0); } catch (e) { return null; }
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, H, W, fh);
+    ctx.strokeStyle = line;
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, H + 0.5); ctx.lineTo(W, H + 0.5); ctx.stroke();
+    var pad = Math.round(fh * 0.3);
+    var name = '';
+    var h1 = document.querySelector('.game-name');
+    if (h1) name = String(h1.textContent || '').replace(/\s+/g, ' ').trim();
+    if (!name) name = slug || 'Art Daily';
+    ctx.fillStyle = ink;
+    ctx.font = '700 ' + Math.round(fh * 0.36) + 'px Caveat, "Segoe Print", "Comic Sans MS", cursive';
+    ctx.fillText(name + ' — ' + lastRound + '/100', pad, H + Math.round(fh * 0.46), W - pad * 2);
+    ctx.fillStyle = muted;
+    ctx.font = '600 ' + Math.round(fh * 0.22) + 'px ui-monospace, Menlo, Consolas, monospace';
+    ctx.fillText(HOME.replace(/^https?:\/\//, '') + '/' + slug + '/', pad, H + Math.round(fh * 0.82), W - pad * 2);
+    return out;
+  }
+
+  function downloadSheet(btn, blob, name) {
+    try {
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = name;
+      (document.body || document.documentElement).appendChild(a);
+      a.click();
+      if (a.remove) a.remove();
+      setTimeout(function () { try { URL.revokeObjectURL(url); } catch (e) {} }, 4000);
+      flashShareLabel(btn, 'saved', '✓');
+    } catch (e) { flashShareLabel(btn, 'couldn’t copy', null); }
+  }
+
+  function deliverSheet(btn, blob) {
+    var fname = 'artdaily-' + (slug || 'drill') + '-' + lastRound + '.png';
+    var file = null;
+    try { file = new File([blob], fname, { type: 'image/png' }); } catch (e) {}
+    try {
+      if (file && navigator.share && navigator.canShare &&
+          navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file] }).then(
+          function () { flashShareLabel(btn, 'shared', '✓'); },
+          function () { /* cancelled — do nothing, punish nobody */ });
+        return;
+      }
+    } catch (e) {}
+    try {
+      if (navigator.clipboard && typeof navigator.clipboard.write === 'function' &&
+          typeof ClipboardItem === 'function') {
+        navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(
+          function () { flashShareLabel(btn, 'copied', '✓'); },
+          function () { downloadSheet(btn, blob, fname); });
+        return;
+      }
+    } catch (e) {}
+    downloadSheet(btn, blob, fname);
+  }
+
+  function shareSheet(btn, cnv) {
+    var out = composeSheet(cnv);
+    if (!out) { flashShareLabel(btn, 'couldn’t copy', null); return; }
+    out.toBlob(function (blob) {
+      if (!blob) { flashShareLabel(btn, 'couldn’t copy', null); return; }
+      deliverSheet(btn, blob);
+    }, 'image/png');
+  }
+
+  function ensureSheetShare(bar) {
+    if (shareWired || !bar || !bar.parentNode) return;
+    var cnv = document.querySelector('canvas.game-canvas');
+    if (!cnv || typeof cnv.toBlob !== 'function') return;
+    shareWired = true;
+    injectChromeCss();
+    var row = document.createElement('p');
+    row.className = 'sheetshare';
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn';
+    shareLabel(btn, 'copy the sheet', '📋');
+    btn.addEventListener('click', function () { shareSheet(btn, cnv); });
+    row.appendChild(btn);
+    bar.parentNode.insertBefore(row, bar.nextSibling);
   }
 
   /* A decorative glyph, hidden from assistive tech. "→" and "✓" are read
@@ -464,10 +620,12 @@ window.ArtDaily = (function () {
     if (announced) bar.removeAttribute('role');
     announced = true;
     /* After the bar, so the first thing under the controls is still the
-       route home; sits outside the bar so the sweep of the bar's leading
-       children can never eat it. Once per sitting, and only on a drill
-       that really dealt from the day. */
+       route home; both sit outside the bar so the sweep of the bar's
+       leading children can never eat them. Each is once-guarded, and the
+       call order puts the share button between the bar and the note:
+       [hand-off][copy the sheet][daily note]. */
     showDailyNote(bar);
+    ensureSheetShare(bar);
     if (delivered) {
       /* The rule the paint below already obeys, finally applied to the ONE
          branch that still broke it: removing the focused element drops focus
