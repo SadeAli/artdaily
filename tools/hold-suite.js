@@ -13,8 +13,10 @@
    clicks, keydown, pointer press/release/cancel on the reveal.
 
    Covered today: light-direction (the riskiest refactor — its timer used
-   to reach the filing path directly). The harness is generic; a sibling
-   joins by adding a runner beside runLightDirection(). */
+   to reach the filing path directly) and game-template (the canonical
+   hold-then-tap that every new drill copies: held reveals, hidden-tab
+   parking, synchronous filing on the last tap). The harness is generic;
+   a sibling joins by adding a runner beside these two. */
 'use strict';
 const fs = require('fs');
 const vm = require('vm');
@@ -104,7 +106,10 @@ function boot(slug, ids) {
     init() {},
     theme: () => 'light',
     onTheme() {},
+    onInput() {},
+    isPalm: () => false,
     best: () => null,
+    ease: (px) => px,
     startRadius: (band) => Math.max(34, band || 34),
     roundRandom(round) {
       let s = (round * 2654435761) >>> 0;
@@ -124,7 +129,8 @@ function boot(slug, ids) {
     createElement: (t) => (t === 'canvas' ? makeCanvas() : makeEl(t)),
     createTextNode: (v) => ({ nodeType: 3, textContent: String(v) }),
     activeElement: null,
-    addEventListener() {},
+    _listeners: {},
+    addEventListener(t, fn) { (this._listeners[t] = this._listeners[t] || []).push(fn); },
   };
   const sandbox = {
     document: doc,
@@ -154,7 +160,13 @@ function boot(slug, ids) {
     }
   }
 
-  return { els, tick, reports, fire, doc, sandbox };
+  /* flip document.hidden and speak visibilitychange, like a real tab switch */
+  function setHidden(h) {
+    doc.hidden = h;
+    (doc._listeners.visibilitychange || []).forEach((fn) => fn({}));
+  }
+
+  return { els, tick, reports, fire, doc, sandbox, setHidden };
 }
 
 /* ============================================================
@@ -245,7 +257,65 @@ function runLightDirection() {
   ok(reports.every((s) => isFinite(s) && s >= 0 && s <= 100), 'every reported score is a real 0-100');
 }
 
+/* ============================================================
+   game-template — the canonical hold-then-tap every new drill copies
+   ============================================================ */
+function runTemplate() {
+  console.log('== game-template: the hold-then-tap pattern itself ==');
+  const IDS = ['gameCanvas', 'hint', 'toast', 'hudRound', 'hudScore', 'hudBest',
+    'btnRound', 'btnHow', 'howTo', 'inputMode'];
+  const p = boot('game-template', IDS);
+  const { els, tick, reports, fire, setHidden } = p;
+  const canvas = els.gameCanvas;
+  const BEAT = 20000; /* > any revealBeat (the first reveal is MEASURED from its own words — 27 words = 8.1s here) */
+
+  const tap = () => { fire(canvas, 'pointerdown', { pointerId: 1, button: 0, isPrimary: true, clientX: 300, clientY: 200 }); };
+  const inReveal = () => els.hint.textContent.indexOf('Target ') !== 0;
+  const roundDone = () => els.hint.textContent.indexOf('Round done') !== -1;
+
+  /* -- round 1: taps + timer; the last tap files synchronously -- */
+  tap();                            /* item 1 scored, reveal up */
+  ok(inReveal(), 'a tap scores and raises the reveal');
+  fire(canvas, 'pointerdown', { pointerId: 9, button: 2 });
+  ok(inReveal() && reports.length === 0, 'a right-click is ignored, not counted');
+  tick(BEAT);                       /* timer advances */
+  ok(!inReveal(), 'the beat advances an unheld reveal');
+  for (let i = 0; i < 3; i++) { tap(); tick(BEAT); }
+  tap();                            /* fifth tap: finishRound runs synchronously */
+  ok(reports.length === 1, 'the fifth tap files the round synchronously (reports=' + reports.length + ')');
+  tick(120000);
+  ok(reports.length === 1 && roundDone(), 'the round-end reveal stays up and never re-files');
+
+  /* -- round 2: held reveal survives a tab switch; parked reveal comes back -- */
+  els.btnRound.click();
+  tap();                            /* reveal up, timer armed */
+  tap();                            /* press during reveal: HOLDS (cancels timer) */
+  tick(60000);
+  ok(inReveal(), 'a press holds the reveal open indefinitely');
+  setHidden(true);
+  setHidden(false);
+  tick(60000);
+  ok(inReveal(), 'a tab switch does not re-arm a HELD reveal');
+  tap();                            /* the next press advances */
+  ok(!inReveal(), 'the next press advances the held reveal');
+  tap();                            /* item 2 scored, timer armed */
+  setHidden(true);                  /* hidden: timer parked */
+  tick(60000);
+  ok(inReveal(), 'a hidden tab parks the reveal instead of spending it');
+  setHidden(false);                 /* visible again: beat handed back in full */
+  ok(inReveal(), 'the beat restarts only on return');
+  tick(BEAT);
+  ok(!inReveal(), 'and then advances normally');
+  tap(); tick(BEAT);
+  tap(); tick(BEAT);
+  tap();
+  ok(reports.length === 2, 'round 2 filed exactly once through hold + park (reports=' + reports.length + ')');
+
+  ok(reports.every((sc) => isFinite(sc) && sc >= 0 && sc <= 100), 'every reported score is a real 0-100');
+}
+
 runLightDirection();
+runTemplate();
 
 console.log('');
 if (failures) { console.log(failures + ' FAILURE(S)'); process.exit(1); }
