@@ -1937,13 +1937,15 @@
      this round stands — reporting twice would be a lie about how many
      drills were done. */
   ArtDaily.onInput(function () {
-    if (phase === 'result' && strokes.length) {
-      var segs = [], i;
-      for (i = 0; i < strokes.length; i++) segs.push(strokes[i].seg);
-      result = analyzeBox(segs, scoreOpts());
-      if (spotlight >= result.families.length) spotlight = -1;
-      renderCritique(result);
-    }
+    /* HISTORY IS NOT RE-JUDGED — the same rule the template's dotted
+       ring states: the checked box on screen was scored under the
+       profile in hand when "check it" was pressed, and its score is
+       already banked. Re-analyzing here rewrote the critique rows at a
+       different tolerance under an unchanged HUD score, dropped the
+       spotlighted row's pressed state, and left the hint naming a
+       family whose numbers had just changed. The new profile simply
+       applies to the next check. The repaint stays — the input chip in
+       the HUD reads the live profile. */
     draw();
   });
 
