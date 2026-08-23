@@ -1219,7 +1219,7 @@
     var dpr = window.devicePixelRatio || 1;
     var moved = (W === 0) || Math.abs(w - W) >= 4;
     if (!moved && dpr === fitDpr) return false;
-    var oldW = W;
+    var oldW = W, oldH = H;
     if (moved) {
       W = w;
       /* taller sheet on phones: at 0.7 a 330px phone got a 231px drill
@@ -1232,7 +1232,14 @@
     canvas.height = Math.round(H * dpr);
     canvas.style.height = H + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    if (moved && oldW > 0) rescaleStrokes(W / oldW);
+    /* Uniform, and by the TIGHTER axis. Width alone was the factor here,
+       but the aspect ratio changes across the 520px breakpoint (0.85
+       portrait, 0.7 landscape) — so a portrait box rescaled through a
+       rotation grew faster than the sheet's height and its bottom fifth
+       landed below the canvas. min() keeps the whole drawing on the
+       sheet; uniform keeps every angle what the hand drew, which is the
+       thing the scorer reads. */
+    if (moved && oldW > 0 && oldH > 0) rescaleStrokes(Math.min(W / oldW, H / oldH));
     return true;
   }
 
