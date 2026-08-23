@@ -38,5 +38,21 @@
       slot.appendChild(dot);
       slot.appendChild(a);
     });
+
+    /* "Embed this drill" — drill pages only. The SDK is the discriminator:
+       drill pages load it before this file, the hub and the prose pages
+       never load it at all. The link routes to the for-teachers walkthrough,
+       which holds the one-line iframe snippet and the swap-the-address
+       instruction — the drill page itself stays free of teacher chrome. */
+    if (window.ArtDaily) {
+      var edot = document.createElement('span');
+      edot.textContent = '·';
+      edot.setAttribute('aria-hidden', 'true');
+      var elink = document.createElement('a');
+      elink.href = 'https://artdaily.sadeali.com/for-teachers/#embedHead';
+      elink.textContent = 'Embed this drill';
+      slot.appendChild(edot);
+      slot.appendChild(elink);
+    }
   }
 })();
