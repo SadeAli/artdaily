@@ -1672,6 +1672,15 @@
   });
 
   canvas.addEventListener('pointermove', function (ev) {
+    /* the palm clock must not go blind between edges: a pen that is
+       moving (or hovering — hover fires pointermove with no press) keeps
+       touch locked out, exactly as superimposed and lines already do.
+       Refreshed BEFORE the active-pointer gate, or it only ticks while
+       an edge is in flight — the between-edges moment is the one where
+       the repositioning heel actually lands. */
+    if (ev.pointerType === 'pen') {
+      lastPenAt = (typeof ev.timeStamp === 'number') ? ev.timeStamp : Date.now();
+    }
     if (ev.pointerId !== activePointer || !live) return;
     ev.preventDefault();
     /* a 120Hz pen delivers several positions per dispatched event, and
