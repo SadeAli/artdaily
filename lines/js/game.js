@@ -325,6 +325,12 @@
   var round = 0, strokeIdx = 0, scores = [], biases = [], pair = null, playing = false;
   var reported = false;     /* this round has already reached ArtDaily.report */
   var drawing = false, stroke = [], ghosts = [], revealing = null, revealTimer = null;
+  /* The pointer currently HOLDING the reveal: press cancels the pending
+     advance, release advances — a quick tap is the same skip this drill
+     always had, and a press kept down keeps the screen (WCAG 2.2.1, the
+     beat as a floor). Cleared by the release/cancel handlers, nextStep and
+     newRound. */
+  var holdPointer = null;
   var activePointer = null, activeType = null;
   var lastPenAt = -1e9;     /* palm rejection: a finger waits after the pen speaks */
   var pending = null;       /* a stroke that stopped short, waiting to be carried on */
@@ -423,6 +429,8 @@
 
   function newRound() {
     clearTimeout(revealTimer);
+    revealTimer = null;
+    holdPointer = null;
     round += 1;
     strokeIdx = 0;
     scores = [];
@@ -694,10 +702,14 @@
     if (ev.pointerType === 'pen') lastPenAt = ev.timeStamp || 0;
     if (!playing) return;
     if (revealing) {
-      /* tap-to-continue: skip the rest of the reveal hold */
+      /* THE BEAT IS A FLOOR (WCAG 2.2.1): the press cancels the pending
+         advance and the RELEASE continues — a quick tap is byte-for-byte
+         the tap-to-continue this drill always had, and a press that stays
+         down holds the reveal for as long as the hand does. */
       ev.preventDefault();
       clearTimeout(revealTimer);
-      nextStep();
+      revealTimer = null;
+      holdPointer = ev.pointerId;
       return;
     }
     if (!pair) return;
@@ -777,6 +789,14 @@
   });
 
   function endStroke(ev) {
+    /* The release of a reveal-holding press continues the round — see the
+       hold branch in pointerdown. Before the drawing guard, because a
+       reveal press never sets `drawing`. */
+    if (holdPointer !== null && ev.pointerId === holdPointer) {
+      holdPointer = null;
+      if (playing && revealing) nextStep();
+      return;
+    }
     if (!drawing || ev.pointerId !== activePointer) return;
     if (ev.cancelable) ev.preventDefault();
     drawing = false;
@@ -867,6 +887,15 @@
   canvas.addEventListener('lostpointercapture', endStroke);
 
   function cancelStroke(ev) {
+    /* A CANCELLED holding press is not a deliberate lift — drop the hold
+       and hand the beat back in full rather than advancing. */
+    if (holdPointer !== null && ev.pointerId === holdPointer) {
+      holdPointer = null;
+      if (playing && revealing && revealTimer === null) {
+        revealTimer = setTimeout(nextStep, REVEAL_MS);
+      }
+      return;
+    }
     /* interrupted stroke (system gesture etc.) — reset, no penalty */
     if (!drawing || ev.pointerId !== activePointer) return;
     abortStroke();
@@ -877,6 +906,7 @@
   window.addEventListener('pointercancel', cancelStroke);
 
   function nextStep() {
+    holdPointer = null;
     if (!revealing) return;
     ghosts.push({ points: revealing.points, a: revealing.a, b: revealing.b });
     if (ghosts.length > GHOSTS_KEPT) ghosts.shift();
