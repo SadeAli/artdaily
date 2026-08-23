@@ -1,2 +1,7 @@
 .claude/
 node_modules/
+
+# secrets — the analytics token lives OUTSIDE the repo (~/.config/sadeali/); tokens must never be committable
+.env
+*.env
+*.token
