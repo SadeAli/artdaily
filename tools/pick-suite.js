@@ -217,7 +217,11 @@ if (!migrated) {
     const p = boot({ 'artdaily-progress-v1': JSON.stringify(fixture.store) });
     const rec = p.els.record.textContent.replace(/\s+/g, ' ');
     check('record still shows 60 full warmups', /60\s*full warmups/.test(rec), rec.slice(0, 200));
-    /* trigger one save so the in-memory backfill persists */
+    /* the backfill persists AT BOOT — a view-only visitor's history is
+       pinned before any future deploy can re-answer it */
+    const viewOnly = p.stored();
+    check('pins persisted with no round recorded', viewOnly && viewOnly.picks &&
+      Object.keys(viewOnly.picks).length >= 60, String(viewOnly && viewOnly.picks && Object.keys(viewOnly.picks).length));
     p.fire('colors', 90);
     const s = p.stored();
     check('picks map persisted', s && s.picks && typeof s.picks === 'object');

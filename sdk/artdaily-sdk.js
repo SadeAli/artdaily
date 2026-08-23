@@ -420,6 +420,8 @@ window.ArtDaily = (function () {
 
   function showDailyNote(bar) {
     if (dailyNoteDone || !dailyDealt || !bar || !bar.parentNode) return;
+    /* Midnight passed since the deal: the sentence would be false. */
+    if (dailyDealtDay !== dateKey(new Date())) return;
     dailyNoteDone = true;
     injectChromeCss();
     var note = document.createElement('p');
@@ -927,9 +929,14 @@ window.ArtDaily = (function () {
      may be shown at all — a drill that never deals from the day (warm-up,
      hatch-ramp, box-check) must never be described as daily. */
   var dailyDealt = false;
+  /* The local date the deal happened on. The daily note must not print
+     "round 1 is TODAY's round" about a round dealt before midnight — a
+     sitting that crosses the day forfeits the note instead of lying. */
+  var dailyDealtDay = null;
 
   function dailyRandom(stream) {
     dailyDealt = true;
+    if (!dailyDealtDay) dailyDealtDay = dateKey(new Date());
     var h = mixString(todaySeed() | 0, contentSlug());
     if (stream !== undefined && stream !== null) h = mixString(h | 0, stream);
     return makeRng(h, true);

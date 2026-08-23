@@ -208,21 +208,41 @@ console.log('\n[1] healthy storage — three rounds, starter trio');
   check('disk holds 3 scores', days && today && Object.keys(days[today]).length === 3, JSON.stringify(days));
 }
 
-/* Scenario 2: storage denied from the start — the wave-19 reproduction. */
+/* Scenario 2: storage denied from the start — the wave-19 reproduction,
+   plus the promise-copy gates: nothing on the page may promise that
+   tomorrow remembers today while the fallback is on. */
 console.log('\n[2] storage denied — three rounds must all stick in memory');
 {
   const p = boot({ denySet: true });
   p.fire('value-trap', 70);
+  check('day-one note suppressed (it promises persistence)', p.els.todayNote.hidden, p.els.todayNote.textContent);
+  check('no streak-promise tail in the done line', !/keeps the streak|longest run/.test(p.doneLine()), p.doneLine());
   p.fire('colors', 80);
   p.fire('lines', 90);
   const slots = p.slots();
   check('3 slots all done', slots.length === 3 && slots.every(s => s[1]), JSON.stringify(slots));
   check('done line says 3/3', /3\/3 done/.test(p.doneLine()), p.doneLine());
   check('closing card shown', p.closingShown());
+  const streakLine = p.els.closing.children.filter(c => c.className === 'closing-streak')[0];
+  check('closing streak line says the true thing, not "come back tomorrow"',
+    streakLine && /isn’t letting the page save/.test(streakLine.textContent) &&
+    !/come back tomorrow/.test(streakLine.textContent), streakLine && streakLine.textContent);
   check('streak chip = 1 day', /1 day/.test(p.streakChip() || ''), String(p.streakChip()));
   check('disk untouched', p.storedDays() === null);
   const note = p.toastWrites.filter(t => /not letting the page save/.test(t));
   check('honest toast queued exactly once', note.length === 1, JSON.stringify(p.toastWrites));
+}
+
+/* Scenario 2b: healthy storage still gets the day-one bridge. */
+console.log('\n[2b] healthy storage — the day-one note and closing promise still render');
+{
+  const p = boot();
+  p.fire('value-trap', 70);
+  check('day-one note shown', !p.els.todayNote.hidden && /day two makes it a streak/.test(p.els.todayNote.textContent), p.els.todayNote.textContent);
+  p.fire('colors', 80);
+  p.fire('lines', 90);
+  const streakLine = p.els.closing.children.filter(c => c.className === 'closing-streak')[0];
+  check('closing line promises tomorrow', streakLine && /come back tomorrow/.test(streakLine.textContent), streakLine && streakLine.textContent);
 }
 
 /* Scenario 3: reset while in fallback mode must not resurrect anything. */
@@ -272,6 +292,26 @@ console.log('\n[5] denied then "recovered" — fallback stays sticky, disk never
   check('disk bytes not clobbered by our snapshot', days && days['2026-01-01'] && days['2026-01-01'].colors === 99, JSON.stringify(days));
   const slots = p.slots();
   check('our session still ticks in memory', slots.filter(s => s[1]).length === 2, JSON.stringify(slots));
+}
+
+/* Scenario 6: removal refused BEFORE any save has failed — the ghost check.
+   The store already carries pins (post-migration shape), so boot performs
+   no backfill persist and the fallback is still unarmed when reset is
+   pressed. removeItem is refused; without the ghost check the next adopt
+   read the old disk text back and resurrected the wiped store. */
+console.log('\n[6] reset with removal refused, fallback not yet armed — nothing resurrects');
+{
+  const old = { days: { '2026-08-20': { lines: 55 } },
+    streak: { count: 1, last: '2026-08-20', freezes: 0, longest: 1 },
+    skills: {}, badges: {}, seen: {}, picks: { '2026-08-20': ['lines', 'colors', 'values'] } };
+  const p = boot({ denySet: true, denyRemove: true,
+    disk: { 'artdaily-progress-v1': JSON.stringify(old) } });
+  p.reset();
+  p.fire('value-trap', 70);
+  const slots = p.slots();
+  check('exactly one drill done after reset+round', slots.filter(s => s[1]).length === 1, JSON.stringify(slots));
+  check('old day not resurrected (record shows 1 day)',
+    !/2 days practised/.test(p.els.record.textContent), p.els.record.textContent.slice(0, 80));
 }
 
 console.log('\n' + (failures ? failures + ' FAILURE(S)' : 'all scenarios green'));

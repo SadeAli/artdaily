@@ -58,6 +58,112 @@
      the player has ever logged. */
   var CAT_SIZE = {};
   liveGames.forEach(function (g) { CAT_SIZE[g.cat] = (CAT_SIZE[g.cat] || 0) + 1; });
+  /* slug -> game, once. gameBySlug used to filter the whole catalogue per
+     call, and the pin path asks it three times per pinned day per record
+     render. A constant of the registry, like CAT_SIZE above. */
+  var SLUG_GAME = Object.create(null);
+  liveGames.forEach(function (g) { SLUG_GAME[g.slug] = g; });
+
+  /* THE FROZEN 2026-08-23 FORMULA — seed off local midnight, chapter bonus
+     0.06 — kept verbatim forever, because it is what every pre-migration
+     day was judged against. Only the loadStore backfill may call it.
+
+     ITS INPUTS ARE FROZEN TOO, and that is not optional: the formula ranks
+     LEGACY_GAMES with LEGACY_CAT_SIZE, never the live registry, because a
+     backfill that reads the live catalogue re-answers history differently
+     the day a drill ships or retires — the exact drift the freeze exists to
+     stop, back in through the inputs. This is the catalogue as it stood on
+     2026-08-23; it may never change again. */
+  var LEGACY_GAMES = [
+    ['colors', 'colour'],
+    ['palette-pick', 'colour'],
+    ['mix-to-target', 'colour'],
+    ['value-trap', 'colour'],
+    ['neutral-hunt', 'colour'],
+    ['temperature-sort', 'colour'],
+    ['colour-constancy', 'colour'],
+    ['sun-and-sky', 'colour'],
+    ['values', 'value'],
+    ['sphere-shade', 'value'],
+    ['value-thumbnail', 'value'],
+    ['hatch-ramp', 'value'],
+    ['light-direction', 'value'],
+    ['warm-up', 'line'],
+    ['superimposed', 'line'],
+    ['lines', 'line'],
+    ['circle', 'line'],
+    ['ellipses', 'line'],
+    ['draw-through', 'line'],
+    ['symmetry', 'line'],
+    ['angle-snap', 'line'],
+    ['steady-tunnel', 'line'],
+    ['even-spacing', 'line'],
+    ['line-weight', 'line'],
+    ['perspective', 'form'],
+    ['cube-from-plane', 'form'],
+    ['box-check', 'form'],
+    ['vp-hunt', 'form'],
+    ['rotate-place', 'form'],
+    ['ellipse-in-plane', 'form'],
+    ['cylinder-ends', 'form'],
+    ['cast-shadow', 'form'],
+    ['horizon-read', 'form'],
+    ['cross-contour', 'form'],
+    ['down-the-row', 'form'],
+    ['crop-it', 'composition'],
+    ['focal-place', 'composition'],
+    ['counterweight', 'composition'],
+    ['contour-memory', 'observation'],
+    ['proportion-eye', 'observation'],
+    ['negative-space', 'observation'],
+    ['anatomy-spot', 'observation'],
+    ['gesture-capture', 'observation'],
+  ];
+  var LEGACY_CAT_SIZE = {};
+  LEGACY_GAMES.forEach(function (e) { LEGACY_CAT_SIZE[e[1]] = (LEGACY_CAT_SIZE[e[1]] || 0) + 1; });
+
+  function seedForKeyLegacy(k) {
+    var p = DAY_RE.exec(String(k));
+    if (!p) return null;
+    return Math.floor(new Date(+p[1], +p[2] - 1, +p[3]).getTime() / 86400000);
+  }
+
+  function pickForKeyLegacy(key, days) {
+    var seed = seedForKeyLegacy(key);
+    if (seed === null) return [];
+    var p = DAY_RE.exec(String(key));
+    function sc(k) { var d = days[k]; return isPlainish(d) ? d : {}; }
+    var recent = {};
+    for (var i = 1; i <= 6; i++) {
+      var k = dateKey(new Date(+p[1], +p[2] - 1, +p[3] - i));
+      Object.keys(sc(k)).forEach(function (s) { recent[s] = Math.max(recent[s] || 0, 7 - i); });
+    }
+    var weighed = LEGACY_GAMES.map(function (e) {
+      return { g: { slug: e[0], cat: e[1] }, w: slugHash(seed, e[0]) / 4294967295 +
+        (LEGACY_CAT_SIZE[e[1]] || 1) * 0.06 - (recent[e[0]] || 0) * 0.25 };
+    });
+    weighed.sort(function (a, b) { return b.w - a.w; });
+    var ranked = weighed.map(function (x) { return x.g; });
+    var picked = [];
+    var seen = {};
+    ranked.forEach(function (g) {
+      var cat = g.cat || '';
+      if (picked.length < 3 && !seen[cat]) { seen[cat] = true; picked.push(g); }
+    });
+    ranked.forEach(function (g) {
+      if (picked.length < 3 && picked.indexOf(g) === -1) picked.push(g);
+    });
+    return picked;
+  }
+
+  function keyForOffset(n) { var d = new Date(); d.setDate(d.getDate() + (n || 0)); return dateKey(d); }
+
+  function slugHash(seed, slug) {
+    var h = seed ^ 0x9e3779b9;
+    for (var i = 0; i < slug.length; i++) h = Math.imul(h ^ slug.charCodeAt(i), 2654435761);
+    return h >>> 0;
+  }
+
 
   /* ---- registry helpers ---- */
 
@@ -236,29 +342,49 @@
         v.every(function (x) { return typeof x === 'string' && /^[a-z0-9-]+$/.test(x); });
       if (!okv) delete s.picks[k];
     });
-    /* One-time backfill: every already-logged day gets the triple the OLD
-       formula answers for it today, so the record's numbers cannot move when
-       the live formula changes right below (new seed, new chapter weight).
-       pickForKeyLegacy is that formula frozen verbatim — tools/pick-suite.js
-       phase A proves the freeze against the pre-migration page. The starter
-       day pins to the curated trio, exactly as picksForKey always judged it.
-       In-memory until the next saveStore persists it; recomputing on a load
-       before that is the same work renderRecord used to do every render. */
-    if (!s.seen.picksBackfill) {
-      Object.keys(s.days).forEach(function (k) {
-        if (s.picks[k]) return;
-        if (k === s.seen.starter) {
-          var st0 = starterPick();
-          if (st0) { s.picks[k] = st0.map(function (g) { return g.slug; }); return; }
-        }
-        s.picks[k] = pickForKeyLegacy(k, s.days).map(function (g) { return g.slug; });
-      });
-      s.seen.picksBackfill = true;
-    }
+    /* Backfill: every logged day WITHOUT a pin gets the triple the frozen
+       legacy formula answers for it, so the record's numbers cannot move
+       when the live formula changes (new seed, new chapter weight) —
+       tools/pick-suite.js phase A proves the freeze against the
+       pre-migration page. The starter day pins to the curated trio, exactly
+       as picksForKey always judged it.
+
+       Deliberately NOT gated on a one-shot flag: a tab still running the
+       pre-migration code can log a day with no pin AFTER the flag would
+       have been set, and a flag-guarded backfill leaves that day unpinned
+       forever — judged against the new formula, which is the drift this
+       whole migration exists to stop. A legacy pin is CORRECT for such a
+       day, because the stale code that served it ran the legacy formula.
+       Per-load cost is O(unpinned logged days), which is zero from the
+       second load on — persistPinsIfNeeded() below writes the pins back at
+       boot, so even a view-only visitor's history is pinned before any
+       future deploy can re-answer it. */
+    Object.keys(s.days).forEach(function (k) {
+      if (s.picks[k]) return;
+      needsPinPersist = true;
+      if (k === s.seen.starter) {
+        var st0 = starterPick();
+        if (st0) { s.picks[k] = st0.map(function (g) { return g.slug; }); return; }
+      }
+      s.picks[k] = pickForKeyLegacy(k, s.days).map(function (g) { return g.slug; });
+    });
     return s;
   }
 
+  /* True while the store in memory holds backfilled pins the disk has not
+     seen. Cleared by saveStore, whose bytes always include them. */
+  var needsPinPersist = false;
+
+  function persistPinsIfNeeded() {
+    if (needsPinPersist) saveStore();
+  }
+
   var store = loadStore();
+  /* Pins backfilled by that load are persisted from the BOOT BLOCK at the
+     bottom of this file, not here: persisting can enter the storage
+     fallback and queue its toast, and the toast machinery does not exist
+     yet on this line. (Found by tools/storage-suite.js scenario 3 — the
+     eager call crashed boot on exactly the denied browser it was for.) */
 
   /* ---- derived-state caches ----
      bestFor and pickForKey are pure functions of store.days, and both were
@@ -331,15 +457,20 @@
        seeing — without it the rounds simply vanish on the next visit with
        no reason given. Queued once per sitting, ahead of the round's own
        toasts, from inside the same recordResult that triggered the save. */
-    if (!storageOk) { memoryRaw = txt; storeRaw = txt; return; }
-    try { localStorage.setItem(STORE_KEY, txt); storeRaw = txt; }
+    if (!storageOk) { memoryRaw = txt; storeRaw = txt; needsPinPersist = false; return; }
+    try { localStorage.setItem(STORE_KEY, txt); storeRaw = txt; needsPinPersist = false; }
     catch (e) {
       storageOk = false;
       memoryRaw = txt;
       storeRaw = txt;
+      needsPinPersist = false;
       if (!storageToastDone) {
         storageToastDone = true;
-        toastPage('this browser is not letting the page save — today’s rounds will work, but they will be gone when you close the tab');
+        /* "on your next visit", not "when you close the tab": a reload
+           loses the fallback rounds just as surely as closing does, and
+           rounds that reached the disk before the fallback began survive
+           either — the honest boundary is the visit. */
+        toastPage('this browser is not letting the page save — today’s rounds count for now, but they will not be here on your next visit');
       }
     }
   }
@@ -552,51 +683,6 @@
     return Date.UTC(+p[1], +p[2] - 1, +p[3]) / 86400000;
   }
 
-  /* THE FROZEN 2026-08-23 FORMULA — seed off local midnight, chapter bonus
-     0.06 — kept verbatim forever, because it is what every pre-migration
-     day was judged against. Only the loadStore backfill may call it. */
-  function seedForKeyLegacy(k) {
-    var p = DAY_RE.exec(String(k));
-    if (!p) return null;
-    return Math.floor(new Date(+p[1], +p[2] - 1, +p[3]).getTime() / 86400000);
-  }
-
-  function pickForKeyLegacy(key, days) {
-    var seed = seedForKeyLegacy(key);
-    if (seed === null) return [];
-    var p = DAY_RE.exec(String(key));
-    function sc(k) { var d = days[k]; return isPlainish(d) ? d : {}; }
-    var recent = {};
-    for (var i = 1; i <= 6; i++) {
-      var k = dateKey(new Date(+p[1], +p[2] - 1, +p[3] - i));
-      Object.keys(sc(k)).forEach(function (s) { recent[s] = Math.max(recent[s] || 0, 7 - i); });
-    }
-    var weighed = liveGames.map(function (g) {
-      return { g: g, w: slugHash(seed, g.slug) / 4294967295 +
-        (CAT_SIZE[g.cat] || 1) * 0.06 - (recent[g.slug] || 0) * 0.25 };
-    });
-    weighed.sort(function (a, b) { return b.w - a.w; });
-    var ranked = weighed.map(function (x) { return x.g; });
-    var picked = [];
-    var seen = {};
-    ranked.forEach(function (g) {
-      var cat = g.cat || '';
-      if (picked.length < 3 && !seen[cat]) { seen[cat] = true; picked.push(g); }
-    });
-    ranked.forEach(function (g) {
-      if (picked.length < 3 && picked.indexOf(g) === -1) picked.push(g);
-    });
-    return picked;
-  }
-
-  function keyForOffset(n) { var d = new Date(); d.setDate(d.getDate() + (n || 0)); return dateKey(d); }
-
-  function slugHash(seed, slug) {
-    var h = seed ^ 0x9e3779b9;
-    for (var i = 0; i < slug.length; i++) h = Math.imul(h ^ slug.charCodeAt(i), 2654435761);
-    return h >>> 0;
-  }
-
   /* Rank live games by hash, take distinct categories first so the
      warmup never doubles up a chapter; top back up if needed.
      Pure function of the DATE LABEL (seedForKey is Date.UTC of the parsed
@@ -703,7 +789,14 @@
     /* The pinned triple — what the day ACTUALLY served — outranks every
        formula. A pinned slug that no longer resolves (a drill retired from
        the registry) is dropped rather than invented; a pin that resolves to
-       nothing at all falls through to the formula so the day still renders. */
+       nothing at all falls through to the formula so the day still renders.
+       A SHORT resolution (2 of 3) is served short, and that is a weighed
+       trade: the record's full-warmup count stays safe behind renderRecord's
+       PICK_SIZE pregate (a day needs 3+ scores before picks are consulted),
+       while todayComplete/the closing card would, on the single day a
+       retirement deploys mid-play, call 2-of-2 a finished warmup. Retiring
+       a drill is not practiced here; if it ever is, revisit before the
+       deploy, not after. */
     var pin = isPlainish(store.picks) ? store.picks[k] : null;
     if (Array.isArray(pin)) {
       var out = [];
@@ -1179,7 +1272,12 @@
            name the first step. 3 is the first count the streak badges call
            a habit; a "longest run" of 1 or 2 is not a run worth naming. */
       var tail = 'perfect day ★ when all three';
-      if (done === 0 && !cold) {
+      /* Both return-state tails promise that tomorrow remembers today —
+         a kept streak, a new run accruing — and in the memory fallback it
+         will not. storageOk gates them (and the day-one note below) so the
+         page never promises persistence on the screen where the storage
+         toast just said there is none. */
+      if (done === 0 && !cold && storageOk) {
         var stk = store.streak;
         if (streakAlive() && stk.last !== todayKey()) {
           tail = '🔥 ' + stk.count + (stk.count === 1 ? ' day' : ' days') +
@@ -1205,7 +1303,7 @@
     var noteEl = $('todayNote');
     if (noteEl) {
       var dk = Object.keys(store.days);
-      var firstDay = !cold && !all && done >= 1 &&
+      var firstDay = storageOk && !cold && !all && done >= 1 &&
         dk.length === 1 && dk[0] === todayKey();
       if (firstDay) {
         say(noteEl, 'saved in this browser — a fresh three tomorrow, and day two makes it a streak');
@@ -1791,11 +1889,19 @@
     var st = store.streak;
     /* Name tomorrow's stake, not just today's number: a count on its own
        says nothing about what the next visit does to it. The day-one line
-       already names it; the running line now does too. */
-    var line = st.count > 1
-      ? '🔥 ' + st.count + ' days running — one drill tomorrow keeps it'
-      : '🔥 day one — come back tomorrow and it becomes a streak';
-    if (st.freezes > 0) line += ' · ❄️ ' + st.freezes + ' rest day' + (st.freezes > 1 ? 's' : '') + ' banked';
+       already names it; the running line now does too. In the memory
+       fallback every promise here is false — the streak lives for this
+       sitting only — so the card says the true thing instead, at the
+       moment it is claiming a finished day. */
+    var line;
+    if (!storageOk) {
+      line = 'this browser isn’t letting the page save — today still counted, but it won’t be here on your next visit';
+    } else {
+      line = st.count > 1
+        ? '🔥 ' + st.count + ' days running — one drill tomorrow keeps it'
+        : '🔥 day one — come back tomorrow and it becomes a streak';
+      if (st.freezes > 0) line += ' · ❄️ ' + st.freezes + ' rest day' + (st.freezes > 1 ? 's' : '') + ' banked';
+    }
     box.appendChild(say(el('p', 'closing-streak'), line));
 
     var tom = tomorrowPick();
@@ -2320,7 +2426,7 @@
   }
 
   function gameBySlug(slug) {
-    return liveGames.filter(function (g) { return g.slug === slug; })[0] || null;
+    return SLUG_GAME[slug] || null;
   }
 
   window.addEventListener('message', function (ev) {
@@ -2482,6 +2588,14 @@
     resetBtn.addEventListener('click', function () {
       if (!window.confirm('reset all local progress? streak, ticks and skill levels will be wiped.')) return;
       try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+      /* Removal can be REFUSED — and it can be refused before any save has
+         ever failed, so the fallback may not be armed yet. If the key
+         survived the wipe, the disk is not ours to clear: arm the fallback
+         now, or the very next adoptStore() reads the old text back and
+         resurrects everything the player just watched disappear. */
+      var ghost = null;
+      try { ghost = localStorage.getItem(STORE_KEY); } catch (e) {}
+      if (ghost !== null) storageOk = false;
       /* The text on disk is gone, so the text `store` was parsed from is too.
          Leaving the old one behind would let the next adoptStore() compare a
          wiped store against a live one and decide nothing had changed. */
@@ -2536,6 +2650,13 @@
   }
 
   /* ---- boot ---- */
+
+  /* Pins backfilled by the boot loadStore reach the disk NOW, not at the
+     next recorded round — a view-only visitor may never record one, and
+     their history must be pinned before any future deploy can re-answer
+     it. Sits first in the boot block so a fallback entered here has its
+     honest states painted by the renders below. */
+  persistPinsIfNeeded();
 
   renderCatalogue();
   renderToday();
@@ -2605,6 +2726,7 @@
     if (todayKey() === renderedDay) return;
     renderedDay = todayKey();
     adoptStore();
+    persistPinsIfNeeded();
     renderAll();
     /* Yesterday's closing card is not today's — but "not yesterday's" is not
        the same as "gone", and this used to be a bare hideClosing(). That is
@@ -2647,6 +2769,9 @@
   window.addEventListener('storage', function (ev) {
     if (ev && ev.key && ev.key !== STORE_KEY) return;
     adoptStore();
+    /* A write missing pins can only come from a tab on pre-migration code;
+       pinning it here is what keeps that day's triple from drifting. */
+    persistPinsIfNeeded();
     renderAll();
     syncClosing();
     updateNextBtn();
