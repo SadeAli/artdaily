@@ -1194,7 +1194,11 @@
          returned for a touch in the pen's shadow. */
       /* EVERY press holds; SKIP_LOCK_MS now guards the RELEASE (see
          endDrag) — a press inside the window used to be swallowed whole,
-         so the reveal advanced under a finger that was holding it. */
+         so the reveal advanced under a finger that was holding it. One
+         press owns the hold: a later contact (a palm — the touch-in-pen-
+         shadow guard above already caught the common case) must not
+         steal the pointer id from the hand actually holding. */
+      if (holdPointer !== null) return;
       clearTimeout(revealTimer);
       revealTimer = null;
       holdPointer = ev.pointerId;

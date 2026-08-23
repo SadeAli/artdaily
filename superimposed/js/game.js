@@ -770,6 +770,13 @@
          nothing, and a press that stays down holds the reveal for as long
          as the hand does. */
       ev.preventDefault();
+      /* one press owns the hold: a palm (or second finger) landing while
+         a press is already holding must not steal the pointer id — the
+         real release would then be ignored and the palm's lift would do
+         the advancing. And a touch in the pen's shadow is the resting
+         hand, exactly as in the drawing branch below. */
+      if (holdPointer !== null) return;
+      if (ev.pointerType === 'touch' && Date.now() - lastPenAt < PEN_LOCK_MS) return;
       /* EVERY press holds — the guard now decides what the RELEASE means
          (see endContact): a quick in-rhythm tap still cannot skip a reveal
          it never read, but a press kept down truly holds for as long as
