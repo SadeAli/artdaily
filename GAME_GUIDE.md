@@ -1158,7 +1158,7 @@ The SDK carries `version: 1` in every message. If the protocol ever
 changes, bump `VERSION` in `sdk/artdaily-sdk.js` and teach the page the new
 shape in the same push. There is nothing to recopy any more, and that cuts
 both ways: every drill loads the one `../sdk/artdaily-sdk.js`, so a bump
-moves all 42 at once and there is no drill left behind to migrate — but
+moves all 43 at once and there is no drill left behind to migrate — but
 there is also no staggered rollout to hide behind. Keep the page accepting
 the older version anyway: a tab left open across the deploy is still
 running the old SDK. Never fork it per-drill.

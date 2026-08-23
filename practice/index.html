@@ -3,27 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>How to Practice Drawing — six guides, 42 scored drills</title>
+<title>How to Practice Drawing — six guides, 43 scored drills</title>
 <!-- 155 chars. The previous one ran to 186 and lost its last clause to SERP
      truncation, which is where the "free, no account needed" was. -->
 <meta name="description" content="Six guides to the fundamentals — colour, value, line, perspective, composition, observation — each explaining what its drills measure. Free, no account needed.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="How to Practice Drawing — six guides">
-<meta property="og:description" content="The reasoning behind 42 scored drawing drills: what each one measures, and what to change when the number comes back low.">
+<meta property="og:description" content="The reasoning behind 43 scored drawing drills: what each one measures, and what to change when the number comes back low.">
 <meta property="og:site_name" content="Art Daily · SadeAli">
 <meta property="og:url" content="https://artdaily.sadeali.com/practice/">
-<!-- The site card, deliberately: this section has no art of its own yet, and a
-     share with no image renders as a grey box. Swap for /og/practice.png if
-     tools/build-og.js ever grows a guide template. -->
-<meta property="og:image" content="https://artdaily.sadeali.com/og.png">
+<!-- The hub's own card, built by tools/build-og.js (the `practice` entry in
+     guideCards). It used the generic site card until 2026-08-23 — this page
+     is what a teacher forwards as "the curriculum", and it deserved its own
+     picture. -->
+<meta property="og:image" content="https://artdaily.sadeali.com/og/practice.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Art Daily — tiny daily drills for artists">
+<meta property="og:image:alt" content="How to practise — six guides, one per chapter, at artdaily.sadeali.com/practice">
 <link rel="canonical" href="https://artdaily.sadeali.com/practice/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="How to Practice Drawing — six guides">
-<meta name="twitter:description" content="The reasoning behind 42 scored drawing drills: what each one measures, and what to change when the number comes back low.">
-<meta name="twitter:image" content="https://artdaily.sadeali.com/og.png">
+<meta name="twitter:description" content="The reasoning behind 43 scored drawing drills: what each one measures, and what to change when the number comes back low.">
+<meta name="twitter:image" content="https://artdaily.sadeali.com/og/practice.png">
 <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;📓&lt;/text&gt;&lt;/svg&gt;">
 <link rel="preload" href="../fonts/caveat-latin.woff2" as="font" type="font/woff2" crossorigin>
 <!-- ONE level up: this page is /practice/, the six guides are /practice/<chapter>/
@@ -32,7 +33,7 @@
 <style>
 /* ---- /practice/ prose ----
    NOT in css/style.css on purpose: that file is the shared sketchbook theme
-   every one of the 42 drills loads too, and these seven pages are the only
+   every one of the 43 drills loads too, and these seven pages are the only
    long-form copy on the site. Tokens only, so both themes come free.
    This block is byte-identical on every page in the section — see
    /practice/_TEMPLATE.md. Change it there and here together, or the six
@@ -68,7 +69,7 @@
 }
 .guide .measured b { font-family: var(--hand); font-size: 1.1rem; font-weight: 700; display: block; }
 .guide .guide-more { margin-top: 20px; padding-top: 12px; border-top: 1px dashed var(--line); font-size: 0.86rem; color: var(--muted); }
-/* .section is 1080px wide for a 42-card catalogue. Narrow it to the prose
+/* .section is 1080px wide for a 43-card catalogue. Narrow it to the prose
    column so a page of guide text and a block of cards share one left edge. */
 .section.guide-cards { max-width: 44rem; }
 </style>
@@ -94,13 +95,13 @@
 <section class="guide accent-sunny">
   <h1>How to practice drawing</h1>
   <p class="lede">Six guides to the fundamentals, written beside the code that scores them.</p>
-  <p>This site has 42 drills on it. Each one gives you a mark out of 100 and then gets out of the way, which is fine for a warm-up and useless as teaching. These six guides are the other half: what the drill is actually measuring, why that is the thing worth measuring, and what to change tomorrow when the number comes back low.</p>
+  <p>This site has 43 drills on it. Each one gives you a mark out of 100 and then gets out of the way, which is fine for a warm-up and useless as teaching. These six guides are the other half: what the drill is actually measuring, why that is the thing worth measuring, and what to change tomorrow when the number comes back low.</p>
   <p>They are written by the person who wrote the scoring, and that is the only thing they can offer that a book cannot. When an article says a line is <em>too curved</em> or a value is <em>a bit off</em>, you have to take its word for it. Here there is a function that decided, and it can be quoted. Every threshold in these guides — every tolerance, every cut-off, every point value — is read out of the drill's own <code>js/game.js</code> before it is printed. Where a number cannot be traced to code, it is not in the guide.</p>
   <p>Nothing here is scored by a model. The drills are closed-form geometry and colour arithmetic; four of them (<a href="../sphere-shade/">Shade a Sphere</a>, <a href="../crop-it/">Crop It</a>, <a href="../focal-place/">Focal Placement</a> and <a href="../gesture-capture/">Gesture Capture</a>, each marked <em>curated</em> in the corner of its card) compare you against a hand-written answer key instead, because taste has no formula and pretending otherwise would be a lie told in decimal places.</p>
 </section>
 
 <section class="section guide-cards" aria-labelledby="chaptersHead">
-  <div class="cat-head"><span class="cat-icon" aria-hidden="true">📚</span><h2 id="chaptersHead" class="accent-sunny" style="text-decoration-color: var(--sunny);">the six chapters</h2><span class="cat-count">6 guides · 42 drills</span></div>
+  <div class="cat-head"><span class="cat-icon" aria-hidden="true">📚</span><h2 id="chaptersHead" class="accent-sunny" style="text-decoration-color: var(--sunny);">the six chapters</h2><span class="cat-count">6 guides · 43 drills</span></div>
   <p class="cat-note">read one, then go and do the drills it names — the guide is the half that says why</p>
   <ul class="grid">
     <li><a class="card accent-coral" href="colour/">
@@ -174,7 +175,7 @@
   <h2>Where to start</h2>
   <p>If you want the reasoning first, read the chapter for whatever is currently going wrong in your drawings. If you would rather warm up and read later, three drills need no drawing hardware at all and take about two minutes each: <a href="../value-trap/">Value Trap</a>, <a href="../colors/">Color Mixer</a> and <a href="../lines/">Steady Lines</a>. A trackpad is enough for all three.</p>
   <p>The habit that these guides assume is small and daily: one drill, two to four minutes, then close the tab. The chapters are there for the day the score stops moving, which is the day it stops being a warm-up and starts being a question.</p>
-  <p class="guide-more">All the drills: <a href="../">the catalogue, 42 of them</a> · Free to use, no ads, no account needed · Scored by geometry and colour arithmetic, not by a model</p>
+  <p class="guide-more">All the drills: <a href="../">the catalogue, 43 of them</a> · Free to use, no ads, no account needed · Scored by geometry and colour arithmetic, not by a model</p>
 </section>
 
 </main>

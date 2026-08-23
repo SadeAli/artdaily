@@ -33,7 +33,7 @@ folder, `css/style.css`, `js/**`, `sdk/**`, `tools/**`, `sitemap.xml`, or any dr
 
 ## 2. Why the page exists, and the bar
 
-The 42 drills can win queries with tool intent — *ellipse practice*, *draw a perfect
+The 43 drills can win queries with tool intent — *ellipse practice*, *draw a perfect
 circle*. They cannot win the article-dominated ones — *perspective practice exercises*,
 *value study exercise*, *gesture drawing practice* — because page one there is long-form
 teaching from sites with a decade of authority behind them. A guide is the only structure
@@ -216,7 +216,7 @@ Starting points — verify the length yourself and change them if you can do bet
 
 ## 5. The shared `<style>` block — copy verbatim
 
-**Add no new CSS to `css/style.css`.** That file is shared by all 42 drills and is owned by
+**Add no new CSS to `css/style.css`.** That file is shared by all 43 drills and is owned by
 another agent right now; a change there is a change to 43 pages.
 
 The guides therefore carry their own small block, and it is the same block on every page in
@@ -228,7 +228,7 @@ section stops looking like one thing.
 <style>
 /* ---- /practice/ prose ----
    NOT in css/style.css on purpose: that file is the shared sketchbook theme
-   every one of the 42 drills loads too, and these seven pages are the only
+   every one of the 43 drills loads too, and these seven pages are the only
    long-form copy on the site. Tokens only, so both themes come free.
    This block is byte-identical on every page in the section — see
    /practice/_TEMPLATE.md. Change it there and here together, or the six
@@ -264,7 +264,7 @@ section stops looking like one thing.
 }
 .guide .measured b { font-family: var(--hand); font-size: 1.1rem; font-weight: 700; display: block; }
 .guide .guide-more { margin-top: 20px; padding-top: 12px; border-top: 1px dashed var(--line); font-size: 0.86rem; color: var(--muted); }
-/* .section is 1080px wide for a 42-card catalogue. Narrow it to the prose
+/* .section is 1080px wide for a 43-card catalogue. Narrow it to the prose
    column so a page of guide text and a block of cards share one left edge. */
 .section.guide-cards { max-width: 44rem; }
 </style>

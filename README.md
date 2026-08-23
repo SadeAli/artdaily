@@ -1,6 +1,6 @@
 # artdaily.sadeali.com — Art Daily
 
-The daily-practice sketchbook of the SadeAli network: a catalogue of 42 tiny
+The daily-practice sketchbook of the SadeAli network: a catalogue of 43 tiny
 scored drills for artists, grouped into six chapters — colour, value & light,
 line & hand, form & perspective, composition, observation & memory. Most
 drills are drawn, not clicked: you commit a stroke and the geometry judges
@@ -100,7 +100,7 @@ sdk/artdaily-sdk.js   canonical protocol-v1 SDK — every drill loads THIS
                   to keep byte-identical by hand
 GAME_GUIDE.md     how to build + register a game
 robots.txt        allows all crawlers + points at the sitemap
-sitemap.xml       the page + the 42 drills; game-template/ ships too but is
+sitemap.xml       the page + the 43 drills; game-template/ ships too but is
                   noindex and stays out of it
 CNAME             artdaily.sadeali.com
 .nojekyll         serve the tree exactly as pushed — no Jekyll build

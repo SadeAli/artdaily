@@ -560,11 +560,30 @@ function guideCards() {
       cat: 'a practice guide',
     });
   }
+  /* The practice HUB itself — the page the guides hang off, and the one a
+     teacher forwards as "the curriculum". It shipped wearing the generic
+     site card; a link with no picture of its own underperforms the same
+     content by close to an order of magnitude in every venue this goes. */
+  if (fs.existsSync('practice/index.html')) {
+    out.push({
+      slug: 'practice',
+      path: 'practice',
+      name: 'how to practise',
+      tagline: 'six guides, one per chapter — what the skill is, and what the score is measuring',
+      icon: '📖',
+      accent: 'sunny',
+      cat: 'the practice guides',
+    });
+  }
   return out;
 }
-const guides = only.length ? [] : guideCards();
-if (only.length && subset.length !== only.length) {
-  die(`unknown slug(s): ${only.filter(s => !live.some(g => g.slug === s)).join(', ')}`);
+/* `only` may name guide cards too — `node tools/build-og.js practice`
+   rebuilds just the hub card. */
+const allGuides = guideCards();
+const guides = only.length ? allGuides.filter(g => only.includes(g.slug)) : allGuides;
+if (only.length && subset.length + guides.length !== only.length) {
+  die(`unknown slug(s): ${only.filter(s =>
+    !live.some(g => g.slug === s) && !allGuides.some(g2 => g2.slug === s)).join(', ')}`);
 }
 
 const fonts = prepareFonts();
