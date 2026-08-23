@@ -78,7 +78,7 @@
   /* ---- progress store ---- */
 
   function freshStore() {
-    return { days: {}, streak: { count: 0, last: '', freezes: 0, longest: 0 }, skills: {}, badges: {}, seen: {} };
+    return { days: {}, streak: { count: 0, last: '', freezes: 0, longest: 0 }, skills: {}, badges: {}, seen: {}, picks: {} };
   }
 
   /* Arrays sneak past typeof checks but JSON.stringify drops their named
@@ -221,6 +221,40 @@
     });
     if (!isPlainish(s.badges)) s.badges = {};   /* badgeId -> day earned */
     if (!isPlainish(s.seen)) s.seen = {};       /* one-time UI flags */
+    /* picks: dayKey -> the [slug, slug, slug] that day actually served.
+       The rotation used to be a FORMULA re-run over history — renderRecord
+       recomputed what every past day asked for from the current registry and
+       weights, so any change to either silently rewrote how many "full
+       warmups" a player had kept (measured: correcting the seed by one day
+       left 3 of 730 standing). The store already pinned the curated starter
+       day for exactly this reason; now every served day is data, and the
+       formula is only ever consulted for days that were never played. */
+    if (!isPlainish(s.picks)) s.picks = {};
+    Object.keys(s.picks).forEach(function (k) {
+      var v = s.picks[k];
+      var okv = isDayKey(k) && Array.isArray(v) && v.length >= 1 && v.length <= 3 &&
+        v.every(function (x) { return typeof x === 'string' && /^[a-z0-9-]+$/.test(x); });
+      if (!okv) delete s.picks[k];
+    });
+    /* One-time backfill: every already-logged day gets the triple the OLD
+       formula answers for it today, so the record's numbers cannot move when
+       the live formula changes right below (new seed, new chapter weight).
+       pickForKeyLegacy is that formula frozen verbatim — tools/pick-suite.js
+       phase A proves the freeze against the pre-migration page. The starter
+       day pins to the curated trio, exactly as picksForKey always judged it.
+       In-memory until the next saveStore persists it; recomputing on a load
+       before that is the same work renderRecord used to do every render. */
+    if (!s.seen.picksBackfill) {
+      Object.keys(s.days).forEach(function (k) {
+        if (s.picks[k]) return;
+        if (k === s.seen.starter) {
+          var st0 = starterPick();
+          if (st0) { s.picks[k] = st0.map(function (g) { return g.slug; }); return; }
+        }
+        s.picks[k] = pickForKeyLegacy(k, s.days).map(function (g) { return g.slug; });
+      });
+      s.seen.picksBackfill = true;
+    }
     return s;
   }
 
@@ -499,10 +533,60 @@
      record a whole day out of step everywhere east of Greenwich.
      (DAY_RE is declared up by loadStore, which needs it at boot.) */
 
+  /* A pure calendar-day count off the DATE LABEL — Date.UTC of the parsed
+     Y/M/D, so the label alone decides the seed and every zone holding the
+     same local date holds the same seed. It used to be the epoch-day of
+     LOCAL midnight, which split east/west of Greenwich (two rotations, one
+     day apart) and — worse — collapsed two consecutive spring days onto ONE
+     seed in every zone whose UTC offset crosses zero at DST (London, Dublin,
+     Lisbon, Canaries, Casablanca): the lapsed player being coaxed back was
+     handed the identical warmup two days running, once a year. Safe to
+     change ONLY because every logged day's triple is pinned in store.picks
+     (see loadStore) — history replays its pins, never this function.
+     THE SDK MIRRORS THIS DERIVATION LINE FOR LINE (sdk/artdaily-sdk.js,
+     seeded-content block) — the two may not drift apart, and
+     tools/pick-suite.js phase E fails the build if they do. */
   function seedForKey(k) {
     var p = DAY_RE.exec(String(k));
     if (!p) return null;
+    return Date.UTC(+p[1], +p[2] - 1, +p[3]) / 86400000;
+  }
+
+  /* THE FROZEN 2026-08-23 FORMULA — seed off local midnight, chapter bonus
+     0.06 — kept verbatim forever, because it is what every pre-migration
+     day was judged against. Only the loadStore backfill may call it. */
+  function seedForKeyLegacy(k) {
+    var p = DAY_RE.exec(String(k));
+    if (!p) return null;
     return Math.floor(new Date(+p[1], +p[2] - 1, +p[3]).getTime() / 86400000);
+  }
+
+  function pickForKeyLegacy(key, days) {
+    var seed = seedForKeyLegacy(key);
+    if (seed === null) return [];
+    var p = DAY_RE.exec(String(key));
+    function sc(k) { var d = days[k]; return isPlainish(d) ? d : {}; }
+    var recent = {};
+    for (var i = 1; i <= 6; i++) {
+      var k = dateKey(new Date(+p[1], +p[2] - 1, +p[3] - i));
+      Object.keys(sc(k)).forEach(function (s) { recent[s] = Math.max(recent[s] || 0, 7 - i); });
+    }
+    var weighed = liveGames.map(function (g) {
+      return { g: g, w: slugHash(seed, g.slug) / 4294967295 +
+        (CAT_SIZE[g.cat] || 1) * 0.06 - (recent[g.slug] || 0) * 0.25 };
+    });
+    weighed.sort(function (a, b) { return b.w - a.w; });
+    var ranked = weighed.map(function (x) { return x.g; });
+    var picked = [];
+    var seen = {};
+    ranked.forEach(function (g) {
+      var cat = g.cat || '';
+      if (picked.length < 3 && !seen[cat]) { seen[cat] = true; picked.push(g); }
+    });
+    ranked.forEach(function (g) {
+      if (picked.length < 3 && picked.indexOf(g) === -1) picked.push(g);
+    });
+    return picked;
   }
 
   function keyForOffset(n) { var d = new Date(); d.setDate(d.getDate() + (n || 0)); return dateKey(d); }
@@ -515,14 +599,13 @@
 
   /* Rank live games by hash, take distinct categories first so the
      warmup never doubles up a chapter; top back up if needed.
-     Pure function of the day number, so tomorrow's plan can be shown today
-     and the record can replay what any past day asked for.
-     NOT globally aligned, despite what this comment used to claim: the seed
-     comes from LOCAL midnight, so on the same calendar date a player east
-     of Greenwich gets seed N-1 and one west of it gets seed N — two valid,
-     self-consistent rotations, one day apart. Fixing that would rewrite
-     which drills every past day asked for, and with it the "full warmups"
-     count in the practice record, so it is a migration, not a tweak. */
+     Pure function of the DATE LABEL (seedForKey is Date.UTC of the parsed
+     Y/M/D since the 2026-08-23 migration), so the same calendar date names
+     the same rotation in every timezone, tomorrow's plan can be shown
+     today, and a day nobody played still previews correctly. Days that WERE
+     played never come back here — picksForKey serves their pinned triple —
+     which is exactly what made the seed and the weights below safe to
+     change at all. */
   function pickForKey(key) {
     var seed = seedForKey(key);
     if (seed === null) return [];
@@ -550,9 +633,19 @@
        comparison, so ranking the whole catalogue cost ~n·log n hashes instead of n —
        about ten times the work, repeated for every day in the record. Sort is
        stable and the weights are identical, so the order is unchanged. */
+    /* 0.02, down from 0.06. The chapter bonus exists so bigger chapters
+       show more often, but at 0.06 the spread it laid over a unit-range
+       hash (form +0.66 … composition +0.12) effectively EXCLUDED the small
+       chapters: measured over 730 simulated daily-player days, composition
+       appeared 8 times — Crop It 3 times in two years — and the allCats
+       badge was unreachable from the daily habit. At 0.02 composition gets
+       ~74 of 730 days and the rarest drill ~37 appearances, while the
+       big-chapters-show-more intent survives. Safe to re-tune only because
+       every played day is pinned (store.picks); history never replays this
+       weight. */
     var weighed = liveGames.map(function (g) {
       return { g: g, w: slugHash(seed, g.slug) / 4294967295 +
-        (CAT_SIZE[g.cat] || 1) * 0.06 - (recent[g.slug] || 0) * 0.25 };
+        (CAT_SIZE[g.cat] || 1) * 0.02 - (recent[g.slug] || 0) * 0.25 };
     });
     weighed.sort(function (a, b) { return b.w - a.w; });
     var ranked = weighed.map(function (x) { return x.g; });
@@ -597,6 +690,19 @@
      result flips their curated checklist to three strangers, and the
      record later judges that day against a triple it never showed. */
   function picksForKey(k) {
+    /* The pinned triple — what the day ACTUALLY served — outranks every
+       formula. A pinned slug that no longer resolves (a drill retired from
+       the registry) is dropped rather than invented; a pin that resolves to
+       nothing at all falls through to the formula so the day still renders. */
+    var pin = isPlainish(store.picks) ? store.picks[k] : null;
+    if (Array.isArray(pin)) {
+      var out = [];
+      pin.forEach(function (slug) {
+        var g = gameBySlug(slug);
+        if (g) out.push(g);
+      });
+      if (out.length) return out;
+    }
     if (store.seen.starter === k) {
       var s = starterPick();
       if (s) return s;
@@ -1356,6 +1462,16 @@
     /* Pin the curated first session to this day BEFORE the first score
        lands, so finishing a drill cannot swap the checklist out. */
     if (isNewcomer() && starterPick()) store.seen.starter = tk;
+    /* And pin the day's served triple, first result of the day, BEFORE the
+       score is written — the same moment and the same reason as the starter
+       pin above, now for every day: once a day is data, no future change to
+       the formula, the registry or the seed can rewrite what it asked for.
+       todayPick() here still answers the starter for a newcomer (the day is
+       not logged yet), so the pin records exactly what the checklist shows. */
+    if (!isPlainish(store.picks)) store.picks = {};
+    if (!store.picks[tk]) {
+      store.picks[tk] = todayPick().map(function (g) { return g.slug; });
+    }
     if (!isPlainish(store.days[tk])) store.days[tk] = {};
     var day = store.days[tk];
     if (typeof day[g.slug] !== 'number' || score > day[g.slug]) day[g.slug] = score;

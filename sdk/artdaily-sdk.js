@@ -387,14 +387,14 @@ window.ArtDaily = (function () {
        about the round just played — a player who pressed "new round"
        before finishing round 1 reports off a practice round, and "that
        was today's round" would be a lie there.
-     - NO "same for everyone" claim, though it is the tempting half. The
-       seed is keyed to LOCAL midnight (see the seeded-content block), so
-       two players either side of Greenwich on the same calendar date hold
-       seeds one apart — "everyone playing today gets the same one" is
-       false across an ocean. "a fresh one lands at midnight" is true
-       everywhere, because midnight here IS the local one. If the seed
-       ever moves to UTC, the stronger sentence becomes honest — earn it
-       then.
+     - The "same for everyone" half is EARNED, not assumed. It shipped
+       without that clause, because under the old local-midnight seed two
+       players either side of Greenwich on the same calendar date held
+       seeds one apart and the sentence was false across an ocean. The
+       seed is a pure function of the date label now (see seedForKey),
+       so everyone whose calendar says today holds today's round — and
+       "a fresh one lands at midnight" stays true everywhere, because the
+       day key still flips at the local one.
      - A plain <p>, never a live region. The drill's #hint is the one
        spoken channel (GAME_GUIDE's rule), and this line is ambient chrome
        a browse-mode reader still reaches.
@@ -415,7 +415,7 @@ window.ArtDaily = (function () {
     }
     var note = document.createElement('p');
     note.className = 'daily-note';
-    note.textContent = 'round 1 is today’s round — a fresh one lands at midnight.';
+    note.textContent = 'round 1 is today’s round — the same one for everyone playing today. a fresh one lands at midnight.';
     bar.parentNode.insertBefore(note, bar.nextSibling);
   }
 
@@ -616,24 +616,26 @@ window.ArtDaily = (function () {
   /* --- the day, derived exactly as js/app.js derives it -------------
      MIRRORED, NOT SHARED: a drill loads this file, and never loads
      js/app.js, so there is no import to make. DAY_RE, dateKey() and
-     seedForKey() below are line-for-line the ones at js/app.js ~99, ~279
-     and ~461. THEY MAY NOT DRIFT APART. The page uses that integer to
-     decide which three drills a day asks for and to replay past days in
-     the practice record; the drill now uses it to decide what is inside
-     one. Two derivations of "which day is it" would eventually disagree
-     and the record would replay a day that was never played.
+     seedForKey() below are line-for-line the ones in js/app.js (the
+     store-key regex, the local day key, and the seed). THEY MAY NOT
+     DRIFT APART — tools/pick-suite.js phase E compares the two
+     seedForKey bodies byte for byte and fails if they differ. The page
+     uses that integer to decide which three drills a day asks for; the
+     drill uses it to decide what is inside one.
 
-     LOCAL MIDNIGHT, NOT UTC — deliberately, and it is a real limit.
-     seedForKey() parses local Y/M/D, so a player at UTC+3 crosses into
-     the new day three hours before Greenwich and nine before New York.
-     Two people comparing scores "today" may be on seeds one apart, and
-     each is internally consistent — nobody sees a broken day, they see a
-     different one. This is left exactly as app.js has it: moving the
-     drills to a UTC boundary while the page stays local would be worse
-     than either (the drill and its own daily pick would disagree), and
-     moving BOTH rewrites which drills every past day asked for, which is
-     a migration of the stored record, not a tweak. Flagged here so
-     whoever ships the leaderboard decides it on purpose. */
+     THE DAY KEY IS LOCAL; THE SEED IS LABEL-PURE (since 2026-08-23).
+     dateKey() still names the day by the player's own calendar — the
+     ritual flips at local midnight, which is the right midnight for a
+     daily habit. But seedForKey() is now Date.UTC of the parsed Y/M/D:
+     a pure function of the date LABEL, so everyone whose calendar says
+     the same date holds the same seed, in every timezone. The old form
+     (epoch-day of local midnight) split east/west of Greenwich and
+     collapsed two spring days onto one seed in every zone whose UTC
+     offset crosses zero at DST. Past days are safe because the page pins
+     every played day's triple in its store (js/app.js, store.picks) —
+     nothing replays this function for history. A leaderboard keyed on
+     daySeed() still needs a ~48h window: one seed is live for as long as
+     its date is someone's today somewhere on earth. */
   var DAY_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
   function pad2(n) { return (n < 10 ? '0' : '') + n; }
@@ -642,7 +644,7 @@ window.ArtDaily = (function () {
   function seedForKey(k) {
     var p = DAY_RE.exec(String(k));
     if (!p) return null;
-    return Math.floor(new Date(+p[1], +p[2] - 1, +p[3]).getTime() / 86400000);
+    return Date.UTC(+p[1], +p[2] - 1, +p[3]) / 86400000;
   }
 
   /* Mixes a string into a 32-bit seed — js/app.js ~469, unchanged, so a

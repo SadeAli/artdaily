@@ -108,7 +108,8 @@ page holds `artdaily-progress-v1`, the SDK holds `artdaily-best-<slug>` and
 One more thing the SDK paints that a drill author should know exists: on a
 **standalone** page, after the first finished round of a sitting, it injects
 a one-line `.daily-note` under the hand-off bar — *"round 1 is today's round
-— a fresh one lands at midnight."* — but only if the drill has dealt from
+— the same one for everyone playing today. a fresh one lands at midnight."*
+— but only if the drill has dealt from
 `dailyRandom` / `roundRandom(1)` this sitting, so a drill with no daily seed
 never carries a claim that is false for it. It is a plain `<p>`, deliberately
 not a live region (the hint stays the one spoken channel), and its styles
