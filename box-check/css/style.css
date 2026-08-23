@@ -249,8 +249,8 @@ a { color: inherit; }
   margin: 0;
   font-size: 1.05rem;
   font-weight: 900;
-  /* accent inked toward graphite so it clears AA on paper… */
-  color: color-mix(in srgb, var(--game-accent) 55%, var(--ink));
+  /* the 45% mix — the same ink the canvas uses — measured worst case 5.01:1 on paper (sunny); 55% left sunny at 4.09, under the 4.5 text owes */
+  color: color-mix(in srgb, var(--game-accent) 45%, var(--ink));
 }
 /* …and pure accent on the dark sheet, where it already passes. */
 :root[data-theme="dark"] .hud-stat dd { color: var(--game-accent); }
@@ -293,7 +293,7 @@ a { color: inherit; }
   white-space: nowrap;
   animation: toast-pop 0.25s ease;
 }
-.toast .toast-accent { color: color-mix(in srgb, var(--game-accent) 55%, var(--ink)); }
+.toast .toast-accent { color: color-mix(in srgb, var(--game-accent) 45%, var(--ink)); }
 :root[data-theme="dark"] .toast .toast-accent { color: var(--game-accent); }
 @keyframes toast-pop {
   from { transform: translateX(-50%) translateY(-8px) rotate(-1.5deg); opacity: 0; }
@@ -446,7 +446,7 @@ a { color: inherit; }
   font-family: var(--hand);
   font-size: 1.15rem;
   font-weight: 700;
-  color: color-mix(in srgb, var(--game-accent) 55%, var(--ink));
+  color: color-mix(in srgb, var(--game-accent) 45%, var(--ink));
   text-decoration: underline;
   text-underline-offset: 3px;
 }

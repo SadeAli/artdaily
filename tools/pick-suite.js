@@ -283,6 +283,29 @@ if (!migrated) {
   }
 }
 
+console.log('\n[G] a stale-code tab’s day gets pinned even under a spent backfill flag');
+{
+  /* The review pass's nastiest confirmed finding: a tab still running
+     pre-migration code logs a day with no pin AFTER the (since-removed)
+     one-shot flag was set — that day must still be legacy-pinned on the
+     next load, or the record judges it against the new formula forever. */
+  const yd = new Date(); yd.setDate(yd.getDate() - 1);
+  const yk = dateKey(yd);
+  const days = {}; days[yk] = { lines: 60, colors: 70, values: 80 };
+  const stale = { days, streak: { count: 1, last: yk, freezes: 0, longest: 1 },
+    skills: {}, badges: {}, seen: { picksBackfill: true }, picks: {} };
+  const p = boot({ 'artdaily-progress-v1': JSON.stringify(stale) });
+  const s = p.stored();
+  check('unpinned day pinned at boot despite the spent flag',
+    s && s.picks && Array.isArray(s.picks[yk]) && s.picks[yk].length === 3,
+    JSON.stringify(s && s.picks));
+  const { games, CAT_SIZE } = loadRegistry();
+  const expect = legacyPick(yk, days, games, CAT_SIZE).map((g) => g.slug);
+  check('pinned with the LEGACY formula (what the stale tab served)',
+    JSON.stringify(s.picks[yk]) === JSON.stringify(expect),
+    JSON.stringify(s.picks[yk]) + ' vs ' + JSON.stringify(expect));
+}
+
 console.log('\n[F] level field: every live entry tagged, rotation served easiest-first');
 {
   const { games } = loadRegistry();

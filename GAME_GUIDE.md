@@ -538,30 +538,21 @@ UX bar for the palette numbers. Three traps beyond the raw accent:
 - *Measure against what is actually behind the mark*, which on a drill
   canvas is `--card` **plus the dot grid** (`--ink` at 8%), not the
   swatch in your head.
-- *Accent **text** owes 4.5, and the chrome inks it one rung **lighter**
-  than the canvas.* The shared sheet paints accent text with
-  `color-mix(--game-accent 55%, --ink)`, while the canvas uses
-  `--canvas-accent`, the 45% mix. So the two surfaces that owe the *higher*
-  bar because they are text — the HUD's round/score/best (16.8px/900) and
-  the SDK's hand-off link (18.4px bold, which lands just under the 18.66px
-  large-text line and therefore owes the full 4.5) — are painted paler than
-  a canvas ring that only owes 3:1. On paper that clears AA for five
-  accents and misses for `--sunny`: **4.09** in the HUD and **4.11** on the
-  link, against 5.27–6.01 for coral, mint, sky, lilac and bubblegum. The
-  night studio is fine everywhere. Until the shared 55% moves, spend one
-  value for both by adding this **below the marker** — worst case becomes
-  5.01, dark is untouched (there `--canvas-accent` *is* the raw accent),
-  and the HUD number and the toast sticker, which print the same score in
-  the same instant, stay the same colour as each other:
-
-  ```css
-  :root[data-theme="light"] .hud-stat dd,
-  :root[data-theme="light"] .handoff-link,
-  :root[data-theme="light"] .toast .toast-accent { color: var(--canvas-accent); }
-  ```
-
-  The template ships it, so a drill copied today inherits it; six live
-  drills chose `--sunny` before it existed.
+- *Accent **text** owes 4.5, and the shared sheet inks it at the canvas's
+  own strength.* Since 2026-08-23 the shared chrome paints accent text —
+  the HUD's round/score/best (16.8px/900), the SDK's hand-off link
+  (18.4px bold, just under the 18.66px large-text line, so it owes the
+  full 4.5) and the toast sticker — with `color-mix(--game-accent 45%,
+  --ink)`, the same mix `--canvas-accent` uses. It used to be 55%, which
+  cleared AA for five accents and missed for `--sunny` (**4.09** in the
+  HUD against a 4.5 bar) on the default paper theme, in the six drills
+  that chose sunny; the 45% mix measures **5.01 worst case** over the dot
+  grid, and the night studio was always fine (there `--canvas-accent` is
+  the raw accent). The below-marker `--canvas-accent` override the guide
+  used to prescribe survives in a few drills as a harmless no-op — the
+  shared rule now says the same thing. A drill's OWN below-marker accent
+  text still owes its own measurement; borders and box-shadows may keep
+  the 55% mix, which clears the 3:1 a non-text mark owes on every accent.
 
 Check a colour before you commit it — no dependencies:
 
