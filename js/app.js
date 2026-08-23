@@ -2143,6 +2143,30 @@
   var openerSlug = null;
   var openerFrom = 'card';  /* 'today' = the hero checklist · 'card' = catalogue */
 
+  /* Navigate the player iframe WITHOUT touching the joint session history.
+     frame.src = url is a real navigation after the first one, and a child
+     browsing context's navigations push entries onto the SHARED history —
+     so three warmups (open, close, open, close…) left the Back button
+     walking the hidden iframe through about:blank → drill → about:blank
+     for ~six presses while the visible page never changed. Back reading
+     as broken is a leave-the-site moment for exactly the returning player
+     this page exists for. location.replace does not push. The URL is
+     resolved absolute first: a relative path handed to an about:blank
+     document's location has nothing sane to resolve against. */
+  function frameGo(url) {
+    if (!frame) return;
+    var abs = url;
+    try { abs = new URL(url, location.href).href; } catch (e) {}
+    try {
+      var w = frame.contentWindow;
+      if (w && w.location && typeof w.location.replace === 'function') {
+        w.location.replace(abs);
+        return;
+      }
+    } catch (e) {}
+    frame.src = abs;   /* last resort: an extra history entry beats a dead player */
+  }
+
   /* Is the iframe currently pointed at a drill? dialog.close() fires its
      'close' event asynchronously and that lands back in closePlayer, so
      without this the frame was navigated to about:blank twice per exit —
@@ -2216,7 +2240,7 @@
     frame.title = g.name;
     playerReady = false;
     gotResult = false;
-    frame.src = url + '?embed=1&theme=' + currentTheme();
+    frameGo(url + '?embed=1&theme=' + currentTheme());
     frameLoaded = true;
     if (statusEl) {
       statusEl.textContent = 'opening ' + g.name + '…';
@@ -2247,7 +2271,7 @@
     openGame = null;
     if (frame && frameLoaded) {
       frameLoaded = false;
-      frame.src = 'about:blank'; /* stops the game's loop */
+      frameGo('about:blank'); /* stops the game's loop */
     }
     document.documentElement.style.overflow = '';
     if (player && player.open) player.close();
