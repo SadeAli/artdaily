@@ -367,6 +367,22 @@ Non-negotiable for every drill:
   never heard at all. Keep the beat **pure** — a function of how many
   reveals this sitting has already shown, plus the text — so the pacing
   can be reasoned about, and tested, without a canvas.
+- **The beat is a floor, not a deadline (WCAG 2.2.1, Timing Adjustable).**
+  However well budgeted, a timed advance still wipes the lesson for anyone
+  slower than the budget — a screen reader behind 200wpm, a slow reader,
+  someone who looked away — and the drill is not timed, so nothing entitles
+  it to take the screen back. The drills already ignore presses during a
+  reveal; spend that press instead: the template's rule is **a press during
+  an item reveal cancels the pending advance (the reveal is held), and the
+  next press asks for the next item**. It sits below the palm guard so a
+  resting wrist can neither hold nor advance, requires `playing` so the
+  round-end reveal keeps its own rule (it stays until "new round"), never
+  scores, and clears on `newRound`. Keep the held state distinct from the
+  hidden-tab parked state, or the visibility re-arm silently un-holds a
+  reveal the player asked to keep. Teach the gesture once, in the first
+  reveal's naming slot — the beat budget then pays for its own words. A
+  drill whose reveals key off something other than a timer owes the same
+  courtesy in its own grammar.
 - **"First of the sitting" is not "round 1, item 1".** They are the same
   screen only until the player touches the primary button, and pressing a
   big button they do not understand yet is the likeliest thing a beginner

@@ -352,6 +352,11 @@
      number printed under it. An offset survives every resize exactly. */
   var reveal = null;
   var revealTimer = null;
+  /* The player pressed during the reveal: the auto-advance is cancelled and
+     the screen is theirs until they press again (the beat-is-a-floor rule
+     in the pointer handler). Distinct from a PARKED timer (hidden tab), so
+     the visibilitychange re-arm below never un-holds a held reveal. */
+  var revealHeld = false;
   /* How many reveals this SITTING has shown. NEVER reset by newRound(): the
      screen that needs the long beat and the one-off naming is the player's
      FIRST reveal, which is not the same thing as round one's first item the
@@ -424,6 +429,7 @@
     clearTimeout(revealTimer);
     revealTimer = null;
     reveal = null;
+    revealHeld = false;
   }
 
   /* The drill's own reference size. TWO different SDK knobs hang off it,
@@ -815,6 +821,25 @@
        dead weight — write the plain `if (ArtDaily.isPalm(ev)) return;` in
        your drill, and delete this one when the vendored copy catches up.) */
     if (typeof ArtDaily.isPalm === 'function' && ArtDaily.isPalm(ev)) return;
+    /* THE BEAT IS A FLOOR, NOT A DEADLINE (WCAG 2.2.1, Timing Adjustable).
+       The reveal is where the drill does its teaching, and a timed advance
+       wipes it for anyone who reads slower than the budget — a screen
+       reader behind 200wpm, a slow reader, someone who looked away. The
+       budget stays (it is the pacing for the player who never touches
+       anything), but a press during an item reveal now HOLDS it: the first
+       press cancels the pending advance, the next one asks for the next
+       target. Never scored, never counted — a held reveal is the player
+       reading, and the drill is not timed. Sits BELOW the palm guard, so a
+       resting wrist can neither hold nor advance; requires `playing`, so
+       the round-end reveal keeps its own rule (it stays until "new round").
+       The first reveal's ring note teaches the gesture in the same breath
+       (see the sentence built at the reveal), and revealBeat budgets the
+       longer line automatically. */
+    if (playing && reveal && ev.isPrimary !== false) {
+      if (revealTimer !== null) { clearTimeout(revealTimer); revealTimer = null; revealHeld = true; return; }
+      nextItem();
+      return;
+    }
     /* Second finger of a two-finger tap must not burn a second target,
        and neither may a tap that lands while the previous reveal is still
        up — the next target has not been drawn yet, so there is nothing it
@@ -842,7 +867,10 @@
        screen where it is new — the third first-thirty-seconds question in
        GAME_GUIDE.md applies to what you draw, not only to what you type. */
     var line = tapWords(words, acc) + '.' +
-      (seen ? '' : ' The dotted ring is where a tap stops scoring.');
+      /* The hold gesture is taught in the same breath as the ring, on the
+         one screen where both are new; revealBeat budgets the longer line
+         automatically, so the extra words buy their own reading time. */
+      (seen ? '' : ' The dotted ring is where a tap stops scoring. A tap holds this screen; another moves on.');
     reveal = {
       tf: target,
       dx: dx,
@@ -897,13 +925,14 @@
        next tick — a reveal built without a beat would come back from a
        hidden tab and vanish instantly, which is the bug this exists to fix
        wearing a disguise. */
-    if (playing && reveal && revealTimer === null) {
+    if (playing && reveal && revealTimer === null && !revealHeld) {
       revealTimer = setTimeout(nextItem, reveal.beat || REVEAL_MS);
     }
   });
 
   function nextItem() {
     revealTimer = null;
+    revealHeld = false;
     if (!playing) return;     /* the round was abandoned while the reveal was up */
     reveal = null;
     nextTarget(targetIdx);
